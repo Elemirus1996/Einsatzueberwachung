@@ -102,8 +102,7 @@ Revolutionäres Feature: **Ein Hund kann jetzt mehrere Spezialisierungen haben!*
 ## 🆘 Support
 
 Bei Fragen oder Problemen:
-- 📧 **Email**: support@rescuedog-sw.com
-- 📖 **Dokumentation**: Integrierte Hilfe (F1 oder Strg+H)
+- 📖 **Dokumentation**: Integrierte Hilfe (Strg+H)
 - 🐛 **Bug Reports**: Über Performance-Metriken und Logs
 
 ## 📄 License
