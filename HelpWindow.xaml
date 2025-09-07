@@ -1,0 +1,157 @@
+<Window x:Class="Einsatzueberwachung.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        Title="Hilfe - Einsatzüberwachung Professional v1.5" 
+        Height="700" Width="900"
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Resources/app.ico"
+        Background="{DynamicResource SurfaceContainer}">
+
+    <Window.Resources>
+        <!-- Help Navigation Button using global design system -->
+        <Style x:Key="HelpNavButton" TargetType="Button" BasedOn="{StaticResource TextButton}">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 📋 Navigation Sidebar -->
+        <Border Grid.Column="0" Style="{StaticResource Card}" 
+               Margin="0,0,16,0" Padding="16">
+            <StackPanel>
+                <!-- Header -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <Border Width="48" Height="48" CornerRadius="24" 
+                           Background="{DynamicResource Primary}" Margin="0,0,12,0">
+                        <fa:ImageAwesome Icon="QuestionCircle" Width="24" Height="24" 
+                                       Foreground="White"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Hilfe-Center" Style="{StaticResource TitleLarge}"
+                                  Foreground="{DynamicResource OnSurface}"/>
+                        <TextBlock Text="Version 1.5" Style="{StaticResource BodySmall}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Navigation Menu -->
+                <StackPanel>
+                    <Button Click="ShowQuickStart_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Rocket" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Schnellstart" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowShortcuts_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="KeyboardOutline" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Tastenkürzel" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowTeamManagement_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Users" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Team-Verwaltung" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowNotesSystem_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="StickyNote" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Notizen-System" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowAutoSave_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Save" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Auto-Speichern" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowThemes_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Adjust" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Themes und UI" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowPerformance_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Tachometer" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Performance" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 📄 Content Area -->
+        <Border Grid.Column="1" Style="{StaticResource Card}">
+            <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="ContentPanel">
+                    <!-- Quick Start Content (Default) -->
+                    <StackPanel x:Name="QuickStartContent">
+                        <TextBlock Text="🚀 Schnellstart Guide" Style="{StaticResource HeadlineLarge}"
+                                  Foreground="{DynamicResource Primary}" Margin="0,0,0,16"/>
+                        
+                        <Border Style="{StaticResource Card}" Background="{DynamicResource PrimaryContainer}" 
+                               Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="🎯 Einsatz-Workflow v1.5" Style="{StaticResource TitleMedium}"
+                                          Foreground="{DynamicResource OnPrimaryContainer}"/>
+                                <TextBlock Style="{StaticResource BodyMedium}"
+                                          Foreground="{DynamicResource OnPrimaryContainer}">
+                                    <Run Text="1. StartWindow: Nur essenzielle Infos eingeben"/>
+                                    <LineBreak/>
+                                    <Run Text="2. MainWindow: Teams nach Bedarf hinzufügen"/>
+                                    <LineBreak/>
+                                    <Run Text="3. Multiple Spezialisierungen pro Hund auswählen"/>
+                                    <LineBreak/>
+                                    <Run Text="4. Timer mit F1-F10 oder Buttons bedienen"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="🐕 Team-Erstellung (NEU)" Style="{StaticResource TitleMedium}"
+                                  Foreground="{DynamicResource OnSurface}" Margin="0,12,0,6"/>
+                        <TextBlock Style="{StaticResource BodyMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}" Margin="0,0,0,8">
+                            Teams werden jetzt dynamisch im Hauptfenster erstellt. Klicken Sie auf '+ Team' und wählen Sie eine oder mehrere Spezialisierungen aus. Ein Hund kann z.B. sowohl Fläche als auch Trümmer suchen.
+                        </TextBlock>
+
+                        <TextBlock Text="⏱️ Timer-Bedienung" Style="{StaticResource TitleMedium}"
+                                  Foreground="{DynamicResource OnSurface}" Margin="0,12,0,6"/>
+                        <TextBlock Text="Jedes Team hat Start/Stop/Reset-Buttons. Alternativ verwenden Sie F1-F10 für schnelle Steuerung. Automatische Warnungen bei konfigurierten Zeiten." 
+                                  Style="{StaticResource BodyMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}" Margin="0,0,0,8"/>
+
+                        <TextBlock Text="📝 Notizen-System" Style="{StaticResource TitleMedium}"
+                                  Foreground="{DynamicResource OnSurface}" Margin="0,12,0,6"/>
+                        <TextBlock Text="Schnellnotizen mit Enter-Taste oder '+' Button hinzufügen. Alle Timer-Aktionen werden automatisch mit Zeitstempel protokolliert." 
+                                  Style="{StaticResource BodyMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

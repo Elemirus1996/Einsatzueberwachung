@@ -1,0 +1,159 @@
+<Window x:Class="Einsatzueberwachung.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        Title="Über Einsatzüberwachung Professional v1.0.0" 
+        Height="500" Width="600"
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Resources/app.ico"
+        ResizeMode="NoResize"
+        Background="#F5F5F5">
+
+    <Window.Resources>
+        <Style x:Key="TitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#2196F3"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10"/>
+        </Style>
+        
+        <Style x:Key="VersionStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,5"/>
+        </Style>
+        
+        <Style x:Key="InfoStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="20,5"/>
+            <Setter Property="LineHeight" Value="18"/>
+        </Style>
+        
+        <Style x:Key="SectionStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#2196F3"/>
+            <Setter Property="Margin" Value="20,15,20,5"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="10" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="5" Opacity="0.3" BlurRadius="15"/>
+        </Border.Effect>
+        
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,20">
+            <StackPanel>
+                <!-- Logo & Title Header -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,20,0,15">
+                    <!-- Large Logo with Real Image -->
+                    <Border Width="120" Height="120" CornerRadius="60" 
+                           Background="White" Margin="0,0,0,15"
+                           BorderBrush="#2196F3" BorderThickness="3"
+                           HorizontalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" Direction="270" ShadowDepth="2" 
+                                            Opacity="0.3" BlurRadius="8"/>
+                        </Border.Effect>
+                        
+                        <!-- Real Logo Implementation with Alternative URI -->
+                        <Image Source="/Resources/logo.jpeg" 
+                              Stretch="UniformToFill" 
+                              Width="110" Height="110"
+                              ClipToBounds="True">
+                            <Image.Clip>
+                                <EllipseGeometry RadiusX="55" RadiusY="55" Center="55,55"/>
+                            </Image.Clip>
+                        </Image>
+                    </Border>
+                    
+                    <!-- App Title -->
+                    <TextBlock Text="Einsatzüberwachung" Style="{StaticResource TitleStyle}"/>
+                </StackPanel>
+                
+                <TextBlock Text="Professional Edition" Style="{StaticResource VersionStyle}"/>
+                <TextBlock x:Name="TxtVersion" Text="Version 1.0" Style="{StaticResource VersionStyle}"/>
+                <TextBlock Text="Build 2025.09.06" Style="{StaticResource VersionStyle}" Foreground="#999"/>
+                
+                <!-- Description -->
+                <TextBlock Style="{StaticResource SectionStyle}" Text="🎯 Beschreibung"/>
+                <TextBlock Style="{StaticResource InfoStyle}">
+                    Professionelle Software zur Überwachung und Koordination von Rettungshunde-Einsätzen. 
+                    Entwickelt für maximale Effizienz und Benutzerfreundlichkeit bei Such- und Rettungsoperationen.
+                </TextBlock>
+                
+                <!-- Features -->
+                <TextBlock Style="{StaticResource SectionStyle}" Text="✨ Hauptfunktionen"/>
+                <TextBlock Style="{StaticResource InfoStyle}">
+                    • Timer-basierte Team-Überwachung mit automatischen Warnungen
+                    <LineBreak/>• 6 verschiedene Rettungshunde-Kategorien
+                    <LineBreak/>• Zeitgestempelte Notizen und Funkspruch-Protokoll
+                    <LineBreak/>• Automatisches Speichern und Crash-Recovery
+                    <LineBreak/>• Dark/Light Theme mit automatischer Zeitsteuerung
+                    <LineBreak/>• Keyboard-Shortcuts für schnelle Bedienung
+                    <LineBreak/>• Responsive Design für verschiedene Bildschirmgrößen
+                    <LineBreak/>• JSON-Export für Dokumentation und Archivierung
+                </TextBlock>
+                
+                <!-- Technical Info -->
+                <TextBlock Style="{StaticResource SectionStyle}" Text="🔧 Technische Informationen"/>
+                <TextBlock Style="{StaticResource InfoStyle}">
+                    Framework: .NET 8.0 Windows Desktop
+                    <LineBreak/>UI-Technologie: WPF (Windows Presentation Foundation)
+                    <LineBreak/>Icons: FontAwesome 4.7
+                    <LineBreak/>Architektur: MVVM Pattern
+                    <LineBreak/>Datenspeicherung: JSON + Auto-Save
+                </TextBlock>
+                
+                <!-- Performance -->
+                <TextBlock Style="{StaticResource SectionStyle}" Text="⚡ Performance-Optimierungen"/>
+                <TextBlock Style="{StaticResource InfoStyle}">
+                    • Intelligente Timer-Diagnostics
+                    <LineBreak/>• Memory-Management mit automatischer GC
+                    <LineBreak/>• UI-Virtualisierung für bessere Performance
+                    <LineBreak/>• Background-Priority für Non-Critical-Tasks
+                    <LineBreak/>• Throttled Layout-Updates für flüssige Bedienung
+                </TextBlock>
+                
+                <!-- Credits -->
+                <TextBlock Style="{StaticResource SectionStyle}" Text="Entwicklung u. Credits"/>
+                <TextBlock Style="{StaticResource InfoStyle}">
+                    Entwickelt für professionelle Rettungshunde-Teams
+                    <LineBreak/>Optimiert für Such- und Rettungseinsätze
+                    <LineBreak/>
+                    <LineBreak/>Besonderer Dank an:
+                    <LineBreak/>• Alle Rettungshunde-Teams für ihr Feedback
+                    <LineBreak/>• FontAwesome für die Icon-Bibliothek
+                    <LineBreak/>• Microsoft für .NET und WPF
+                </TextBlock>
+                
+                <!-- Copyright -->
+                <TextBlock Style="{StaticResource VersionStyle}" Margin="0,20,0,10"
+                          Text="Copyright 2024 Emergency Dog Teams Software"/>
+                
+                <!-- Close Button -->
+                <Button Content="Schließen" Width="100" Height="35" 
+                       Click="BtnClose_Click" Margin="0,10,0,20"
+                       Background="#2196F3" Foreground="White" 
+                       BorderThickness="0" Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.8"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</Window>

@@ -1,0 +1,274 @@
+<Window x:Class="Einsatzueberwachung.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        Title="Einsatzüberwachung Professional v1.5 - Multiple Team Types Edition" 
+        Height="900" Width="1400"
+        WindowState="Maximized"
+        Icon="pack://application:,,,/Resources/app.ico"
+        x:Name="MainWindowRoot"
+        KeyDown="MainWindow_KeyDown"
+        Focusable="True"
+        Background="{DynamicResource SurfaceContainer}">
+
+    <Window.Resources>
+        <!-- Custom Styles for MainWindow using global design system -->
+        <Style x:Key="HeaderCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="Effect" Value="{StaticResource Elevation2}"/>
+            <Setter Property="CornerRadius" Value="0,0,16,16"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="24,16"/>
+        </Style>
+        
+        <Style x:Key="ClockDisplay" TargetType="TextBlock" BasedOn="{StaticResource DisplayMedium}">
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Effect" Value="{StaticResource Elevation1}"/>
+        </Style>
+        
+        <Style x:Key="ActionButton" TargetType="Button" BasedOn="{StaticResource FilledButton}">
+            <Setter Property="Margin" Value="8,0"/>
+            <Setter Property="Padding" Value="20,12"/>
+        </Style>
+        
+        <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource FAB}">
+            <Setter Property="Width" Value="48"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="Margin" Value="4,0"/>
+        </Style>
+        
+        <Style x:Key="WelcomeHero" TargetType="Border" BasedOn="{StaticResource CardElevated}">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#E3F2FD" Offset="0"/>
+                        <GradientStop Color="#BBDEFB" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 🏢 Professional Header -->
+        <Border Grid.Row="0" Style="{StaticResource HeaderCard}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Mission Info Section -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Professional Logo -->
+                    <Border Width="56" Height="56" CornerRadius="28" 
+                           Background="White" Margin="0,0,20,0"
+                           BorderBrush="{DynamicResource Primary}" BorderThickness="2">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" Direction="270" ShadowDepth="2" 
+                                            Opacity="0.2" BlurRadius="6"/>
+                        </Border.Effect>
+                        
+                        <Image Source="/Resources/logo.jpeg" 
+                              Stretch="UniformToFill" Width="48" Height="48" ClipToBounds="True">
+                            <Image.Clip>
+                                <EllipseGeometry RadiusX="24" RadiusY="24" Center="24,24"/>
+                            </Image.Clip>
+                        </Image>
+                    </Border>
+                    
+                    <!-- Mission Details -->
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtEinsatzInfo" Style="{StaticResource TitleLarge}"
+                                  Foreground="{DynamicResource Primary}"/>
+                        <TextBlock x:Name="TxtEinsatzort" Style="{StaticResource BodyMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"/>
+                        <TextBlock x:Name="TxtEinsatzleiter" Style="{StaticResource BodyMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Central Clock & Status -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtCurrentTime" Style="{StaticResource ClockDisplay}"
+                              HorizontalAlignment="Center"/>
+                    
+                    <Border Background="{DynamicResource SurfaceVariant}" CornerRadius="20" 
+                           Padding="12,4" Margin="0,8,0,0">
+                        <TextBlock Text="F1-F10: Teams | Strg+N: + Team | F11: Vollbild" 
+                                  Style="{StaticResource LabelSmall}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"
+                                  HorizontalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Action Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Team Counter Badge -->
+                    <Border Background="{DynamicResource PrimaryContainer}" CornerRadius="16" 
+                           Padding="12,6" Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Users" Width="14" Height="14" 
+                                           Foreground="{DynamicResource OnPrimaryContainer}" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="TxtTeamCount" Text="0/10" 
+                                      Style="{StaticResource LabelMedium}"
+                                      Foreground="{DynamicResource OnPrimaryContainer}"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Primary Actions -->
+                    <Button x:Name="BtnAddTeam" Click="BtnAddTeam_Click" 
+                           Style="{StaticResource ActionButton}"
+                           Background="{DynamicResource Primary}"
+                           ToolTip="Hundeteam hinzufügen (Strg+N)">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Plus" Width="14" Height="14" 
+                                           Foreground="White" Margin="0,0,6,0"/>
+                            <TextBlock Text="Team" Foreground="White"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Secondary Actions -->
+                    <Button x:Name="BtnHelp" Click="BtnHelp_Click" 
+                           Style="{StaticResource IconButton}"
+                           Background="{DynamicResource Secondary}"
+                           ToolTip="Hilfe und Tastenkürzel">
+                        <fa:ImageAwesome Icon="QuestionCircle" Width="20" Height="20" Foreground="White"/>
+                    </Button>
+                    
+                    <Button x:Name="BtnThemeToggle" Click="BtnThemeToggle_Click" 
+                           Style="{StaticResource IconButton}"
+                           Background="{DynamicResource Secondary}">
+                        <fa:ImageAwesome x:Name="ThemeIcon" Icon="SunOutline" Width="20" Height="20" Foreground="White"/>
+                    </Button>
+                    
+                    <Button x:Name="BtnExport" Click="BtnExport_Click" 
+                           Style="{StaticResource ActionButton}"
+                           Background="{DynamicResource Success}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Download" Width="14" Height="14" 
+                                           Foreground="White" Margin="0,0,6,0"/>
+                            <TextBlock Text="Export" Foreground="White"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button x:Name="BtnMenu" Click="BtnMenu_Click" 
+                           Style="{StaticResource IconButton}"
+                           Background="{DynamicResource Outline}"
+                           ToolTip="Menü">
+                        <fa:ImageAwesome Icon="Bars" Width="18" Height="18" Foreground="White"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 🐕 Teams Container or Welcome -->
+        <Grid Grid.Row="1" Margin="16">
+            <!-- Teams Container -->
+            <ScrollViewer x:Name="TeamsScrollViewer" VerticalScrollBarVisibility="Auto" 
+                         HorizontalScrollBarVisibility="Disabled" Padding="8">
+                <UniformGrid x:Name="TeamsGrid" Columns="2" VerticalAlignment="Top"/>
+            </ScrollViewer>
+            
+            <!-- Enhanced Welcome Message -->
+            <Border x:Name="WelcomeMessage" Style="{StaticResource WelcomeHero}"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    MaxWidth="800" Visibility="Visible">
+                
+                <StackPanel TextBlock.TextAlignment="Center">
+                    <!-- Hero Icon -->
+                    <Viewbox Width="120" Height="120" Margin="0,0,0,24">
+                        <Grid>
+                            <Ellipse Fill="{DynamicResource Primary}" Width="120" Height="120"/>
+                            <fa:ImageAwesome Icon="Paw" Width="60" Height="60" 
+                                           Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Viewbox>
+                    
+                    <!-- Welcome Content -->
+                    <TextBlock Text="Willkommen bei Professional v1.5!" 
+                              Style="{StaticResource HeadlineSmall}"
+                              Foreground="{DynamicResource Primary}" 
+                              Margin="0,0,0,16"/>
+                    
+                    <TextBlock Style="{StaticResource BodyLarge}"
+                              Foreground="{DynamicResource OnSurface}" 
+                              LineHeight="28" Margin="0,0,0,32">
+                        <Run Text="Klicken Sie auf"/>
+                        <Run Text="+ Team" FontWeight="Bold" Foreground="{DynamicResource Primary}"/>
+                        <Run Text="um Ihr erstes Hundeteam hinzuzufügen."/>
+                        <LineBreak/><LineBreak/>
+                        <Run Text="✨ Neu: Teamname = 'Team [Hundename]'" FontWeight="Medium"/>
+                        <LineBreak/>
+                        <Run Text="Ein Hund kann mehrere Spezialisierungen haben!" FontStyle="Italic" 
+                             Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    </TextBlock>
+                    
+                    <!-- CTA Button -->
+                    <Button Click="BtnAddTeam_Click" Style="{StaticResource FilledButton}" 
+                           Background="{DynamicResource Success}"
+                           Padding="32,16" FontSize="16">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Plus" Width="18" Height="18" 
+                                           Foreground="White" Margin="0,0,12,0"/>
+                            <TextBlock Text="Erstes Team hinzufügen" Foreground="White" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 📊 Professional Status Bar -->
+        <Border Grid.Row="2" Background="{DynamicResource Surface}" 
+                BorderBrush="{DynamicResource OutlineVariant}" BorderThickness="0,1,0,0" 
+                Padding="16,8">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Direction="90" ShadowDepth="1" 
+                                Opacity="0.1" BlurRadius="4"/>
+            </Border.Effect>
+            
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Status Information -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SuccessContainer}" CornerRadius="12" 
+                           Padding="8,4" Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="CheckCircle" Width="12" Height="12" 
+                                           Foreground="{DynamicResource Success}" Margin="0,0,4,0"/>
+                            <TextBlock Text="AKTIV" Style="{StaticResource LabelSmall}"
+                                      Foreground="{DynamicResource OnSuccessContainer}"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <TextBlock x:Name="TxtStatus" Text="Einsatzüberwachung v1.5 bereit" 
+                              Style="{StaticResource BodyMedium}"
+                              Foreground="{DynamicResource OnSurface}" 
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- System Log -->
+                <TextBlock x:Name="TxtLastLog" Grid.Column="1" 
+                          Style="{StaticResource BodySmall}"
+                          FontFamily="Consolas" 
+                          Foreground="{DynamicResource OnSurfaceVariant}"
+                          VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

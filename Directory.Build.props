@@ -1,0 +1,38 @@
+<Project>
+  <PropertyGroup>
+    <!-- Global warning suppressions for the entire solution -->
+    <NoWarn>$(NoWarn);CS1998;CA1822;CA1303;CA1305;CA1304;CA2007;CA1062;CA1031;CA1416;CA2254;CA1848;CA1851;CA1001;CA2000;CA1308;CA1309;IL2026;IL3050;IDE0028;IDE0290;IDE0300;IDE0079;IDE0065</NoWarn>
+    
+    <!-- Code analysis settings -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    
+    <!-- Nullable reference types -->
+    <Nullable>enable</Nullable>
+    
+    <!-- WPF specific settings -->
+    <UseWPF Condition="'$(UseWPF)' == ''">false</UseWPF>
+    
+    <!-- Platform target -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    
+    <!-- Optimization -->
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <DebugType Condition="'$(Configuration)' == 'Release'">portable</DebugType>
+    
+    <!-- Suppress specific analyzers for WPF projects -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- Conditional properties for WPF projects -->
+  <PropertyGroup Condition="'$(UseWPF)' == 'true'">
+    <!-- Additional WPF-specific warning suppressions -->
+    <NoWarn>$(NoWarn);WPF0001;WPF0002;WPF0003;WPF0004;WPF0005</NoWarn>
+  </PropertyGroup>
+  
+  <!-- Global package references that might cause warnings -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

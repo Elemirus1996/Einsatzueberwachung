@@ -1,0 +1,437 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 🎨 PROFESSIONAL COLOR PALETTE - Material Design 3 Inspired -->
+    
+    <!-- Primary Colors -->
+    <SolidColorBrush x:Key="Primary" Color="#1565C0"/> <!-- Deep Blue -->
+    <SolidColorBrush x:Key="PrimaryContainer" Color="#E3F2FD"/>
+    <SolidColorBrush x:Key="OnPrimary" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="OnPrimaryContainer" Color="#0D47A1"/>
+    
+    <!-- Secondary Colors -->
+    <SolidColorBrush x:Key="Secondary" Color="#455A64"/> <!-- Blue Grey -->
+    <SolidColorBrush x:Key="SecondaryContainer" Color="#CFD8DC"/>
+    <SolidColorBrush x:Key="OnSecondary" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="OnSecondaryContainer" Color="#263238"/>
+    
+    <!-- Tertiary Colors -->
+    <SolidColorBrush x:Key="Tertiary" Color="#6A1B9A"/> <!-- Purple -->
+    <SolidColorBrush x:Key="TertiaryContainer" Color="#F3E5F5"/>
+    <SolidColorBrush x:Key="OnTertiary" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="OnTertiaryContainer" Color="#4A148C"/>
+    
+    <!-- Surface Colors -->
+    <SolidColorBrush x:Key="Surface" Color="#FEFBFF"/> <!-- Light surface -->
+    <SolidColorBrush x:Key="SurfaceVariant" Color="#F4F9FD"/>
+    <SolidColorBrush x:Key="SurfaceContainer" Color="#F0F4F8"/>
+    <SolidColorBrush x:Key="SurfaceContainerHigh" Color="#E8EDF2"/>
+    <SolidColorBrush x:Key="SurfaceContainerHighest" Color="#E1E7EC"/>
+    <SolidColorBrush x:Key="OnSurface" Color="#1A1C1E"/>
+    <SolidColorBrush x:Key="OnSurfaceVariant" Color="#44474A"/>
+    
+    <!-- Outline Colors -->
+    <SolidColorBrush x:Key="Outline" Color="#74777A"/>
+    <SolidColorBrush x:Key="OutlineVariant" Color="#C4C7CA"/>
+    
+    <!-- Semantic Colors -->
+    <SolidColorBrush x:Key="Success" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="SuccessContainer" Color="#E8F5E8"/>
+    <SolidColorBrush x:Key="OnSuccess" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="OnSuccessContainer" Color="#1B5E20"/>
+    
+    <SolidColorBrush x:Key="Warning" Color="#F57C00"/>
+    <SolidColorBrush x:Key="WarningContainer" Color="#FFF3E0"/>
+    <SolidColorBrush x:Key="OnWarning" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="OnWarningContainer" Color="#E65100"/>
+    
+    <SolidColorBrush x:Key="Error" Color="#D32F2F"/>
+    <SolidColorBrush x:Key="ErrorContainer" Color="#FFEBEE"/>
+    <SolidColorBrush x:Key="OnError" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="OnErrorContainer" Color="#B71C1C"/>
+    
+    <!-- Emergency Team Type Colors -->
+    <SolidColorBrush x:Key="FlächeColor" Color="#1976D2"/> <!-- Blue -->
+    <SolidColorBrush x:Key="TrümmerColor" Color="#F57C00"/> <!-- Orange -->
+    <SolidColorBrush x:Key="MantrailerColor" Color="#388E3C"/> <!-- Green -->
+    <SolidColorBrush x:Key="WasserColor" Color="#0097A7"/> <!-- Cyan -->
+    <SolidColorBrush x:Key="LawineColor" Color="#7B1FA2"/> <!-- Purple -->
+    <SolidColorBrush x:Key="AllgemeinColor" Color="#616161"/> <!-- Grey -->
+    
+    <!-- 🌓 DARK THEME COLORS -->
+    
+    <!-- Dark Primary Colors -->
+    <SolidColorBrush x:Key="DarkPrimary" Color="#90CAF9"/>
+    <SolidColorBrush x:Key="DarkPrimaryContainer" Color="#0D47A1"/>
+    <SolidColorBrush x:Key="DarkOnPrimary" Color="#0A2C5A"/>
+    <SolidColorBrush x:Key="DarkOnPrimaryContainer" Color="#C5E1FF"/>
+    
+    <!-- Dark Secondary Colors -->
+    <SolidColorBrush x:Key="DarkSecondary" Color="#B0BEC5"/>
+    <SolidColorBrush x:Key="DarkSecondaryContainer" Color="#37474F"/>
+    <SolidColorBrush x:Key="DarkOnSecondary" Color="#1C313A"/>
+    <SolidColorBrush x:Key="DarkOnSecondaryContainer" Color="#CFD8DC"/>
+    
+    <!-- Dark Surface Colors -->
+    <SolidColorBrush x:Key="DarkSurface" Color="#0F1419"/>
+    <SolidColorBrush x:Key="DarkSurfaceVariant" Color="#1A1F24"/>
+    <SolidColorBrush x:Key="DarkSurfaceContainer" Color="#1E2328"/>
+    <SolidColorBrush x:Key="DarkSurfaceContainerHigh" Color="#252A30"/>
+    <SolidColorBrush x:Key="DarkSurfaceContainerHighest" Color="#2B3138"/>
+    <SolidColorBrush x:Key="DarkOnSurface" Color="#E1E3E6"/>
+    <SolidColorBrush x:Key="DarkOnSurfaceVariant" Color="#C4C7CA"/>
+    
+    <!-- Dark Outline Colors -->
+    <SolidColorBrush x:Key="DarkOutline" Color="#8E9192"/>
+    <SolidColorBrush x:Key="DarkOutlineVariant" Color="#44474A"/>
+    
+    <!-- 📝 TYPOGRAPHY SYSTEM -->
+    
+    <!-- Display Typography -->
+    <Style x:Key="DisplayLarge" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="57"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="64"/>
+    </Style>
+    
+    <Style x:Key="DisplayMedium" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="45"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="52"/>
+    </Style>
+    
+    <Style x:Key="DisplaySmall" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="36"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="44"/>
+    </Style>
+    
+    <!-- Headline Typography -->
+    <Style x:Key="HeadlineLarge" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="32"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="40"/>
+    </Style>
+    
+    <Style x:Key="HeadlineMedium" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="28"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="36"/>
+    </Style>
+    
+    <Style x:Key="HeadlineSmall" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="32"/>
+    </Style>
+    
+    <!-- Title Typography -->
+    <Style x:Key="TitleLarge" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="28"/>
+    </Style>
+    
+    <Style x:Key="TitleMedium" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="LineHeight" Value="24"/>
+    </Style>
+    
+    <Style x:Key="TitleSmall" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="LineHeight" Value="20"/>
+    </Style>
+    
+    <!-- Label Typography -->
+    <Style x:Key="LabelLarge" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="LineHeight" Value="20"/>
+    </Style>
+    
+    <Style x:Key="LabelMedium" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="LineHeight" Value="16"/>
+    </Style>
+    
+    <Style x:Key="LabelSmall" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="LineHeight" Value="16"/>
+    </Style>
+    
+    <!-- Body Typography -->
+    <Style x:Key="BodyLarge" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="24"/>
+    </Style>
+    
+    <Style x:Key="BodyMedium" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="20"/>
+    </Style>
+    
+    <Style x:Key="BodySmall" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="LineHeight" Value="16"/>
+    </Style>
+    
+    <!-- 🔘 ELEVATION SYSTEM -->
+    
+    <DropShadowEffect x:Key="Elevation1" Color="Black" BlurRadius="3" ShadowDepth="1" Opacity="0.12"/>
+    <DropShadowEffect x:Key="Elevation2" Color="Black" BlurRadius="6" ShadowDepth="2" Opacity="0.16"/>
+    <DropShadowEffect x:Key="Elevation3" Color="Black" BlurRadius="10" ShadowDepth="3" Opacity="0.19"/>
+    <DropShadowEffect x:Key="Elevation4" Color="Black" BlurRadius="14" ShadowDepth="4" Opacity="0.25"/>
+    <DropShadowEffect x:Key="Elevation5" Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.30"/>
+    
+    <!-- 🎯 COMPONENT STYLES -->
+    
+    <!-- Card Style -->
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Effect" Value="{StaticResource Elevation2}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    
+    <Style x:Key="CardElevated" TargetType="Border" BasedOn="{StaticResource Card}">
+        <Setter Property="Effect" Value="{StaticResource Elevation4}"/>
+    </Style>
+    
+    <!-- Filled Button -->
+    <Style x:Key="FilledButton" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="24,10"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="20"
+                            Effect="{StaticResource Elevation1}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                        Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation2}"/>
+                            <Setter Property="Opacity" Value="0.92"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation1}"/>
+                            <Setter Property="Opacity" Value="0.88"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.38"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Outlined Button -->
+    <Style x:Key="OutlinedButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Outline}"/>
+        <Setter Property="Padding" Value="24,10"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="20">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                        Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+                            <Setter Property="Opacity" Value="0.08"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+                            <Setter Property="Opacity" Value="0.12"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.38"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Text Button -->
+    <Style x:Key="TextButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="20">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                        Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+                            <Setter Property="Opacity" Value="0.08"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+                            <Setter Property="Opacity" Value="0.12"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.38"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Floating Action Button -->
+    <Style x:Key="FAB" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Width" Value="56"/>
+        <Setter Property="Height" Value="56"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="16"
+                            Effect="{StaticResource Elevation3}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation4}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation2}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Text Field -->
+    <Style x:Key="TextField" TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="4"
+                            BorderThickness="0,0,0,1"
+                            BorderBrush="{DynamicResource Outline}">
+                        <ScrollViewer x:Name="PART_ContentHost" 
+                                    Margin="{TemplateBinding Padding}"
+                                    VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="0,0,0,2"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource OnSurface}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- ✨ ANIMATIONS -->
+    
+    <Storyboard x:Key="FadeIn">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                       From="0" To="1" Duration="0:0:0.3"
+                       AccelerationRatio="0.2"/>
+    </Storyboard>
+    
+    <Storyboard x:Key="SlideInFromTop">
+        <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                       From="-20" To="0" Duration="0:0:0.4"
+                       AccelerationRatio="0.2"/>
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                       From="0" To="1" Duration="0:0:0.3"/>
+    </Storyboard>
+    
+    <Storyboard x:Key="SlideInFromBottom">
+        <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                       From="20" To="0" Duration="0:0:0.4"
+                       AccelerationRatio="0.2"/>
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                       From="0" To="1" Duration="0:0:0.3"/>
+    </Storyboard>
+    
+    <Storyboard x:Key="ScaleIn">
+        <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                       From="0.8" To="1" Duration="0:0:0.3"
+                       AccelerationRatio="0.2"/>
+        <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                       From="0.8" To="1" Duration="0:0:0.3"
+                       AccelerationRatio="0.2"/>
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                       From="0" To="1" Duration="0:0:0.2"/>
+    </Storyboard>
+    
+</ResourceDictionary>
