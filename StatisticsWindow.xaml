@@ -1,0 +1,263 @@
+<Window x:Class="Einsatzueberwachung.StatisticsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        Title="📊 Einsatz-Statistiken - Einsatzüberwachung v1.5" 
+        Height="800" Width="1200"
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Resources/app.ico"
+        Background="{DynamicResource SurfaceContainer}">
+
+    <Window.Resources>
+        <!-- Statistic Card Style -->
+        <Style x:Key="StatCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="MinHeight" Value="120"/>
+        </Style>
+        
+        <!-- Metric Value Style -->
+        <Style x:Key="MetricValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        
+        <!-- Metric Label Style -->
+        <Style x:Key="MetricLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+        
+        <!-- Progress Bar Style -->
+        <Style x:Key="MetricProgress" TargetType="ProgressBar">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <Border Width="48" Height="48" CornerRadius="24" 
+                   Background="{DynamicResource Primary}" Margin="0,0,16,0">
+                <fa:ImageAwesome Icon="BarChart" Width="24" Height="24" 
+                               Foreground="White"/>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="📊 Einsatz-Statistiken" Style="{StaticResource HeadlineMedium}"
+                          Foreground="{DynamicResource OnSurface}"/>
+                <TextBlock x:Name="LastUpdateText" Text="Letzte Aktualisierung: Jetzt" 
+                          Style="{StaticResource BodySmall}"
+                          Foreground="{DynamicResource OnSurfaceVariant}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0">
+                <Button Click="RefreshStats_Click" Style="{StaticResource FilledButton}" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Refresh" Width="16" Height="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Aktualisieren"/>
+                    </StackPanel>
+                </Button>
+                <Button Click="ExportReport_Click" Style="{StaticResource OutlinedButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Download" Width="16" Height="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Export"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                
+                <!-- Quick Metrics Row -->
+                <TextBlock Text="📈 Übersicht" Style="{StaticResource TitleMedium}" 
+                          Foreground="{DynamicResource OnSurface}" Margin="0,0,0,12"/>
+                
+                <UniformGrid Columns="4" Margin="0,0,0,20">
+                    <!-- Einsatzdauer -->
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <fa:ImageAwesome Icon="ClockOutline" Width="24" Height="24" 
+                                           Foreground="{DynamicResource Primary}" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="EinsatzdauerValue" Text="02:34:15" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="Einsatzdauer" Style="{StaticResource MetricLabel}"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Anzahl Teams -->
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <fa:ImageAwesome Icon="Users" Width="24" Height="24" 
+                                           Foreground="{DynamicResource Secondary}" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="AnzahlTeamsValue" Text="8" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="Teams Gesamt" Style="{StaticResource MetricLabel}"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Aktive Teams -->
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <fa:ImageAwesome Icon="Play" Width="24" Height="24" 
+                                           Foreground="{DynamicResource Success}" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="AktiveTeamsValue" Text="3" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="Teams Aktiv" Style="{StaticResource MetricLabel}"/>
+                            <ProgressBar x:Name="TeamAuslastungProgress" Style="{StaticResource MetricProgress}" Value="37.5"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Durchschnittszeit -->
+                    <Border Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <fa:ImageAwesome Icon="Calculator" Width="24" Height="24" 
+                                           Foreground="{DynamicResource Tertiary}" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="DurchschnittszeitValue" Text="42:15" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="⌀ Einsatzzeit" Style="{StaticResource MetricLabel}"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- Team Performance Section -->
+                <TextBlock Text="🏆 Team-Performance" Style="{StaticResource TitleMedium}" 
+                          Foreground="{DynamicResource OnSurface}" Margin="0,20,0,12"/>
+                
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Team Rankings -->
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                        <StackPanel>
+                            <TextBlock Text="📋 Team-Rankings" Style="{StaticResource TitleSmall}" 
+                                      Foreground="{DynamicResource OnSurface}" Margin="0,0,0,12"/>
+                            <ListView x:Name="TeamRankingsList" MaxHeight="300">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="30"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="60"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Rank}" FontWeight="Bold"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding TeamName}"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Einsatzzeit}"/>
+                                            <Border Grid.Column="3" Background="{Binding StatusColor}" 
+                                                   CornerRadius="10" Padding="6,2">
+                                                <TextBlock Text="{Binding Status}" Foreground="White" 
+                                                          FontSize="10" HorizontalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Team Type Distribution -->
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
+                        <StackPanel>
+                            <TextBlock Text="🐕 Team-Type Verteilung" Style="{StaticResource TitleSmall}" 
+                                      Foreground="{DynamicResource OnSurface}" Margin="0,0,0,12"/>
+                            <ItemsControl x:Name="TeamTypeDistribution">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="60"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding TeamType}" FontWeight="Medium"/>
+                                                <ProgressBar Value="{Binding Percentage}" Maximum="100" 
+                                                           Height="6" Foreground="{Binding Color}"/>
+                                                <TextBlock Text="{Binding DetailText}" FontSize="10" 
+                                                          Foreground="{DynamicResource OnSurfaceVariant}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding Count}" 
+                                                      FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Recommendations Section -->
+                <TextBlock Text="💡 Empfehlungen" Style="{StaticResource TitleMedium}" 
+                          Foreground="{DynamicResource OnSurface}" Margin="0,20,0,12"/>
+                
+                <Border Style="{StaticResource Card}" Background="{DynamicResource PrimaryContainer}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <ItemsControl x:Name="RecommendationsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource Surface}" CornerRadius="8" 
+                                           Margin="0,0,0,8" Padding="12">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Border Background="{Binding Priority}" Width="4" Height="40" 
+                                                   CornerRadius="2" Margin="0,0,12,0"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontWeight="Medium" 
+                                                          Foreground="{DynamicResource OnSurface}"/>
+                                                <TextBlock Text="{Binding Description}" 
+                                                          Foreground="{DynamicResource OnSurfaceVariant}"
+                                                          TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Timeline Section -->
+                <TextBlock Text="📅 Einsatz-Timeline" Style="{StaticResource TitleMedium}" 
+                          Foreground="{DynamicResource OnSurface}" Margin="0,0,0,12"/>
+                
+                <Border Style="{StaticResource Card}">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="TimelineEvents">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding EventColor}" CornerRadius="8" 
+                                           Margin="4" Padding="8" MinWidth="120">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Time}" FontWeight="Bold" 
+                                                      Foreground="White" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding EventType}" 
+                                                      Foreground="White" HorizontalAlignment="Center" FontSize="10"/>
+                                            <TextBlock Text="{Binding TeamName}" 
+                                                      Foreground="White" HorizontalAlignment="Center" FontSize="10"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

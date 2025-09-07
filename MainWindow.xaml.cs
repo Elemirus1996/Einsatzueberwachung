@@ -1,16 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using Einsatzueberwachung.Models;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+using Microsoft.Win32;
+using System.Text.Json;
+using System.ComponentModel;
+using System.IO;
 using Einsatzueberwachung.Services;
+using Einsatzueberwachung.Models;
+using IOPath = System.IO.Path;
 
 namespace Einsatzueberwachung
 {
@@ -26,6 +36,7 @@ namespace Einsatzueberwachung
         private WindowState _previousWindowState;
         private WindowStyle _previousWindowStyle;
         private DispatcherTimer? _resizeTimer;
+        private MobileConnectionWindow? _mobileConnectionWindow;
 
         public MainWindow()
         {
@@ -152,6 +163,8 @@ namespace Einsatzueberwachung
 
                 // Initialize theme service
                 ThemeService.Instance.ThemeChanged += OnThemeChanged;
+                
+                // Force initial theme application
                 ApplyTheme(ThemeService.Instance.IsDarkMode);
 
                 // Initialize logging with Normal priority for important logs
@@ -166,11 +179,100 @@ namespace Einsatzueberwachung
                     }
                 };
 
-                LoggingService.Instance.LogInfo("MainWindow v1.5 initialized");
+                LoggingService.Instance.LogInfo("MainWindow v1.6 initialized with theme system and GitHub updates");
+                
+                // Initialize GitHub Update Service
+                InitializeUpdateService();
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error initializing services", ex);
+            }
+        }
+
+        private void InitializeUpdateService()
+        {
+            try
+            {
+                // Starte Update-Check im Hintergrund nach verzögertem Start
+                _ = Task.Run(async () =>
+                {
+                    // Warte 10 Sekunden nach App-Start für Update-Check
+                    await Task.Delay(10000);
+                    await CheckForUpdatesAsync();
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing update service", ex);
+            }
+        }
+
+        private async Task CheckForUpdatesAsync()
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo("🔄 Starte automatische Update-Prüfung...");
+
+                var updateService = new GitHubUpdateService();
+                var updateInfo = await updateService.CheckForUpdatesAsync();
+
+                if (updateInfo != null && !IsUpdateSkipped(updateInfo.Version))
+                {
+                    LoggingService.Instance.LogInfo($"✅ Update gefunden: v{updateInfo.Version}");
+                    
+                    // Update-Dialog auf UI-Thread anzeigen
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        ShowUpdateNotification(updateInfo);
+                    });
+                }
+                else
+                {
+                    LoggingService.Instance.LogInfo("✅ Keine Updates verfügbar oder Update übersprungen");
+                }
+
+                updateService.Dispose();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Automatische Update-Prüfung fehlgeschlagen", ex);
+            }
+        }
+
+        private void ShowUpdateNotification(UpdateInfo updateInfo)
+        {
+            try
+            {
+                var updateWindow = new UpdateNotificationWindow(updateInfo)
+                {
+                    Owner = this
+                };
+                
+                LoggingService.Instance.LogInfo($"📱 Zeige Update-Benachrichtigung für v{updateInfo.Version}");
+                updateWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Fehler beim Anzeigen der Update-Benachrichtigung", ex);
+            }
+        }
+
+        private bool IsUpdateSkipped(string version)
+        {
+            try
+            {
+                // Prüfe ob diese Version bereits übersprungen wurde
+                var skippedVersion = Microsoft.Win32.Registry.GetValue(
+                    @"HKEY_CURRENT_USER\Software\RescueDog_SW\Einsatzüberwachung Professional",
+                    "SkippedVersion",
+                    "") as string;
+
+                return skippedVersion == version;
+            }
+            catch
+            {
+                return false; // Bei Fehlern immer Update anzeigen
             }
         }
 
@@ -414,6 +516,7 @@ Esc:       Vollbild beenden
 💡 Ein Hund kann mehrere Spezialisierungen haben!
 
 === FEATURES ===
+• Animierte Timer mit akustischen Warnungen
 • Automatische Zeitstempel bei Timer-Aktionen
 • Schnellnotizen mit Enter oder '+' Button
 • Speichert alle 30 Sekunden automatisch
@@ -469,7 +572,7 @@ Version 1.5 - Professional Edition
                 var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
                 
                 var fileName = $"Einsatz_{_einsatzData.EinsatzDatum:yyyy-MM-dd_HH-mm-ss}_v1.5.json";
-                var filePath = Path.Combine(_einsatzData.ExportPfad, fileName);
+                var filePath = IOPath.Combine(_einsatzData.ExportPfad, fileName);
                 
                 Directory.CreateDirectory(_einsatzData.ExportPfad);
                 File.WriteAllText(filePath, json);
@@ -711,33 +814,71 @@ Version 1.5 - Professional Edition
         {
             try
             {
-                // Simple theme implementation using direct resource assignments
+                // Update all theme-related DynamicResources directly
+                var resources = Application.Current.Resources;
+                
                 if (isDarkMode)
                 {
-                    // Dark theme colors
-                    Resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(30, 30, 30)); // #1E1E1E
-                    Resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(45, 45, 45)); // #2D2D2D
-                    Resources["PrimaryBrush"] = new SolidColorBrush(Color.FromRgb(144, 202, 249)); // #90CAF9
-                    Resources["TextBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224)); // #E0E0E0
-                    Resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(68, 68, 68)); // #444444
-                    Resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // #2196F3
+                    // Dark theme colors - Update global resources
+                    resources["Surface"] = new SolidColorBrush(Color.FromRgb(30, 30, 30)); // #1E1E1E
+                    resources["SurfaceContainer"] = new SolidColorBrush(Color.FromRgb(25, 25, 25)); // #191919
+                    resources["SurfaceVariant"] = new SolidColorBrush(Color.FromRgb(35, 35, 35)); // #232323
+                    resources["Primary"] = new SolidColorBrush(Color.FromRgb(144, 202, 249)); // #90CAF9
+                    resources["PrimaryContainer"] = new SolidColorBrush(Color.FromRgb(13, 71, 161)); // #0D47A1
+                    resources["OnPrimary"] = new SolidColorBrush(Color.FromRgb(10, 44, 90)); // #0A2C5A
+                    resources["OnPrimaryContainer"] = new SolidColorBrush(Color.FromRgb(197, 225, 255)); // #C5E1FF
+                    resources["Secondary"] = new SolidColorBrush(Color.FromRgb(176, 190, 197)); // #B0BEC5
+                    resources["OnSurface"] = new SolidColorBrush(Color.FromRgb(225, 227, 230)); // #E1E3E6
+                    resources["OnSurfaceVariant"] = new SolidColorBrush(Color.FromRgb(196, 199, 202)); // #C4C7CA
+                    resources["Outline"] = new SolidColorBrush(Color.FromRgb(142, 145, 146)); // #8E9192
+                    resources["OutlineVariant"] = new SolidColorBrush(Color.FromRgb(68, 71, 74)); // #44474A
+                    resources["Success"] = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // #4CAF50
+                    resources["SuccessContainer"] = new SolidColorBrush(Color.FromRgb(27, 94, 32)); // #1B5E20
+                    resources["OnSuccessContainer"] = new SolidColorBrush(Color.FromRgb(200, 230, 201)); // #C8E6C9
+                    
+                    // Legacy theme resources for compatibility
+                    resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+                    resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(45, 45, 45));
+                    resources["PrimaryBrush"] = new SolidColorBrush(Color.FromRgb(144, 202, 249));
+                    resources["TextBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224));
+                    resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(68, 68, 68));
+                    resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(33, 150, 243));
                 }
                 else
                 {
-                    // Light theme colors
-                    Resources["BackgroundBrush"] = new SolidColorBrush(Colors.White);
-                    Resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(248, 249, 250)); // #F8F9FA
-                    Resources["PrimaryBrush"] = new SolidColorBrush(Color.FromRgb(21, 101, 192)); // #1565C0
-                    Resources["TextBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
-                    Resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224)); // #E0E0E0
-                    Resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(25, 118, 210)); // #1976D2
+                    // Light theme colors - Update global resources
+                    resources["Surface"] = new SolidColorBrush(Color.FromRgb(254, 251, 255)); // #FEFBFF
+                    resources["SurfaceContainer"] = new SolidColorBrush(Color.FromRgb(240, 244, 248)); // #F0F4F8
+                    resources["SurfaceVariant"] = new SolidColorBrush(Color.FromRgb(244, 249, 253)); // #F4F9FD
+                    resources["Primary"] = new SolidColorBrush(Color.FromRgb(21, 101, 192)); // #1565C0
+                    resources["PrimaryContainer"] = new SolidColorBrush(Color.FromRgb(227, 242, 253)); // #E3F2FD
+                    resources["OnPrimary"] = new SolidColorBrush(Colors.White);
+                    resources["OnPrimaryContainer"] = new SolidColorBrush(Color.FromRgb(13, 71, 161)); // #0D47A1
+                    resources["Secondary"] = new SolidColorBrush(Color.FromRgb(69, 90, 100)); // #455A64
+                    resources["OnSurface"] = new SolidColorBrush(Color.FromRgb(26, 28, 30)); // #1A1C1E
+                    resources["OnSurfaceVariant"] = new SolidColorBrush(Color.FromRgb(68, 71, 74)); // #44474A
+                    resources["Outline"] = new SolidColorBrush(Color.FromRgb(116, 119, 122)); // #74777A
+                    resources["OutlineVariant"] = new SolidColorBrush(Color.FromRgb(196, 199, 202)); // #C4C7CA
+                    resources["Success"] = new SolidColorBrush(Color.FromRgb(46, 125, 50)); // #2E7D32
+                    resources["SuccessContainer"] = new SolidColorBrush(Color.FromRgb(232, 245, 233)); // #E8F5E8
+                    resources["OnSuccessContainer"] = new SolidColorBrush(Color.FromRgb(27, 94, 32)); // #1B5E20
+                    
+                    // Legacy theme resources for compatibility
+                    resources["BackgroundBrush"] = new SolidColorBrush(Colors.White);
+                    resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                    resources["PrimaryBrush"] = new SolidColorBrush(Color.FromRgb(21, 101, 192));
+                    resources["TextBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33));
+                    resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224));
+                    resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(25, 118, 210));
                 }
 
+                // Update theme icon
                 if (FindName("ThemeIcon") is FontAwesome.WPF.ImageAwesome themeIcon)
                 {
                     themeIcon.Icon = isDarkMode ? FontAwesome.WPF.FontAwesomeIcon.SunOutline : FontAwesome.WPF.FontAwesomeIcon.MoonOutline;
                 }
 
+                // Apply theme to team controls
                 UpdateTeamControlsTheme(isDarkMode);
                 LoggingService.Instance.LogInfo($"Theme changed to {(isDarkMode ? "dark" : "light")} mode");
             }
@@ -770,7 +911,7 @@ Version 1.5 - Professional Edition
                 
                 var aboutItem = new MenuItem
                 {
-                    Header = "Über Einsatzüberwachung v1.5...",
+                    Header = "Über Einsatzüberwachung v1.6...",
                     Icon = new FontAwesome.WPF.ImageAwesome 
                     { 
                         Icon = FontAwesome.WPF.FontAwesomeIcon.InfoCircle, 
@@ -796,6 +937,18 @@ Version 1.5 - Professional Edition
                 };
                 helpItem.Click += (s, args) => BtnHelp_Click(s, new RoutedEventArgs());
                 
+                var updateItem = new MenuItem
+                {
+                    Header = "Nach Updates suchen...",
+                    Icon = new FontAwesome.WPF.ImageAwesome
+                    {
+                        Icon = FontAwesome.WPF.FontAwesomeIcon.Download,
+                        Width = 16,
+                        Height = 16
+                    }
+                };
+                updateItem.Click += MenuUpdate_Click;
+                
                 var perfItem = new MenuItem
                 {
                     Header = "Performance-Metriken",
@@ -814,9 +967,36 @@ Version 1.5 - Professional Edition
                         "Performance", MessageBoxButton.OK, MessageBoxImage.Information);
                 };
                 
+                var statisticsItem = new MenuItem
+                {
+                    Header = "Statistiken",
+                    Icon = new FontAwesome.WPF.ImageAwesome
+                    {
+                        Icon = FontAwesome.WPF.FontAwesomeIcon.BarChart,
+                        Width = 16,
+                        Height = 16
+                    }
+                };
+                statisticsItem.Click += MenuStatistics_Click;
+                
+                var mobileConnectionItem = new MenuItem
+                {
+                    Header = "Mobile Verbindung",
+                    Icon = new FontAwesome.WPF.ImageAwesome
+                    {
+                        Icon = FontAwesome.WPF.FontAwesomeIcon.Mobile,
+                        Width = 16,
+                        Height = 16
+                    }
+                };
+                mobileConnectionItem.Click += MenuMobileConnection_Click;
+                
                 contextMenu.Items.Add(helpItem);
                 contextMenu.Items.Add(new Separator());
+                contextMenu.Items.Add(updateItem);
                 contextMenu.Items.Add(perfItem);
+                contextMenu.Items.Add(statisticsItem);
+                contextMenu.Items.Add(mobileConnectionItem);
                 contextMenu.Items.Add(new Separator());
                 contextMenu.Items.Add(aboutItem);
                 
@@ -827,6 +1007,65 @@ Version 1.5 - Professional Edition
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error opening menu", ex);
+            }
+        }
+
+        private async void MenuUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo("🔄 Manuelle Update-Prüfung gestartet");
+                
+                // Show progress indicator
+                TxtStatus.Text = "🔄 Prüfe auf Updates...";
+                
+                var updateService = new GitHubUpdateService();
+                var updateInfo = await updateService.CheckForUpdatesAsync();
+                
+                if (updateInfo != null)
+                {
+                    TxtStatus.Text = $"✅ Update v{updateInfo.Version} verfügbar";
+                    ShowUpdateNotification(updateInfo);
+                }
+                else
+                {
+                    TxtStatus.Text = "✅ Anwendung ist aktuell";
+                    MessageBox.Show(
+                        "Ihre Einsatzüberwachung Professional ist bereits auf dem neuesten Stand!\n\n" +
+                        $"Aktuelle Version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}\n\n" +
+                        "Automatische Update-Prüfung ist aktiviert und benachrichtigt Sie über neue Versionen.",
+                        "Keine Updates verfügbar",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                
+                updateService.Dispose();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Manuelle Update-Prüfung fehlgeschlagen", ex);
+                TxtStatus.Text = "❌ Update-Prüfung fehlgeschlagen";
+                
+                MessageBox.Show(
+                    $"Die Update-Prüfung ist fehlgeschlagen:\n\n{ex.Message}\n\n" +
+                    "Bitte prüfen Sie Ihre Internetverbindung oder besuchen Sie GitHub:\n" +
+                    "https://github.com/Elemirus1996/Einsatzueberwachung/releases",
+                    "Update-Prüfung fehlgeschlagen",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
+
+        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ExportData();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error during export", ex);
+                MessageBox.Show($"Fehler beim Export: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -856,72 +1095,138 @@ Version 1.5 - Professional Edition
             }
         }
 
-        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        private void MenuStatistics_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ExportData();
+                var statisticsWindow = new StatisticsWindow(_teams.ToList(), _einsatzData);
+                statisticsWindow.Owner = this;
+                statisticsWindow.ShowDialog();
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error during export", ex);
-                MessageBox.Show($"Fehler beim Export: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LoggingService.Instance.LogError($"Fehler beim Öffnen der Statistiken: {ex.Message}", ex);
+                MessageBox.Show($"Fehler beim Öffnen der Statistiken:\n{ex.Message}", 
+                               "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        protected override void OnClosed(EventArgs e)
+        private void MenuMobileConnection_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                TimerDiagnosticService.Instance.LogAllTimerPerformance();
-
-                if (_einsatzData != null)
+                // Wenn Fenster bereits offen ist, fokussieren statt neues zu öffnen
+                if (_mobileConnectionWindow?.IsLoaded == true)
                 {
-                    var sessionData = GetCurrentSessionData();
-                    _ = PersistenceService.Instance.SaveCrashRecoveryAsync(sessionData);
+                    _mobileConnectionWindow.WindowState = WindowState.Normal;
+                    _mobileConnectionWindow.Activate();
+                    return;
                 }
 
-                _clockTimer?.Stop();
-                PersistenceService.Instance.StopAutoSave();
-                PerformanceService.Instance.StopCleanup();
+                _mobileConnectionWindow = new MobileConnectionWindow();
+                _mobileConnectionWindow.Owner = this;
                 
-                foreach (var team in _teams)
-                {
-                    team.StopTimer();
-                }
-
-                PerformanceService.Instance.LogPerformanceMetrics();
-                LoggingService.Instance.LogInfo("Application v1.5 closing");
+                // Set up data providers for the mobile service
+                var mobileService = new Services.MobileIntegrationService();
+                mobileService.GetCurrentTeams = () => _teams.ToList();
+                mobileService.GetEinsatzData = () => _einsatzData;
+                
+                // Pass the configured service to the mobile window
+                _mobileConnectionWindow.SetMobileService(mobileService);
+                
+                // Zeige sofort Diagnose-Information vor dem ersten Server-Start
+                ShowMobileConnectionTips();
+                
+                // Cleanup when window is closed
+                _mobileConnectionWindow.Closed += (s, args) => _mobileConnectionWindow = null;
+                
+                _mobileConnectionWindow.Show(); // Show() statt ShowDialog() für non-blocking
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error during application shutdown", ex);
+                LoggingService.Instance.LogError($"Fehler beim Öffnen der Mobile-Verbindung: {ex.Message}", ex);
+                
+                // Erweiterte Fehlerbehandlung mit spezifischen Lösungen
+                ShowMobileConnectionErrorHelp(ex);
             }
-
-            base.OnClosed(e);
         }
 
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        private void ShowMobileConnectionTips()
         {
-            base.OnRenderSizeChanged(sizeInfo);
-            
-            if (sizeInfo.WidthChanged && _teams.Count > 0)
+            try
             {
-                if (_resizeTimer == null)
-                {
-                    _resizeTimer = new DispatcherTimer(DispatcherPriority.Background)
-                    {
-                        Interval = TimeSpan.FromMilliseconds(250)
-                    };
-                    _resizeTimer.Tick += (s, e) =>
-                    {
-                        _resizeTimer.Stop();
-                        UpdateTeamGridLayout();
-                    };
-                }
-                
-                _resizeTimer.Stop();
-                _resizeTimer.Start();
+                var tipMessage = @"📱 MOBILE VERBINDUNG - ERSTE SCHRITTE
+
+🎯 FÜR OPTIMALE ERGEBNISSE:
+1. Starten Sie die Anwendung als Administrator
+2. Verwenden Sie 'System-Diagnose' bei Problemen
+3. Nutzen Sie 'API Test' für Verbindungstests
+
+💡 HÄUFIGE PROBLEME:
+• Port 8080 belegt → Alternative Ports werden automatisch versucht
+• Firewall blockiert → 'Netzwerk konfigurieren' verwenden
+• Keine Admin-Rechte → 'Ohne Admin-Rechte' Button für Alternativen
+
+🚀 SCHNELLSTART:
+1. 'Server starten' klicken
+2. Bei Problemen 'JA' für erweiterte Diagnose wählen
+3. QR-Code scannen oder URL manuell eingeben
+
+📞 BEI ANHALTENDEN PROBLEMEN:
+Verwenden Sie die 'System-Diagnose' für eine vollständige Analyse.";
+
+                MessageBox.Show(tipMessage, "Mobile Verbindung - Tipps", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error showing mobile connection tips", ex);
+            }
+        }
+        
+        private void ShowMobileConnectionErrorHelp(Exception exception)
+        {
+            try
+            {
+                var errorHelp = $@"🚨 MOBILE VERBINDUNG FEHLER
+
+❌ Fehler: {exception.Message}
+
+🔧 SOFORTMASSNAHMEN:
+1. Als Administrator neu starten
+2. Windows-Firewall prüfen
+3. Port 8080 Verfügbarkeit testen
+4. Netzwerk-Konfiguration überprüfen
+
+💡 HÄUFIGE LÖSUNGEN:
+
+🔑 Administrator-Rechte:
+• Rechtsklick auf .exe → 'Als Administrator ausführen'
+• UAC-Dialog mit 'Ja' bestätigen
+
+🛡️ Firewall-Konfiguration:
+• Windows-Einstellungen → Update & Sicherheit
+• Windows-Sicherheit → Firewall & Netzwerkschutz
+• App durch Firewall zulassen → Einsatzüberwachung
+
+🔌 Port-Probleme:
+• Andere Apps schließen die Port 8080 verwenden
+• Skype, IIS, Apache, Jenkins, etc.
+
+📱 ALTERNATIVE OHNE ADMIN:
+• Windows Mobile Hotspot verwenden
+• iPhone als Hotspot nutzen
+• Router Client-Isolation deaktivieren
+
+🔄 NEUSTART:
+Computer neu starten kann viele Probleme lösen.";
+
+                MessageBox.Show(errorHelp, "Mobile Verbindung - Fehlerhilfe", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error showing mobile connection error help", ex);
             }
         }
     }

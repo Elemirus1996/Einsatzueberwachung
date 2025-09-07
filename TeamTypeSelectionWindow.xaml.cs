@@ -17,8 +17,30 @@ namespace Einsatzueberwachung
         {
             InitializeComponent();
             SelectedMultipleTeamTypes = currentSelection ?? new MultipleTeamTypes();
+            
+            // Apply current theme
+            ApplyCurrentTheme();
+            
             CreateTypeCheckBoxes();
             UpdateSelectedTypesDisplay();
+        }
+
+        private void ApplyCurrentTheme()
+        {
+            try
+            {
+                // Subscribe to theme changes
+                if (Services.ThemeService.Instance != null)
+                {
+                    var isDarkMode = Services.ThemeService.Instance.IsDarkMode;
+                    // The window will automatically use the global theme resources
+                    // No manual theme application needed as we use DynamicResource bindings
+                }
+            }
+            catch (Exception ex)
+            {
+                Services.LoggingService.Instance.LogError("Error applying theme to TeamTypeSelectionWindow", ex);
+            }
         }
 
         private void CreateTypeCheckBoxes()

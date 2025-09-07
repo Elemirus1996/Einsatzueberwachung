@@ -69,6 +69,14 @@
                         </StackPanel>
                     </Button>
 
+                    <Button Click="ShowTimer_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="ClockOutline" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Timer-System" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
                     <Button Click="ShowNotesSystem_Click" Style="{StaticResource HelpNavButton}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="StickyNote" Width="16" Height="16" 
@@ -98,6 +106,22 @@
                             <fa:ImageAwesome Icon="Tachometer" Width="16" Height="16" 
                                            Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
                             <TextBlock Text="Performance" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowTroubleshooting_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Wrench" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Fehlerbehebung" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Click="ShowFAQ_Click" Style="{StaticResource HelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="QuestionCircleOutline" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Häufige Fragen" Foreground="{DynamicResource OnSurface}"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -147,6 +171,12 @@
                         <TextBlock Text="📝 Notizen-System" Style="{StaticResource TitleMedium}"
                                   Foreground="{DynamicResource OnSurface}" Margin="0,12,0,6"/>
                         <TextBlock Text="Schnellnotizen mit Enter-Taste oder '+' Button hinzufügen. Alle Timer-Aktionen werden automatisch mit Zeitstempel protokolliert." 
+                                  Style="{StaticResource BodyMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"/>
+
+                        <TextBlock Text="💾 Automatisches Speichern" Style="{StaticResource TitleMedium}"
+                                  Foreground="{DynamicResource OnSurface}" Margin="0,12,0,6"/>
+                        <TextBlock Text="Alle 30 Sekunden automatische Speicherung. Bei Absturz werden alle Daten wiederhergestellt." 
                                   Style="{StaticResource BodyMedium}"
                                   Foreground="{DynamicResource OnSurfaceVariant}"/>
                     </StackPanel>

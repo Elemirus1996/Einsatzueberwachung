@@ -14,7 +14,28 @@ namespace Einsatzueberwachung
         public TeamInputWindow()
         {
             InitializeComponent();
+            
+            // Apply current theme
+            ApplyCurrentTheme();
+            
             UpdatePreview();
+        }
+
+        private void ApplyCurrentTheme()
+        {
+            try
+            {
+                // Subscribe to theme changes - The window will automatically use global theme resources
+                if (Services.ThemeService.Instance != null)
+                {
+                    var isDarkMode = Services.ThemeService.Instance.IsDarkMode;
+                    // Window automatically inherits theme from Application.Current.Resources
+                }
+            }
+            catch (Exception ex)
+            {
+                Services.LoggingService.Instance.LogError("Error applying theme to TeamInputWindow", ex);
+            }
         }
 
         private void TxtHundName_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)

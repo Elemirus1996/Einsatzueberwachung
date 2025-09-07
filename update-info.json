@@ -1,0 +1,20 @@
+{
+  "version": "1.6.0",
+  "releaseDate": "2025-01-07",
+  "downloadUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/download/v1.6.0/Einsatzueberwachung_Professional_v1.6.0_Setup.exe",
+  "releaseNotesUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v1.6.0",
+  "mandatory": false,
+  "minimumVersion": "1.5.0",
+  "fileSize": 2508762,
+  "checksum": "",
+  "releaseNotes": [
+    "🚀 Neue Version 1.6.0 verfügbar",
+    "🔄 Vollständiges GitHub Update-System implementiert",
+    "📱 Erweiterte Mobile Server-Funktionalität mit iPhone-Optimierung",
+    "🛠️ Professional Setup.exe mit automatischer Konfiguration",
+    "🎨 Modernes Theme-System mit Dark/Light Mode",
+    "📊 Statistics-Dashboard für Einsatz-Analyse",
+    "🔧 Umfassende Troubleshooting-Tools und Dokumentation",
+    "🛡️ Verbesserte Sicherheit und Performance-Optimierungen"
+  ]
+}
