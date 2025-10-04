@@ -34,6 +34,14 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Read project version
+      id: project_version
+      run: |
+        $projectFile = Get-Content -Path "${{ env.PROJECT_FILE }}" -Raw
+        $version = [regex]::Match($projectFile, '<Version>(.*?)<\/Version>').Groups[1].Value
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+      shell: powershell
+
     - name: 📦 Restore Dependencies
       run: dotnet restore "${{ env.PROJECT_FILE }}"
 
@@ -59,7 +67,7 @@ jobs:
 
     - name: 📄 Create Setup Documentation
       run: |
-        $version = "${{ github.ref_name }}".TrimStart('v')
+        $version = "${{ steps.project_version.outputs.version }}"
         if ("${{ github.event_name }}" -eq "workflow_dispatch") {
           $version = "${{ github.event.inputs.version }}"
         }
@@ -227,7 +235,7 @@ jobs:
 
     - name: 📋 Create update-info.json
       run: |
-        $version = "${{ github.ref_name }}".TrimStart('v')
+        $version = "${{ steps.project_version.outputs.version }}"
         if ("${{ github.event_name }}" -eq "workflow_dispatch") {
           $version = "${{ github.event.inputs.version }}"
           $tagName = "v$version"
@@ -274,7 +282,7 @@ jobs:
 
     - name: 📊 Generate Release Notes
       run: |
-        $version = "${{ github.ref_name }}".TrimStart('v')
+        $version = "${{ steps.project_version.outputs.version }}"
         if ("${{ github.event_name }}" -eq "workflow_dispatch") {
           $version = "${{ github.event.inputs.version }}"
         }
@@ -365,6 +373,9 @@ jobs:
       if: github.event_name == 'workflow_dispatch'
       run: |
         $version = "${{ github.event.inputs.version }}"
+        if (-not $version) {
+          $version = "${{ steps.project_version.outputs.version }}"
+        }
         $tagName = "v$version"
         
         git config user.name "GitHub Actions"
@@ -380,8 +391,8 @@ jobs:
     - name: 📤 Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version) || github.ref_name }}
-        name: 🚀 Einsatzüberwachung Professional ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
+        tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version || steps.project_version.outputs.version) || github.ref_name }}
+        name: 🚀 Einsatzüberwachung Professional ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.version || steps.project_version.outputs.version) || github.ref_name }}
         body_path: RELEASE_NOTES.md
         files: |
           Setup/Output/Einsatzueberwachung_Professional_v*_Setup.exe
@@ -394,7 +405,7 @@ jobs:
 
     - name: 📊 Release Summary
       run: |
-        $version = "${{ github.ref_name }}".TrimStart('v')
+        $version = "${{ steps.project_version.outputs.version }}"
         if ("${{ github.event_name }}" -eq "workflow_dispatch") {
           $version = "${{ github.event.inputs.version }}"
         }
