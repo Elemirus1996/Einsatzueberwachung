@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang='de'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Einsatzüberwachung Mobile</title>
+    <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --text-light: #ffffff;
+            --time-active: #2ecc71;
+            --time-warning: #f39c12;
+            --time-critical: #e74c3c;
+            --border-color: #e0e0e0;
+            --header-bg: rgba(255, 255, 255, 0.95);
+            --status-ready: #95a5a6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-gradient-start: #1a1a2e;
+                --bg-gradient-end: #16213e;
+                --card-bg: #2c3e50;
+                --card-shadow: rgba(0, 0, 0, 0.3);
+                --text-primary: #ecf0f1;
+                --text-secondary: #bdc3c7;
+                --border-color: #34495e;
+                --header-bg: rgba(44, 62, 80, 0.95);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 15px;
+            padding-bottom: 80px;
+            color: var(--text-primary);
+        }
+
+        .header {
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px var(--card-shadow);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 6px var(--card-shadow);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--time-active);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .section-title {
+            color: var(--text-light);
+            font-size: 18px;
+            font-weight: 600;
+            margin: 25px 0 12px 0;
+            padding-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .team-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .team-card:active {
+            transform: scale(0.98);
+        }
+
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .team-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .team-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: var(--time-active);
+            color: white;
+        }
+
+        .status-ready {
+            background: var(--status-ready);
+            color: white;
+        }
+
+        .team-time {
+            font-size: 48px;
+            font-weight: 700;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+            color: var(--time-active);
+            text-align: center;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        .team-time.warning {
+            color: var(--time-warning);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .team-time.critical {
+            color: var(--time-critical);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .team-info {
+            display: grid;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--header-bg);
+            border-radius: 8px;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            width: 28px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 80px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .team-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .team-type-badge {
+            padding: 4px 10px;
+            background: var(--time-active);
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .notes-container {
+            margin-top: 20px;
+        }
+
+        .note-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px var(--card-shadow);
+            border-left: 4px solid var(--time-active);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .note-time {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .note-type {
+            padding: 3px 8px;
+            background: var(--header-bg);
+            border-radius: 8px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .note-content {
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            margin-top: 8px;
+        }
+
+        .note-team {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .error {
+            background: var(--time-critical);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .refresh-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 12px 18px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px var(--card-shadow);
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .refresh-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--time-active);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: none;
+            box-shadow: 0 4px 12px var(--card-shadow);
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            display: none; /* Auto-detect based on system preference */
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .team-time {
+                font-size: 36px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <h1>🐕 Einsatzüberwachung</h1>
+        <div class='stats'>
+            <div class='stat-item'>
+                <div class='stat-value' id='teamCount'>-</div>
+                <div class='stat-label'>Teams</div>
+            </div>
+            <div class='stat-item'>
+                <div class='stat-value' id='activeCount'>-</div>
+                <div class='stat-label'>Aktiv</div>
+            </div>
+            <div class='stat-item'>
+                <div class='stat-value' id='missionTime'>-</div>
+                <div class='stat-label'>Einsatzdauer</div>
+            </div>
+        </div>
+    </div>
+
+    <div class='section-title'>🎯 Teams</div>
+    <div id='teamsContainer'>
+        <div class='loading'>Lade Daten...</div>
+    </div>
+
+    <div class='section-title'>📋 Globale Notizen</div>
+    <div id='notesContainer' class='notes-container'>
+        <div class='loading'>Lade Notizen...</div>
+    </div>
+
+    <div class='refresh-indicator' id='refreshIndicator'>
+        <div class='refresh-spinner'></div>
+        <span>Aktualisiere...</span>
+    </div>
+
+    <script>
+        let updateInterval;
+        let isUpdating = false;
+
+        async function loadData() {
+            if (isUpdating) return;
+            isUpdating = true;
+            showRefreshIndicator();
+
+            try {
+                console.log('🔄 Loading data...');
+                
+                // Lade Status
+                console.log('📊 Fetching /api/status...');
+                const statusResponse = await fetch('/api/status');
+                console.log('📊 Status response:', statusResponse.status, statusResponse.statusText);
+                const status = await statusResponse.json();
+                console.log('📊 Status data:', status);
+                updateStats(status);
+
+                // Lade Teams
+                console.log('🐕 Fetching /api/teams...');
+                const teamsResponse = await fetch('/api/teams');
+                console.log('🐕 Teams response:', teamsResponse.status, teamsResponse.statusText);
+                const teams = await teamsResponse.json();
+                console.log('🐕 Teams data:', teams);
+                displayTeams(teams);
+
+                // Lade Notizen
+                console.log('📋 Fetching /api/notes...');
+                const notesResponse = await fetch('/api/notes');
+                console.log('📋 Notes response:', notesResponse.status, notesResponse.statusText);
+                
+                if (!notesResponse.ok) {
+                    console.error('❌ Notes fetch failed:', notesResponse.status, notesResponse.statusText);
+                    throw new Error(`Notes fetch failed: ${notesResponse.status}`);
+                }
+                
+                const notesText = await notesResponse.text();
+                console.log('📋 Notes raw text:', notesText.substring(0, 200));
+                
+                let notes;
+                try {
+                    notes = JSON.parse(notesText);
+                    console.log('📋 Notes parsed successfully:', notes);
+                } catch (parseError) {
+                    console.error('❌ JSON parse error:', parseError);
+                    console.error('❌ Failed text:', notesText);
+                    throw parseError;
+                }
+                
+                console.log('📋 Calling displayNotes with:', notes);
+                displayNotes(notes);
+
+                hideRefreshIndicator();
+                console.log('✅ All data loaded successfully');
+            } catch (error) {
+                console.error('❌ Error loading data:', error);
+                console.error('❌ Error stack:', error.stack);
+                showError('Verbindungsfehler. Überprüfe die Netzwerkverbindung.');
+                hideRefreshIndicator();
+            }
+
+            isUpdating = false;
+        }
+
+        function updateStats(status) {
+            document.getElementById('teamCount').textContent = status.teamCount || 0;
+            document.getElementById('activeCount').textContent = status.activeTeams || 0;
+            document.getElementById('missionTime').textContent = status.mission?.duration || '00:00:00';
+        }
+
+        function displayTeams(teams) {
+            const container = document.getElementById('teamsContainer');
+            
+            if (!teams || teams.length === 0) {
+                container.innerHTML = `
+                    <div class='empty-state'>
+                        <div class='empty-state-icon'>🐕</div>
+                        <div class='empty-state-text'>
+                            Keine Teams verfügbar<br>
+                            <small>Erstelle Teams in der Desktop-Anwendung</small>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = teams.map(team => {
+                const statusClass = team.status === 'active' ? 'status-active' : 'status-ready';
+                const statusText = team.status === 'active' ? 'Aktiv' : 'Bereit';
+                
+                let timeClass = '';
+                if (team.isSecondWarning) {
+                    timeClass = 'critical';
+                } else if (team.isFirstWarning) {
+                    timeClass = 'warning';
+                }
+
+                const types = Array.isArray(team.types) ? team.types : [team.typeDisplay || 'Standard'];
+
+                return `
+                    <div class='team-card'>
+                        <div class='team-header'>
+                            <div class='team-name'>${escapeHtml(team.name || 'Unbenannt')}</div>
+                            <div class='team-status ${statusClass}'>${statusText}</div>
+                        </div>
+
+                        <div class='team-time ${timeClass}'>${escapeHtml(team.time || '00:00:00')}</div>
+
+                        <div class='team-info'>
+                            <div class='info-row'>
+                                <div class='info-icon'>🐕</div>
+                                <div class='info-label'>Hund</div>
+                                <div class='info-value'>${escapeHtml(team.dogName || '-')}</div>
+                            </div>
+
+                            <div class='info-row'>
+                                <div class='info-icon'>👤</div>
+                                <div class='info-label'>Hundeführer</div>
+                                <div class='info-value'>${escapeHtml(team.handler || '-')}</div>
+                            </div>
+
+                            ${team.helper ? `
+                            <div class='info-row'>
+                                <div class='info-icon'>👥</div>
+                                <div class='info-label'>Helfer</div>
+                                <div class='info-value'>${escapeHtml(team.helper)}</div>
+                            </div>
+                            ` : ''}
+
+                            ${team.suchgebiet ? `
+                            <div class='info-row'>
+                                <div class='info-icon'>📍</div>
+                                <div class='info-label'>Suchgebiet</div>
+                                <div class='info-value'>${escapeHtml(team.suchgebiet)}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        ${types.length > 0 ? `
+                        <div class='team-types'>
+                            ${types.map(type => `<span class='team-type-badge'>${escapeHtml(type)}</span>`).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayNotes(notes) {
+            const container = document.getElementById('notesContainer');
+            
+            console.log('📋 displayNotes called with:', notes);
+            console.log('📋 Notes is array:', Array.isArray(notes));
+            console.log('📋 Notes length:', notes?.length);
+            
+            if (!container) {
+                console.error('❌ notesContainer not found in DOM!');
+                return;
+            }
+            
+            if (!notes || !Array.isArray(notes) || notes.length === 0) {
+                console.log('📋 No notes available - showing empty state');
+                container.innerHTML = `
+                    <div class='empty-state'>
+                        <div class='empty-state-icon'>📋</div>
+                        <div class='empty-state-text'>
+                            Keine Notizen vorhanden
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            console.log('📋 Rendering', notes.length, 'notes');
+            console.log('📋 First note sample:', JSON.stringify(notes[0]));
+            
+            try {
+                const notesHTML = notes.slice(0, 20).map((note, index) => {
+                    console.log(`📝 Processing note ${index}:`, note);
+                    
+                    // Zeitstempel mit Fallback
+                    const time = note.formattedTimestamp || note.timestamp || 'N/A';
+                    const content = note.content || 'Kein Inhalt';
+                    const entryType = note.entryType || 'Manual';
+                    const entryTypeIcon = note.entryTypeIcon || '📝';
+                    const teamName = note.teamName || '';
+                    
+                    return `
+                        <div class='note-card'>
+                            <div class='note-header'>
+                                <div class='note-time'>${escapeHtml(time)}</div>
+                                <div class='note-type'>
+                                    <span>${entryTypeIcon}</span>
+                                    <span>${escapeHtml(entryType)}</span>
+                                </div>
+                            </div>
+                            <div class='note-content'>${escapeHtml(content)}</div>
+                            ${teamName ? `<div class='note-team'>Team: ${escapeHtml(teamName)}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = notesHTML;
+                console.log('✅ Notes rendered successfully:', notes.length, 'notes displayed');
+                
+            } catch (error) {
+                console.error('❌ Error rendering notes:', error);
+                container.innerHTML = `
+                    <div class='error'>
+                        Fehler beim Laden der Notizen: ${error.message}
+                    </div>`;
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('teamsContainer');
+            container.innerHTML = `<div class='error'>${escapeHtml(message)}</div>`;
+        }
+
+        function showRefreshIndicator() {
+            document.getElementById('refreshIndicator').style.display = 'flex';
+        }
+
+        function hideRefreshIndicator() {
+            setTimeout(() => {
+                document.getElementById('refreshIndicator').style.display = 'none';
+            }, 500);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial load
+        loadData();
+
+        // Auto-refresh every 5 seconds
+        updateInterval = setInterval(loadData, 5000);
+
+        // Pull to refresh for mobile
+        let startY = 0;
+        let isPulling = false;
+
+        document.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                startY = e.touches[0].pageY;
+                isPulling = true;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isPulling) return;
+            const currentY = e.touches[0].pageY;
+            if (currentY - startY > 100) {
+                loadData();
+                isPulling = false;
+            }
+        });
+
+        document.addEventListener('touchend', () => {
+            isPulling = false;
+        });
+
+        // Reload when coming back to the page
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadData();
+            }
+        });
+
+        // Log for debugging
+        console.log('Einsatzüberwachung Mobile v1.7 loaded');
+        console.log('Auto-refresh: every 5 seconds');
+    </script>
+</body>
+</html>

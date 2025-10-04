@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows;
 using Einsatzueberwachung.Models;
 using Einsatzueberwachung.Services;
@@ -11,11 +12,145 @@ namespace Einsatzueberwachung
         public int FirstWarningMinutes { get; private set; } = 10;
         public int SecondWarningMinutes { get; private set; } = 20;
 
+        private readonly MasterDataService _masterDataService;
+
         public StartWindow()
         {
             InitializeComponent();
+            
+            _masterDataService = MasterDataService.Instance;
+            
             InitializeTheme();
-            LoggingService.Instance.LogInfo("StartWindow v1.5 initialized");
+            LoadMasterData();
+            
+            LoggingService.Instance.LogInfo("StartWindow v1.7 initialized with master data integration");
+        }
+
+        private async Task LoadMasterData()
+        {
+            try
+            {
+                // Erzwinge das vollständige Neuladen der Daten
+                await _masterDataService.RefreshDataAsync();
+                
+                // Kurze Verzögerung um sicherzustellen, dass Daten geladen sind
+                await Task.Delay(100);
+                
+                // Load Einsatzleiter mit erweiterte Filterung
+                var leaders = _masterDataService.PersonalList
+                    .Where(p => p != null && p.IsActive && (
+                        p.Skills.HasFlag(PersonalSkills.Gruppenfuehrer) ||
+                        p.Skills.HasFlag(PersonalSkills.Zugfuehrer) ||
+                        p.Skills.HasFlag(PersonalSkills.Verbandsfuehrer)))
+                    .OrderBy(p => p.Nachname)
+                    .ThenBy(p => p.Vorname)
+                    .ToList();
+
+                // ComboBox auf UI-Thread aktualisieren
+                Dispatcher.Invoke(() =>
+                {
+                    CmbEinsatzleiter.Items.Clear();
+                    CmbEinsatzleiter.Items.Add(new { FullName = "(Manuell eingeben)" });
+
+                    foreach (var person in leaders)
+                    {
+                        CmbEinsatzleiter.Items.Add(person);
+                    }
+
+                    if (CmbEinsatzleiter.Items.Count > 0)
+                        CmbEinsatzleiter.SelectedIndex = 0;
+                });
+
+                LoggingService.Instance.LogInfo($"Loaded {leaders.Count} potential mission leaders from master data");
+                
+                // Benutzer-Information
+                if (leaders.Count == 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        TxtEinsatzleiterInfo.Text = "💡 Keine Führungskräfte in Stammdaten - Testdaten werden erstellt";
+                        // Versuche erneut nach kurzer Verzögerung
+                        Task.Delay(1000).ContinueWith(_ => Dispatcher.Invoke(async () => await LoadMasterData()));
+                    });
+                }
+                else if (leaders.Any(l => l.Nachname == "Testperson"))
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        TxtEinsatzleiterInfo.Text = "✅ Testdaten erfolgreich geladen";
+                        TxtEinsatzleiterInfo.Foreground = (System.Windows.Media.Brush)FindResource("Success");
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error loading master data into StartWindow", ex);
+                
+                // Fallback mit Retry-Mechanismus
+                Dispatcher.Invoke(() =>
+                {
+                    CmbEinsatzleiter.Items.Clear();
+                    CmbEinsatzleiter.Items.Add(new { FullName = "(Manuell eingeben)" });
+                    CmbEinsatzleiter.SelectedIndex = 0;
+                    
+                    TxtEinsatzleiterInfo.Text = "⚠️ Ladefehler - wird erneut versucht...";
+                });
+                
+                // Erneuter Versuch nach 2 Sekunden
+                await Task.Delay(2000);
+                await LoadMasterData();
+            }
+        }
+
+        private void CmbEinsatzleiter_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (CmbEinsatzleiter.SelectedItem is PersonalEntry selectedPerson)
+                {
+                    // Zeige zusätzliche Info über Qualifikationen
+                    UpdateEinsatzleiterInfo(selectedPerson);
+                }
+                else if (CmbEinsatzleiter.IsEditable && !string.IsNullOrEmpty(CmbEinsatzleiter.Text))
+                {
+                    // Manual text entry
+                    ClearEinsatzleiterInfo();
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error handling Einsatzleiter selection", ex);
+            }
+        }
+
+        private void UpdateEinsatzleiterInfo(PersonalEntry person)
+        {
+            try
+            {
+                // Zeige Qualifikationen des ausgewählten Einsatzleiters
+                var qualifications = string.Join(", ", 
+                    new[] 
+                    {
+                        person.Skills.HasFlag(PersonalSkills.Gruppenfuehrer) ? "GF" : null,
+                        person.Skills.HasFlag(PersonalSkills.Zugfuehrer) ? "ZF" : null,
+                        person.Skills.HasFlag(PersonalSkills.Verbandsfuehrer) ? "VF" : null
+                    }.Where(s => s != null));
+
+                if (!string.IsNullOrEmpty(qualifications))
+                {
+                    TxtEinsatzleiterInfo.Text = $"Qualifikation: {qualifications}";
+                    TxtEinsatzleiterInfo.Foreground = (System.Windows.Media.Brush)FindResource("Success");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating Einsatzleiter info", ex);
+            }
+        }
+
+        private void ClearEinsatzleiterInfo()
+        {
+            TxtEinsatzleiterInfo.Text = "";
         }
 
         private void InitializeTheme()
@@ -36,31 +171,31 @@ namespace Einsatzueberwachung
             {
                 if (isDarkMode)
                 {
-                    // Dark theme colors
-                    Resources["BackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(18, 18, 18)); // #121212
-                    Resources["CardBackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30)); // #1E1E1E
-                    Resources["TextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(224, 224, 224)); // #E0E0E0
-                    Resources["BorderBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 51, 51)); // #333333
-                    Resources["PrimaryBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(187, 134, 252)); // #BB86FC
-                    Resources["AccentBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(207, 102, 121)); // #CF6679
+                    // Dark theme colors - use design system
+                    Resources["BackgroundBrush"] = FindResource("DarkSurface");
+                    Resources["CardBackgroundBrush"] = FindResource("DarkSurfaceContainer");
+                    Resources["TextBrush"] = FindResource("DarkOnSurface");
+                    Resources["BorderBrush"] = FindResource("DarkOutline");
+                    Resources["PrimaryBrush"] = FindResource("DarkPrimary");
+                    Resources["AccentBrush"] = FindResource("DarkTertiary");
                     
                     // Dark Mode Info Box - bessere Lesbarkeit
-                    Resources["InfoBoxBackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(45, 45, 45)); // #2D2D2D
-                    Resources["InfoBoxTextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(224, 224, 224)); // #E0E0E0
+                    Resources["InfoBoxBackgroundBrush"] = FindResource("DarkSurfaceContainerHigh");
+                    Resources["InfoBoxTextBrush"] = FindResource("DarkOnSurface");
                 }
                 else
                 {
-                    // Light theme colors
-                    Resources["BackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 245, 245)); // #F5F5F5
-                    Resources["CardBackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
-                    Resources["TextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(33, 33, 33)); // #212121
-                    Resources["BorderBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(224, 224, 224)); // #E0E0E0
-                    Resources["PrimaryBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(33, 150, 243)); // #2196F3
-                    Resources["AccentBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 64, 129)); // #FF4081
+                    // Light theme colors - use design system
+                    Resources["BackgroundBrush"] = FindResource("Surface");
+                    Resources["CardBackgroundBrush"] = FindResource("SurfaceContainer");
+                    Resources["TextBrush"] = FindResource("OnSurface");
+                    Resources["BorderBrush"] = FindResource("Outline");
+                    Resources["PrimaryBrush"] = FindResource("Primary");
+                    Resources["AccentBrush"] = FindResource("Tertiary");
                     
                     // Light Mode Info Box
-                    Resources["InfoBoxBackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(227, 242, 253)); // #E3F2FD
-                    Resources["InfoBoxTextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(13, 71, 161)); // #0D47A1
+                    Resources["InfoBoxBackgroundBrush"] = FindResource("SurfaceContainerHigh");
+                    Resources["InfoBoxTextBrush"] = FindResource("OnSurface");
                 }
             }
             catch (Exception ex)
@@ -72,13 +207,35 @@ namespace Einsatzueberwachung
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             LoggingService.Instance.LogInfo("Start canceled by user");
-            DialogResult = false;
+            
+            // Check if this window was opened as dialog or as startup window
+            if (Owner != null)
+            {
+                // Opened as dialog, can set DialogResult
+                DialogResult = false;
+            }
+            else
+            {
+                // Opened as startup window, close application
+                Application.Current.Shutdown();
+            }
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             LoggingService.Instance.LogInfo("Start window closed by user");
-            DialogResult = false;
+            
+            // Check if this window was opened as dialog or as startup window
+            if (Owner != null)
+            {
+                // Opened as dialog, can set DialogResult
+                DialogResult = false;
+            }
+            else
+            {
+                // Opened as startup window, close application
+                Application.Current.Shutdown();
+            }
         }
 
         private void BtnMinimize_Click(object sender, RoutedEventArgs e)
@@ -90,12 +247,24 @@ namespace Einsatzueberwachung
         {
             try
             {
-                // Validate essential inputs
-                if (string.IsNullOrWhiteSpace(TxtEinsatzleiter.Text))
+                // Get Einsatzleiter from ComboBox
+                string einsatzleiter = string.Empty;
+                
+                if (CmbEinsatzleiter.SelectedItem is PersonalEntry selectedPerson)
                 {
-                    MessageBox.Show("Bitte geben Sie einen Einsatzleiter ein.", "Validierungsfehler", 
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    TxtEinsatzleiter.Focus();
+                    einsatzleiter = selectedPerson.FullName;
+                }
+                else if (CmbEinsatzleiter.IsEditable && !string.IsNullOrEmpty(CmbEinsatzleiter.Text))
+                {
+                    einsatzleiter = CmbEinsatzleiter.Text.Trim();
+                }
+
+                // Validate essential inputs
+                if (string.IsNullOrWhiteSpace(einsatzleiter))
+                {
+                    MessageBox.Show("Bitte wählen Sie einen Einsatzleiter aus oder geben Sie einen Namen ein.", 
+                        "Validierungsfehler", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CmbEinsatzleiter.Focus();
                     return;
                 }
 
@@ -126,7 +295,7 @@ namespace Einsatzueberwachung
                 // Create simplified EinsatzData - teams will be added in MainWindow
                 EinsatzData = new EinsatzData
                 {
-                    Einsatzleiter = TxtEinsatzleiter.Text.Trim(),
+                    Einsatzleiter = einsatzleiter,
                     Alarmiert = TxtAlarmiert.Text.Trim(),
                     Einsatzort = TxtEinsatzort.Text.Trim(),
                     IstEinsatz = RbEinsatz.IsChecked == true,
@@ -142,11 +311,36 @@ namespace Einsatzueberwachung
                 FirstWarningMinutes = warning1;
                 SecondWarningMinutes = warning2;
 
-                LoggingService.Instance.LogInfo($"Einsatz v1.5 started - Type: {EinsatzData.EinsatzTyp}, " +
+                LoggingService.Instance.LogInfo($"Einsatz v1.7 started - Type: {EinsatzData.EinsatzTyp}, " +
                     $"Location: {EinsatzData.Einsatzort}, Leader: {EinsatzData.Einsatzleiter}, " +
                     $"Warnings: {warning1}/{warning2} minutes");
 
-                DialogResult = true;
+                // Check if this window was opened as dialog or as startup window
+                if (Owner != null)
+                {
+                    // Opened as dialog, can set DialogResult
+                    DialogResult = true;
+                }
+                else
+                {
+                    // WICHTIG: Opened as startup window
+                    // 1. Erstelle MainWindow
+                    var mainWindow = new MainWindow(EinsatzData, FirstWarningMinutes, SecondWarningMinutes);
+                    
+                    // 2. Setze es als Application.MainWindow BEVOR es angezeigt wird
+                    Application.Current.MainWindow = mainWindow;
+                    
+                    // 3. Ändere ShutdownMode zu OnMainWindowClose (jetzt sicher)
+                    Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                    
+                    // 4. Zeige MainWindow
+                    mainWindow.Show();
+                    
+                    // 5. Schließe StartWindow (App wird NICHT beendet, weil MainWindow noch offen ist)
+                    this.Close();
+                    
+                    LoggingService.Instance.LogInfo("✅ Transition from StartWindow to MainWindow completed");
+                }
             }
             catch (Exception ex)
             {

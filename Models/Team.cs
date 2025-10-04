@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -8,13 +7,13 @@ using Einsatzueberwachung.Services;
 
 namespace Einsatzueberwachung.Models
 {
-    public class Team : INotifyPropertyChanged
+    public class Team : INotifyPropertyChanged, IDisposable
     {
         private string _teamName = string.Empty;
         private string _hundName = string.Empty;
         private string _hundefuehrer = string.Empty;
         private string _helfer = string.Empty;
-        private string _notizen = string.Empty;
+        private string _suchgebiet = string.Empty;
         private TimeSpan _elapsedTime = TimeSpan.Zero;
         private bool _isRunning = false;
         private bool _isFirstWarning = false;
@@ -23,12 +22,10 @@ namespace Einsatzueberwachung.Models
         private DispatcherTimer? _timer;
         private MultipleTeamTypes _multipleTeamTypes;
         private string _cachedElapsedTimeString = "00:00:00";
+        private bool _disposed = false;
 
         public int TeamId { get; set; }
 
-        // Enhanced Notes System
-        public ObservableCollection<NotesEntry> NotesEntries { get; } = new ObservableCollection<NotesEntry>();
-        
         public string TeamName
         {
             get => _teamName;
@@ -101,10 +98,10 @@ namespace Einsatzueberwachung.Models
             set { _helfer = value; OnPropertyChanged(); }
         }
 
-        public string Notizen
+        public string Suchgebiet
         {
-            get => _notizen;
-            set { _notizen = value; OnPropertyChanged(); }
+            get => _suchgebiet;
+            set { _suchgebiet = value; OnPropertyChanged(); }
         }
 
         public TimeSpan ElapsedTime
@@ -149,32 +146,13 @@ namespace Einsatzueberwachung.Models
         public int SecondWarningMinutes { get; set; } = 20;
 
         public event Action<Team, bool>? WarningTriggered;
+        public event Action<Team>? TimerStarted;
+        public event Action<Team>? TimerStopped;
+        public event Action<Team>? TimerReset;
 
         public Team()
         {
             _multipleTeamTypes = new MultipleTeamTypes();
-        }
-
-        // Enhanced Notes Methods
-        public void AddTimestampedNote(string content)
-        {
-            var entry = new NotesEntry
-            {
-                Content = content,
-                Timestamp = DateTime.Now,
-                EntryType = NotesEntryType.Manual
-            };
-            NotesEntries.Add(entry);
-        }
-
-        private void AddAutomaticNote(NotesEntryType entryType)
-        {
-            var entry = new NotesEntry
-            {
-                Timestamp = DateTime.Now,
-                EntryType = entryType
-            };
-            NotesEntries.Add(entry);
         }
 
         public void StartTimer()
@@ -195,8 +173,8 @@ namespace Einsatzueberwachung.Models
                 IsRunning = true;
                 _timer.Start();
                 
-                // Add automatic note
-                AddAutomaticNote(NotesEntryType.TimerStart);
+                // Trigger Event für globale Notizen
+                TimerStarted?.Invoke(this);
             }
         }
 
@@ -207,8 +185,8 @@ namespace Einsatzueberwachung.Models
                 IsRunning = false;
                 _timer?.Stop();
                 
-                // Add automatic note
-                AddAutomaticNote(NotesEntryType.TimerStop);
+                // Trigger Event für globale Notizen
+                TimerStopped?.Invoke(this);
             }
         }
 
@@ -228,8 +206,8 @@ namespace Einsatzueberwachung.Models
                 IsSecondWarning = false;
             }
             
-            // Add automatic note
-            AddAutomaticNote(NotesEntryType.TimerReset);
+            // Trigger Event für globale Notizen
+            TimerReset?.Invoke(this);
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
@@ -262,7 +240,6 @@ namespace Einsatzueberwachung.Models
             if (!IsFirstWarning && totalMinutes >= FirstWarningMinutes)
             {
                 IsFirstWarning = true;
-                AddAutomaticNote(NotesEntryType.Warning1);
                 WarningTriggered?.Invoke(this, false);
             }
 
@@ -270,9 +247,47 @@ namespace Einsatzueberwachung.Models
             if (!IsSecondWarning && totalMinutes >= SecondWarningMinutes)
             {
                 IsSecondWarning = true;
-                AddAutomaticNote(NotesEntryType.Warning2);
                 WarningTriggered?.Invoke(this, true);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    try
+                    {
+                        // Stoppe und bereinige Timer
+                        if (_timer != null)
+                        {
+                            _timer.Stop();
+                            _timer.Tick -= Timer_Tick;
+                            _timer = null;
+                        }
+                        
+                        IsRunning = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Instance.LogError($"Error disposing team {TeamName}", ex);
+                    }
+                }
+                
+                _disposed = true;
+            }
+        }
+
+        ~Team()
+        {
+            Dispose(false);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

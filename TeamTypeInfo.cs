@@ -1,6 +1,6 @@
 using System;
 
-namespace Einsatzueberwachung.Models
+namespace Einsatzueberwachung
 {
     public enum TeamType
     {
@@ -27,18 +27,18 @@ namespace Einsatzueberwachung.Models
                 new TeamTypeInfo 
                 { 
                     Type = TeamType.Flaechensuchhund, 
-                    DisplayName = "Flächensuchhund", 
+                    DisplayName = "FlÃ¤chensuchhund", 
                     ShortName = "FL",
                     ColorHex = "#4CAF50",
-                    Description = "Suche in großen Flächen"
+                    Description = "Suche in groÃŸen FlÃ¤chen"
                 },
                 new TeamTypeInfo 
                 { 
                     Type = TeamType.Truemmersuchhund, 
-                    DisplayName = "Trümmersuchhund", 
+                    DisplayName = "TrÃ¼mmersuchhund", 
                     ShortName = "TR",
                     ColorHex = "#FF5722",
-                    Description = "Suche in Trümmern und Gebäuden"
+                    Description = "Suche in TrÃ¼mmern und GebÃ¤uden"
                 },
                 new TeamTypeInfo 
                 { 
@@ -46,7 +46,7 @@ namespace Einsatzueberwachung.Models
                     DisplayName = "Mantrailer", 
                     ShortName = "MT",
                     ColorHex = "#9C27B0",
-                    Description = "Personenverfolgung über Geruchsspuren"
+                    Description = "Personenverfolgung Ã¼ber Geruchsspuren"
                 },
                 new TeamTypeInfo 
                 { 
@@ -62,7 +62,7 @@ namespace Einsatzueberwachung.Models
                     DisplayName = "Lawinensuchhund", 
                     ShortName = "LW",
                     ColorHex = "#607D8B",
-                    Description = "Suche von Verschütteten in Lawinen"
+                    Description = "Suche von VerschÃ¼tteten in Lawinen"
                 },
                 new TeamTypeInfo 
                 { 

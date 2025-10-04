@@ -1,8 +1,8 @@
-; Einsatzüberwachung Professional v1.6 - Inno Setup Script
+; Einsatzüberwachung Professional v1.7 - Inno Setup Script
 ; Einfache Installation für Windows
 
 #define MyAppName "Einsatzüberwachung Professional"
-#define MyAppVersion "1.6.0"
+#define MyAppVersion "1.7.0"
 #define MyAppPublisher "RescueDog_SW"
 #define MyAppURL "https://github.com/Elemirus1996/Einsatzueberwachung"
 #define MyAppExeName "Einsatzueberwachung.exe"

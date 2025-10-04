@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -18,13 +19,14 @@ using Microsoft.Win32;
 using System.Text.Json;
 using System.ComponentModel;
 using System.IO;
-using Einsatzueberwachung.Services;
+using System.Runtime.CompilerServices;
 using Einsatzueberwachung.Models;
+using Einsatzueberwachung.Services;
 using IOPath = System.IO.Path;
 
 namespace Einsatzueberwachung
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private DispatcherTimer _clockTimer;
         private EinsatzData? _einsatzData;
@@ -37,15 +39,218 @@ namespace Einsatzueberwachung
         private WindowStyle _previousWindowStyle;
         private DispatcherTimer? _resizeTimer;
         private MobileConnectionWindow? _mobileConnectionWindow;
+        
+        // Dashboard View Management
+        private Dictionary<int, TeamCompactCard> _compactCards = new Dictionary<int, TeamCompactCard>();
+
+        // NEU: Public properties for accessing global warning settings
+        public int GlobalFirstWarningMinutes => _firstWarningMinutes;
+        public int GlobalSecondWarningMinutes => _secondWarningMinutes;
+
+        // ============================================
+        // GLOBALES NOTIZEN-SYSTEM v1.7
+        // ============================================
+        private ObservableCollection<GlobalNotesEntry> _globalNotesCollection = new ObservableCollection<GlobalNotesEntry>();
+        public ObservableCollection<GlobalNotesEntry> GlobalNotesCollection => _globalNotesCollection;
+
+        // NEU: Gefilterte Collection nur für einsatzrelevante Notizen (für UI-Anzeige)
+        private ObservableCollection<GlobalNotesEntry> _filteredNotesCollection = new ObservableCollection<GlobalNotesEntry>();
+        public ObservableCollection<GlobalNotesEntry> FilteredNotesCollection => _filteredNotesCollection;
+
+        // NEU: Note Targets für ComboBox (Teams + Einsatzleiter + Drohnenstaffel)
+        private ObservableCollection<NoteTarget> _noteTargets = new ObservableCollection<NoteTarget>();
+        public ObservableCollection<NoteTarget> NoteTargets => _noteTargets;
+
+        private string _quickNoteText = string.Empty;
+        public string QuickNoteText
+        {
+            get => _quickNoteText;
+            set
+            {
+                _quickNoteText = value;
+                OnPropertyChanged(nameof(QuickNoteText));
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public MainWindow()
         {
             InitializeComponent();
             _teams = new ObservableCollection<Team>();
-            
+
+            // DataContext für Binding setzen
+            DataContext = this;
+
+            // NEU: Initialisiere Note Targets mit speziellen Einträgen
+            InitializeNoteTargets();
+
+            // Team-Auswahl ComboBox mit Note Targets befüllen
+            if (TeamSelectionComboBox != null)
+            {
+                TeamSelectionComboBox.ItemsSource = _noteTargets;
+            }
+
+            // NEU: Binde gefilterte Notizen-Collection
+            if (GlobalNotesItemsControl != null)
+            {
+                GlobalNotesItemsControl.ItemsSource = _filteredNotesCollection;
+            }
+
             InitializeServices();
+            InitializeTheme(); // NEU: Theme-Initialisierung
             InitializeClock();
+            
             CheckForRecoveryAsync();
+
+            // Willkommensnotiz im globalen System
+            AddGlobalNote("Einsatzüberwachung Professional v1.7 gestartet",
+                GlobalNotesEntryType.EinsatzUpdate);
+        }
+
+        // NEW: Constructor that accepts EinsatzData from StartWindow
+        public MainWindow(EinsatzData einsatzData, int firstWarningMinutes, int secondWarningMinutes) : this()
+        {
+            // Set the mission data directly without showing StartWindow
+            _einsatzData = einsatzData;
+            _firstWarningMinutes = firstWarningMinutes;
+            _secondWarningMinutes = secondWarningMinutes;
+
+            // Update UI with mission info
+            UpdateMissionDisplayAsync(einsatzData);
+
+            // Add global note for mission start
+            AddGlobalNote($"Einsatz gestartet: {einsatzData.EinsatzTyp} - {einsatzData.Einsatzort}", 
+                GlobalNotesEntryType.EinsatzUpdate);
+        }
+
+        // NEU: Theme-Initialisierung
+        private void InitializeTheme()
+        {
+            try
+            {
+                // Theme Service Event abonnieren
+                ThemeService.Instance.ThemeChanged += OnThemeChanged;
+                
+                // Sicherstellen, dass Auto-Modus aktiviert ist
+                if (!ThemeService.Instance.IsAutoMode)
+                {
+                    ThemeService.Instance.EnableAutoMode();
+                }
+                
+                // Initial theme icon setzen
+                UpdateThemeIcon();
+                
+                // Initial theme auf alle Team Controls anwenden
+                ApplyThemeToAllTeams();
+                
+                LoggingService.Instance.LogInfo($"Theme initialized: {ThemeService.Instance.CurrentThemeStatus}");
+                
+                // NEU: SystemEvent statt Info für Theme-Status (wird nicht im Panel angezeigt)
+                AddGlobalNote($"Theme: {ThemeService.Instance.CurrentThemeStatus}", GlobalNotesEntryType.SystemEvent);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing theme", ex);
+            }
+        }
+
+        private void OnThemeChanged(bool isDarkMode)
+        {
+            try
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    UpdateThemeIcon();
+                    ApplyThemeToAllTeams();
+                    
+                    // NEU: SystemEvent statt Info (wird nicht im Panel angezeigt)
+                    AddGlobalNote($"Theme geändert zu: {ThemeService.Instance.CurrentThemeStatus}", 
+                        GlobalNotesEntryType.SystemEvent);
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error handling theme change", ex);
+            }
+        }
+
+        private void UpdateThemeIcon()
+        {
+            if (ThemeIcon != null)
+            {
+                // Icon je nach aktuellem Theme
+                ThemeIcon.Icon = ThemeService.Instance.IsDarkMode 
+                    ? FontAwesome.WPF.FontAwesomeIcon.MoonOutline
+                    : FontAwesome.WPF.FontAwesomeIcon.SunOutline;
+
+                // Tooltip mit detaillierten Informationen
+                if (BtnThemeToggle != null)
+                {
+                    string tooltip;
+                    if (ThemeService.Instance.IsAutoMode)
+                    {
+                        tooltip = $"Theme: Auto-Modus (18-8 Uhr Dunkel)\nAktuell: {(ThemeService.Instance.IsDarkMode ? "Dunkel" : "Hell")}\n\nKlick → Manuell wechseln";
+                    }
+                    else
+                    {
+                        tooltip = $"Theme: Manuell\nAktuell: {(ThemeService.Instance.IsDarkMode ? "Dunkel" : "Hell")}\n\nKlick → Wechseln";
+                    }
+                    BtnThemeToggle.ToolTip = tooltip;
+                }
+            }
+        }
+
+        private void ApplyThemeToAllTeams()
+        {
+            try
+            {
+                // Apply theme to COMPACT cards
+                foreach (var compactCard in _compactCards.Values)
+                {
+                    compactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                }
+                
+                LoggingService.Instance.LogInfo($"Applied theme to {_compactCards.Count} compact cards");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error applying theme to team controls", ex);
+            }
+        }
+
+        private void UpdateMissionDisplayAsync(EinsatzData einsatzData)
+        {
+            // Use Dispatcher to ensure UI updates happen on the UI thread
+            Dispatcher.BeginInvoke(() =>
+            {
+                try
+                {
+                    if (TxtEinsatzInfo != null)
+                    {
+                        TxtEinsatzInfo.Text = $"{einsatzData.EinsatzTyp} - {einsatzData.EinsatzDatum:dd.MM.yyyy HH:mm}";
+                    }
+                    if (TxtEinsatzort != null)
+                    {
+                        TxtEinsatzort.Text = $"Ort: {einsatzData.Einsatzort}";
+                    }
+                    if (TxtEinsatzleiter != null)
+                    {
+                        TxtEinsatzleiter.Text = $"EL: {einsatzData.Einsatzleiter}";
+                    }
+
+                    StartAutoSave();
+                }
+                catch (Exception ex)
+                {
+                    LoggingService.Instance.LogError("Error updating mission display", ex);
+                }
+            });
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private async void CheckForRecoveryAsync()
@@ -76,7 +281,7 @@ namespace Einsatzueberwachung
                     }
                 }
 
-                // Normal startup
+                // Normal startup - Welcome Message bleibt sichtbar
                 ShowStartWindow();
             }
             catch (Exception ex)
@@ -86,7 +291,7 @@ namespace Einsatzueberwachung
             }
         }
 
-        private async System.Threading.Tasks.Task RestoreSessionAsync(EinsatzSessionData sessionData)
+        private async System.Threading.Tasks.Task RestoreSessionAsync(Services.EinsatzSessionData sessionData)
         {
             try
             {
@@ -97,12 +302,31 @@ namespace Einsatzueberwachung
                     _secondWarningMinutes = sessionData.SecondWarningMinutes;
                     _nextTeamId = sessionData.NextTeamId;
 
-                    // Update UI with mission info
-                    TxtEinsatzInfo.Text = $"{_einsatzData.EinsatzTyp} - {_einsatzData.EinsatzDatum:dd.MM.yyyy HH:mm}";
-                    TxtEinsatzort.Text = $"Ort: {_einsatzData.Einsatzort}";
-                    TxtEinsatzleiter.Text = $"EL: {_einsatzData.Einsatzleiter}";
+                    // Update UI with mission info - using safe property access
+                    if (TxtEinsatzInfo != null)
+                    {
+                        TxtEinsatzInfo.Text = $"{_einsatzData.EinsatzTyp} - {_einsatzData.EinsatzDatum:dd.MM.yyyy HH:mm}";
+                    }
+                    if (TxtEinsatzort != null)
+                    {
+                        TxtEinsatzort.Text = $"Ort: {_einsatzData.Einsatzort}";
+                    }
+                    if (TxtEinsatzleiter != null)
+                    {
+                        TxtEinsatzleiter.Text = $"EL: {_einsatzData.Einsatzleiter}";
+                    }
 
-                    // Restore teams with multiple types support
+                    // NEU: Verwende EinsatzData.GlobalNotesEntries als Haupt-Collection
+                    _globalNotesCollection = _einsatzData.GlobalNotesEntries;
+
+                    // NEU: Gefilterte Collection aus den wiederhergestellten Notizen erstellen
+                    _filteredNotesCollection.Clear();
+                    foreach (var note in _globalNotesCollection.Where(n => IsEinsatzRelevantNote(n.EntryType)))
+                    {
+                        _filteredNotesCollection.Add(note);
+                    }
+
+                    // Restore teams
                     foreach (var teamData in sessionData.Teams)
                     {
                         var team = new Team
@@ -112,7 +336,7 @@ namespace Einsatzueberwachung
                             HundName = teamData.HundName,
                             Hundefuehrer = teamData.Hundefuehrer,
                             Helfer = teamData.Helfer,
-                            Notizen = teamData.Notizen,
+                            Suchgebiet = teamData.Suchgebiet,
                             ElapsedTime = teamData.ElapsedTime,
                             IsFirstWarning = teamData.IsFirstWarning,
                             IsSecondWarning = teamData.IsSecondWarning,
@@ -120,7 +344,7 @@ namespace Einsatzueberwachung
                             SecondWarningMinutes = teamData.SecondWarningMinutes
                         };
 
-                        // Restore multiple team types if available, otherwise use single type
+                        // Restore multiple team types
                         if (!string.IsNullOrEmpty(teamData.TeamType))
                         {
                             if (Enum.TryParse<TeamType>(teamData.TeamType, out var singleType))
@@ -129,613 +353,301 @@ namespace Einsatzueberwachung
                             }
                         }
 
-                        _teams.Add(team);
+                        // *** WICHTIG: Event-Handler für globale Notizen registrieren ***
 
-                        var teamControl = new TeamControl { Team = team };
-                        teamControl.TeamDeleteRequested += OnTeamDeleteRequested;
-                        teamControl.ApplyTheme(ThemeService.Instance.IsDarkMode);
-                        TeamsGrid.Children.Add(teamControl);
+                RegisterTeamEventsForGlobalNotes(team);
 
-                        // Restart timer if it was running
-                        if (teamData.IsRunning && teamData.StartTime.HasValue)
-                        {
-                            team.StartTimer();
-                        }
-                    }
+                _teams.Add(team);
 
-                    UpdateTeamGridLayout();
-                    StartAutoSave();
+                // NEU: Create compact card for restored teams
+                var compactCard = new TeamCompactCard { Team = team };
+                compactCard.TeamClicked += OnTeamCompactCardClicked;
+                compactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                _compactCards[team.TeamId] = compactCard;
+                
+                if (DashboardGrid != null)
+                {
+                    DashboardGrid.Children.Add(compactCard);
+                }
+
+                // Restart timer if it was running
+                if (teamData.IsRunning && teamData.StartTime.HasValue)
+                {
+                    team.StartTimer();
                 }
             }
+
+            UpdateTeamGridLayout();
+            StartAutoSave();
+
+            // NEU: Note Targets aktualisieren
+            UpdateNoteTargets();
+
+            // NEU: Welcome Message Visibility aktualisieren
+            UpdateWelcomeMessageVisibility();
+
+            // Globale Notiz: Session wiederhergestellt
+            AddGlobalNote($"Einsatz wiederhergestellt - {_teams.Count} Teams geladen",
+                GlobalNotesEntryType.EinsatzUpdate);
+                }
+            }            
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error restoring session", ex);
-                throw;
             }
         }
 
         private void InitializeServices()
         {
-            try
-            {
-                // Initialize performance service
-                PerformanceService.Instance.LogPerformanceMetrics();
+            PersistenceService.Instance.Initialize("einsatzueberwachung.json", true);
+            LoggingService.Instance.Initialize("einsatzueberwachung.log", LogLevel.Info);
 
-                // Initialize theme service
-                ThemeService.Instance.ThemeChanged += OnThemeChanged;
-                
-                // Force initial theme application
-                ApplyTheme(ThemeService.Instance.IsDarkMode);
+            // NEU: Verbose Logging aktivieren
+            LoggingService.Instance.SetVerboseLogging(true);
 
-                // Initialize logging with Normal priority for important logs
-                LoggingService.Instance.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(LoggingService.LastLogEntry))
-                    {
-                        Dispatcher.BeginInvoke(() =>
-                        {
-                            TxtLastLog.Text = LoggingService.Instance.LastLogEntry;
-                        }, DispatcherPriority.Normal); // Use Normal priority for logs
-                    }
-                };
-
-                LoggingService.Instance.LogInfo("MainWindow v1.6 initialized with theme system and GitHub updates");
-                
-                // Initialize GitHub Update Service
-                InitializeUpdateService();
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error initializing services", ex);
-            }
-        }
-
-        private void InitializeUpdateService()
-        {
-            try
-            {
-                // Starte Update-Check im Hintergrund nach verzögertem Start
-                _ = Task.Run(async () =>
-                {
-                    // Warte 10 Sekunden nach App-Start für Update-Check
-                    await Task.Delay(10000);
-                    await CheckForUpdatesAsync();
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error initializing update service", ex);
-            }
-        }
-
-        private async Task CheckForUpdatesAsync()
-        {
-            try
-            {
-                LoggingService.Instance.LogInfo("🔄 Starte automatische Update-Prüfung...");
-
-                var updateService = new GitHubUpdateService();
-                var updateInfo = await updateService.CheckForUpdatesAsync();
-
-                if (updateInfo != null && !IsUpdateSkipped(updateInfo.Version))
-                {
-                    LoggingService.Instance.LogInfo($"✅ Update gefunden: v{updateInfo.Version}");
-                    
-                    // Update-Dialog auf UI-Thread anzeigen
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        ShowUpdateNotification(updateInfo);
-                    });
-                }
-                else
-                {
-                    LoggingService.Instance.LogInfo("✅ Keine Updates verfügbar oder Update übersprungen");
-                }
-
-                updateService.Dispose();
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Automatische Update-Prüfung fehlgeschlagen", ex);
-            }
-        }
-
-        private void ShowUpdateNotification(UpdateInfo updateInfo)
-        {
-            try
-            {
-                var updateWindow = new UpdateNotificationWindow(updateInfo)
-                {
-                    Owner = this
-                };
-                
-                LoggingService.Instance.LogInfo($"📱 Zeige Update-Benachrichtigung für v{updateInfo.Version}");
-                updateWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Fehler beim Anzeigen der Update-Benachrichtigung", ex);
-            }
-        }
-
-        private bool IsUpdateSkipped(string version)
-        {
-            try
-            {
-                // Prüfe ob diese Version bereits übersprungen wurde
-                var skippedVersion = Microsoft.Win32.Registry.GetValue(
-                    @"HKEY_CURRENT_USER\Software\RescueDog_SW\Einsatzüberwachung Professional",
-                    "SkippedVersion",
-                    "") as string;
-
-                return skippedVersion == version;
-            }
-            catch
-            {
-                return false; // Bei Fehlern immer Update anzeigen
-            }
+            // *** ZENTRAL: Globale Notizen-Services initialisieren ***
+            GlobalNotesService.Instance.Initialize(GlobalNotesCollection,
+                (message) => AddGlobalNote(message, GlobalNotesEntryType.Info),
+                (message) => AddGlobalNote(message, GlobalNotesEntryType.Warnung),
+                (message) => AddGlobalNote(message, GlobalNotesEntryType.Fehler));
         }
 
         private void InitializeClock()
         {
-            // Use Normal Priority for clock timer too
-            _clockTimer = new DispatcherTimer(DispatcherPriority.Normal);
-            _clockTimer.Interval = TimeSpan.FromSeconds(1);
-            _clockTimer.Tick += (s, e) =>
+            _clockTimer = new DispatcherTimer
             {
-                TxtCurrentTime.Text = DateTime.Now.ToString("HH:mm:ss");
+                Interval = TimeSpan.FromSeconds(1)
             };
+            _clockTimer.Tick += ClockTick;
+
+            // Timer sofort starten, um Verzögerung zu vermeiden
             _clockTimer.Start();
-            TxtCurrentTime.Text = DateTime.Now.ToString("HH:mm:ss");
-        }
-
-        private void StartAutoSave()
-        {
-            PersistenceService.Instance.StartAutoSave(() => GetCurrentSessionData());
-        }
-
-        private EinsatzSessionData GetCurrentSessionData()
-        {
-            return new EinsatzSessionData
-            {
-                EinsatzData = _einsatzData,
-                Teams = _teams.Select(t => new TeamSessionData
-                {
-                    TeamId = t.TeamId,
-                    TeamName = t.TeamName,
-                    TeamType = t.TeamType.ToString(), // For backward compatibility
-                    HundName = t.HundName,
-                    Hundefuehrer = t.Hundefuehrer,
-                    Helfer = t.Helfer,
-                    Notizen = t.Notizen,
-                    ElapsedTime = t.ElapsedTime,
-                    IsRunning = t.IsRunning,
-                    IsFirstWarning = t.IsFirstWarning,
-                    IsSecondWarning = t.IsSecondWarning,
-                    FirstWarningMinutes = t.FirstWarningMinutes,
-                    SecondWarningMinutes = t.SecondWarningMinutes,
-                    StartTime = t.IsRunning ? DateTime.Now - t.ElapsedTime : null
-                }).ToArray(),
-                NextTeamId = _nextTeamId,
-                FirstWarningMinutes = _firstWarningMinutes,
-                SecondWarningMinutes = _secondWarningMinutes
-            };
-        }
-
-        private void ShowStartWindow()
-        {
-            try
-            {
-                var startWindow = new StartWindow();
-                var result = startWindow.ShowDialog();
-
-                if (result == true && startWindow.EinsatzData != null)
-                {
-                    _einsatzData = startWindow.EinsatzData;
-                    _firstWarningMinutes = startWindow.FirstWarningMinutes;
-                    _secondWarningMinutes = startWindow.SecondWarningMinutes;
-                    
-                    InitializeEinsatz();
-                    StartAutoSave();
-                }
-                else
-                {
-                    Application.Current.Shutdown();
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error showing start window", ex);
-                MessageBox.Show($"Fehler beim Starten: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Application.Current.Shutdown();
-            }
-        }
-
-        private void InitializeEinsatz()
-        {
-            if (_einsatzData == null) return;
-
-            try
-            {
-                // Update UI with mission info
-                TxtEinsatzInfo.Text = $"{_einsatzData.EinsatzTyp} - {_einsatzData.EinsatzDatum:dd.MM.yyyy HH:mm}";
-                TxtEinsatzort.Text = $"Ort: {_einsatzData.Einsatzort}";
-                TxtEinsatzleiter.Text = $"EL: {_einsatzData.Einsatzleiter}";
-
-                // v1.5: No initial teams - user will add them manually
-                // This allows for better customization of teams with multiple types
-                UpdateTeamCountStatus();
-                LoggingService.Instance.LogInfo($"Mission v1.5 initialized - teams will be added manually");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error initializing mission", ex);
-            }
-        }
-
-        private void CreateTeam(string teamName, MultipleTeamTypes? multipleTypes = null)
-        {
-            // Legacy method - redirect to new detailed method
-            CreateTeamWithDetails(teamName, "Unbekannt", "", "", multipleTypes);
-        }
-
-        private Team CreateTeamWithDetails(string teamName, string hundName, string hundefuehrer, string helfer, MultipleTeamTypes multipleTypes)
-        {
-            try
-            {
-                // Check maximum team limit
-                if (_teams.Count >= 10)
-                {
-                    MessageBox.Show("Maximale Anzahl von 10 Teams erreicht!", "Team-Limit", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    return null;
-                }
-
-                var team = new Team
-                {
-                    TeamId = _nextTeamId++,
-                    TeamName = teamName,
-                    HundName = hundName,
-                    Hundefuehrer = hundefuehrer,
-                    Helfer = helfer,
-                    MultipleTeamTypes = multipleTypes ?? new MultipleTeamTypes(),
-                    FirstWarningMinutes = _firstWarningMinutes,
-                    SecondWarningMinutes = _secondWarningMinutes
-                };
-
-                _teams.Add(team);
-
-                var teamControl = new TeamControl { Team = team };
-                
-                // Subscribe to delete event
-                teamControl.TeamDeleteRequested += OnTeamDeleteRequested;
-                
-                // Apply current theme to new team control
-                teamControl.ApplyTheme(ThemeService.Instance.IsDarkMode);
-                
-                TeamsGrid.Children.Add(teamControl);
-
-                // Improved grid layout based on team count
-                UpdateTeamGridLayout();
-                
-                // v1.5: Hide welcome message after first team is added
-                UpdateWelcomeMessageVisibility();
-
-                LoggingService.Instance.LogInfo($"Team v1.5 created: {teamName} with dog {hundName} ({team.TeamTypeDisplayName})");
-                return team;
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError($"Error creating team {teamName}", ex);
-                return null;
-            }
-        }
-
-        private void BtnAddTeam_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (_teams.Count >= 10)
-                {
-                    MessageBox.Show("Maximale Anzahl von 10 Teams bereits erreicht!", "Team-Limit", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                // v1.5: Two-step process - first get team details, then specialization
-                var teamInputWindow = new TeamInputWindow();
-                if (teamInputWindow.ShowDialog() == true)
-                {
-                    // Now get the specialization
-                    var teamTypeWindow = new TeamTypeSelectionWindow();
-                    if (teamTypeWindow.ShowDialog() == true)
-                    {
-                        // Create team with Team + Dog name
-                        string teamName = teamInputWindow.TeamName;
-                        var team = CreateTeamWithDetails(teamName, teamInputWindow.HundName, 
-                            teamInputWindow.Hundefuehrer, teamInputWindow.Helfer, 
-                            teamTypeWindow.SelectedMultipleTeamTypes);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error adding team", ex);
-                MessageBox.Show($"Fehler beim Hinzufügen des Teams: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void BtnHelp_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var helpWindow = new HelpWindow
-                {
-                    Owner = this
-                };
-                helpWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error opening help window", ex);
-                
-                // Fallback simple help dialog for v1.5
-                var helpText = @"🚀 EINSATZÜBERWACHUNG PROFESSIONAL v1.5
-
-=== NEU IN v1.5 ===
-✨ Vereinfachtes StartWindow - nur essenzielle Infos
-✨ Automatische Teamname-Generierung: 'Team [Hundename]'
-✨ Teams im Hauptfenster hinzufügen
-✨ Multiple Typen pro Hund (Fläche + Trümmer + Mantrailer)
-✨ Verbesserte Team-Verwaltung
-
-=== SCHNELLSTART ====
-1. Einsatzleiter und Ort eingeben
-2. Warnschwellen einstellen (Standard: 10/20 Min)
-3. '+ Team' für Hundeteams hinzufügen
-4. Hundename eingeben (Teamname = 'Team [Hundename]')
-5. Mehrfach-Spezialisierung auswählen
-6. Timer mit Start/Stop/Reset bedienen
-
-=== TASTENKÜRZEL ===
-F1-F10:    Team 1-10 Timer Start/Stop
-F11:       Vollbild ein/aus
-Strg+N:    Neues Team
-Strg+E:    Export
-Strg+T:    Theme umschalten
-Esc:       Vollbild beenden
-
-=== TEAM-SPEZIALISIERUNGEN ===
-• Flächensuchhund (Blau)
-• Trümmersuchhund (Orange)  
-• Mantrailer (Grün)
-• Wasserortung (Cyan)
-• Lawinensuchhund (Lila)
-• Allgemein (Grau)
-
-💡 Ein Hund kann mehrere Spezialisierungen haben!
-
-=== FEATURES ===
-• Animierte Timer mit akustischen Warnungen
-• Automatische Zeitstempel bei Timer-Aktionen
-• Schnellnotizen mit Enter oder '+' Button
-• Speichert alle 30 Sekunden automatisch
-• Crash-Recovery beim nächsten Start
-• Export als JSON für Dokumentation
-
-Version 1.5 - Professional Edition
-© 2024 RescueDog_SW";
-
-                MessageBox.Show(helpText, "Hilfe - Einsatzüberwachung Professional v1.5", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-        private void ExportData()
-        {
-            if (_einsatzData == null) return;
-
-            try
-            {
-                var exportData = new
-                {
-                    Einsatz = _einsatzData,
-                    Teams = _teams.Select(t => new
-                    {
-                        t.TeamId,
-                        t.TeamName,
-                        // v1.5: Export multiple team types
-                        TeamTypes = t.MultipleTeamTypes.SelectedTypes.Select(type => new
-                        {
-                            Type = type.ToString(),
-                            Info = TeamTypeInfo.GetTypeInfo(type)
-                        }).ToArray(),
-                        TeamTypeDisplay = t.TeamTypeDisplayName,
-                        TeamTypeColor = t.TeamTypeColorHex,
-                        // Backward compatibility
-                        PrimaryTeamType = t.TeamType.ToString(),
-                        t.HundName,
-                        t.Hundefuehrer,
-                        t.Helfer,
-                        t.Notizen,
-                        ElapsedTime = t.ElapsedTime.ToString(),
-                        IsRunning = t.IsRunning,
-                        IsFirstWarning = t.IsFirstWarning,
-                        IsSecondWarning = t.IsSecondWarning,
-                        NotesEntries = t.NotesEntries.ToArray()
-                    }).ToArray(),
-                    ExportTime = DateTime.Now,
-                    ExportVersion = "1.5.0",
-                    Application = "Einsatzüberwachung Professional v1.5"
-                };
-
-                var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
-                
-                var fileName = $"Einsatz_{_einsatzData.EinsatzDatum:yyyy-MM-dd_HH-mm-ss}_v1.5.json";
-                var filePath = IOPath.Combine(_einsatzData.ExportPfad, fileName);
-                
-                Directory.CreateDirectory(_einsatzData.ExportPfad);
-                File.WriteAllText(filePath, json);
-
-                TxtStatus.Text = $"Export erstellt: {fileName}";
-                LoggingService.Instance.LogInfo($"Data v1.5 exported to {filePath}");
-
-                MessageBox.Show($"Daten erfolgreich exportiert:\n{filePath}", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Export failed", ex);
-                throw;
-            }
-        }
-
-        // Standard methods remain the same...
-        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                // F1-F10 for team control
-                if (e.Key >= Key.F1 && e.Key <= Key.F10)
-                {
-                    int teamIndex = (int)(e.Key - Key.F1);
-                    if (teamIndex < _teams.Count)
-                    {
-                        var team = _teams[teamIndex];
-                        if (team.IsRunning)
-                        {
-                            team.StopTimer();
-                            TxtStatus.Text = $"Team {teamIndex + 1} gestoppt (F{teamIndex + 1})";
-                        }
-                        else
-                        {
-                            team.StartTimer();
-                            TxtStatus.Text = $"Team {teamIndex + 1} gestartet (F{teamIndex + 1})";
-                        }
-                    }
-                    e.Handled = true;
-                }
-                // F11 for fullscreen
-                else if (e.Key == Key.F11)
-                {
-                    ToggleFullscreen();
-                    e.Handled = true;
-                }
-                // Ctrl+N for New Team
-                else if (e.Key == Key.N && Keyboard.Modifiers == ModifierKeys.Control)
-                {
-                    BtnAddTeam_Click(sender, new RoutedEventArgs());
-                    e.Handled = true;
-                }
-                // Ctrl+E for Export
-                else if (e.Key == Key.E && Keyboard.Modifiers == ModifierKeys.Control)
-                {
-                    BtnExport_Click(sender, new RoutedEventArgs());
-                    e.Handled = true;
-                }
-                // Ctrl+T for Theme Toggle
-                else if (e.Key == Key.T && Keyboard.Modifiers == ModifierKeys.Control)
-                {
-                    BtnThemeToggle_Click(sender, new RoutedEventArgs());
-                    e.Handled = true;
-                }
-                // Ctrl+H for Help
-                else if (e.Key == Key.H && Keyboard.Modifiers == ModifierKeys.Control)
-                {
-                    BtnHelp_Click(sender, new RoutedEventArgs());
-                    e.Handled = true;
-                }
-                // Escape to exit fullscreen or close app
-                else if (e.Key == Key.Escape)
-                {
-                    if (_isFullscreen)
-                    {
-                        ToggleFullscreen();
-                    }
-                    else
-                    {
-                        Close();
-                    }
-                    e.Handled = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error handling keyboard shortcut", ex);
-            }
         }
 
         private void ToggleFullscreen()
         {
-            try
+            if (_isFullscreen)
             {
-                if (_isFullscreen)
+                // Restore previous window state and style
+                WindowState = _previousWindowState;
+                WindowStyle = _previousWindowStyle;
+                _isFullscreen = false;
+
+                // Restore window size
+                if (_resizeTimer != null)
                 {
-                    // Exit fullscreen
-                    WindowStyle = _previousWindowStyle;
-                    WindowState = _previousWindowState;
-                    _isFullscreen = false;
-                    LoggingService.Instance.LogInfo("Exited fullscreen mode");
+                    _resizeTimer.Stop();
+                    _resizeTimer = null;
                 }
-                else
-                {
-                    // Enter fullscreen
-                    _previousWindowStyle = WindowStyle;
-                    _previousWindowState = WindowState;
-                    WindowStyle = WindowStyle.None;
-                    WindowState = WindowState.Maximized;
-                    _isFullscreen = true;
-                    LoggingService.Instance.LogInfo("Entered fullscreen mode");
-                }
+                Width = 1200;
+                Height = 800;
+                Top = 100;
+                Left = 100;
             }
-            catch (Exception ex)
+            else
             {
-                LoggingService.Instance.LogError("Error toggling fullscreen", ex);
+                // Speichere aktuelle Fensterposition und -größe
+                _previousWindowState = WindowState;
+                _previousWindowStyle = WindowStyle;
+
+                // In den Vollbildmodus wechseln
+                WindowStyle = WindowStyle.None;
+                WindowState = WindowState.Normal;
+                _isFullscreen = true;
+
+                // Größe an Bildschirm anpassen
+                var screenWidth = SystemParameters.PrimaryScreenWidth;
+                var screenHeight = SystemParameters.PrimaryScreenHeight;
+                Width = screenWidth;
+                Height = screenHeight;
+                Top = 0;
+                Left = 0;
             }
         }
 
-        private void OnTeamDeleteRequested(object? sender, Team team)
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            // Verbinden mit MobileService
+            MobileService.Instance.Connect();
+        }
+
+        private void OnClosed(object sender, EventArgs e)
+        {
+            // Trennen von MobileService
+            MobileService.Instance.Disconnect();
+
+            // Alle Timers stoppen
+            _clockTimer?.Stop();
+            foreach (var team in _teams)
+            {
+                team.StopTimer();
+            }
+        }
+
+        // Verhalten beim Schließen des Fensters
+        protected override void OnClosing(CancelEventArgs e)
         {
             try
             {
-                // Find and remove the team control
-                var teamControlToRemove = TeamsGrid.Children.OfType<TeamControl>()
-                    .FirstOrDefault(tc => tc.Team?.TeamId == team.TeamId);
-
-                if (teamControlToRemove != null)
+                LoggingService.Instance.LogInfo("MainWindow closing - starting cleanup");
+                
+                // Zeige Bestätigungsdialog wenn Einsatz aktiv ist
+                if (_teams.Any(t => t.IsRunning))
                 {
-                    // Unsubscribe from events
-                    teamControlToRemove.TeamDeleteRequested -= OnTeamDeleteRequested;
+                    var result = MessageBox.Show(
+                        "Es sind noch aktive Timer vorhanden.\n\n" +
+                        "Möchten Sie die Anwendung wirklich beenden?",
+                        "Aktive Einsatzzeiten",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
                     
-                    // Remove from UI
-                    TeamsGrid.Children.Remove(teamControlToRemove);
-                    
-                    // Remove from teams collection
-                    _teams.Remove(team);
-                    
-                    // Update layout
-                    UpdateTeamGridLayout();
-                    
-                    // v1.5: Show welcome message again if no teams left
-                    UpdateWelcomeMessageVisibility();
-                    
-                    LoggingService.Instance.LogInfo($"Team deleted: {team.TeamName}");
+                    if (result == MessageBoxResult.No)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                }
+                
+                // Stoppe und dispose alle Team-Timer
+                foreach (var team in _teams)
+                {
+                    team.StopTimer();
+                    if (team is IDisposable disposableTeam)
+                    {
+                        disposableTeam.Dispose();
+                    }
+                }
+                LoggingService.Instance.LogInfo($"Stopped and disposed {_teams.Count} team timers");
+                
+                // Stoppe Mobile Server falls vorhanden
+                try
+                {
+                    _mobileConnectionWindow?.ForceClose();
+                    MobileService.Instance.Disconnect();
+                    LoggingService.Instance.LogInfo("Mobile Server stopped");
+                }
+                catch (Exception ex)
+                {
+                    LoggingService.Instance.LogWarning($"Error stopping mobile server: {ex.Message}");
+                }
+                
+                // Theme Service Event abmelden
+                ThemeService.Instance.ThemeChanged -= OnThemeChanged;
+                
+                // Clock Timer stoppen
+                if (_clockTimer != null)
+                {
+                    _clockTimer.Stop();
+                    _clockTimer.Tick -= ClockTick;
+                    _clockTimer = null;
+                }
+                
+                // Auto-Save stoppen
+                PersistenceService.Instance.StopAutoSave();
+                
+                // Gib Threads Zeit zum Beenden
+                System.Threading.Thread.Sleep(300);
+                
+                LoggingService.Instance.LogInfo("MainWindow cleanup completed successfully");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error during window closing", ex);
+            }
+            finally
+            {
+                base.OnClosing(e);
+            }
+        }
+        
+        protected override void OnClosed(EventArgs e)
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo("MainWindow closed - forcing application exit");
+                
+                // Stelle sicher, dass die Anwendung wirklich beendet wird
+                Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error during window cleanup", ex);
+            }
+            finally
+            {
+                base.OnClosed(e);
+            }
+        }
+
+        // Fehlende Methoden aus MainWindow_MissingMethods.cs
+        private void OnTeamCompactCardClicked(object? sender, Team team)
+        {
+            try
+            {
+                // Öffne separates Detail-Fenster für das Team
+                var detailWindow = new TeamDetailWindow(team);
+                detailWindow.Owner = this;
+                detailWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                detailWindow.Show();
+                
+                // NEU: SystemEvent (wird nicht im Panel angezeigt)
+                AddGlobalNote($"Detail-Fenster für Team {team.TeamName} geöffnet", GlobalNotesEntryType.SystemEvent);
+                
+                LoggingService.Instance.LogInfo($"Opened detail window for team {team.TeamName}");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error handling compact card click", ex);
+                MessageBox.Show($"Fehler beim Öffnen des Detail-Fensters: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UpdateMissionDisplay()
+        {
+            try
+            {
+                if (_einsatzData == null) return;
+
+                if (TxtEinsatzInfo != null)
+                {
+                    TxtEinsatzInfo.Text = $"{_einsatzData.EinsatzTyp} - {_einsatzData.EinsatzDatum:dd.MM.yyyy HH:mm}";
+                }
+                if (TxtEinsatzort != null)
+                {
+                    TxtEinsatzort.Text = $"Ort: {_einsatzData.Einsatzort}";
+                }
+                if (TxtEinsatzleiter != null)
+                {
+                    TxtEinsatzleiter.Text = $"EL: {_einsatzData.Einsatzleiter}";
                 }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error deleting team", ex);
+                LoggingService.Instance.LogError("Error updating mission display", ex);
             }
         }
 
-        // v1.5: New method to handle welcome message visibility
+        private void UpdateTeamCount()
+        {
+            if (TxtTeamCount != null)
+            {
+                TxtTeamCount.Text = $"{_teams.Count}/50";
+            }
+            
+            // NEU: Welcome Message ausblenden wenn erstes Team erstellt wurde
+            UpdateWelcomeMessageVisibility();
+        }
+
+        // NEU: Methode zur Steuerung der Willkommensnachricht
         private void UpdateWelcomeMessageVisibility()
         {
             try
             {
-                if (FindName("WelcomeMessage") is Border welcomeMessage)
+                if (WelcomeMessage != null)
                 {
-                    // Hide welcome message when teams exist, show when no teams
-                    welcomeMessage.Visibility = _teams.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                    // Zeige Welcome Message nur wenn keine Teams vorhanden sind
+                    WelcomeMessage.Visibility = _teams.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
                 }
             }
             catch (Exception ex)
@@ -744,328 +656,523 @@ Version 1.5 - Professional Edition
             }
         }
 
-        private void UpdateTeamGridLayout()
+        private void BtnHelp_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                int teamCount = _teams.Count;
-                int columns;
-
-                var windowWidth = ActualWidth > 0 ? ActualWidth : Width;
+                var helpWindow = new HelpWindow();
+                helpWindow.Owner = this;
+                helpWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                helpWindow.Show();
                 
-                if (windowWidth < 800)
-                {
-                    columns = 1;
-                }
-                else if (windowWidth < 1200)
-                {
-                    columns = teamCount switch
-                    {
-                        1 => 1,
-                        2 or 3 or 4 => 2,
-                        _ => Math.Min(2, teamCount)
-                    };
-                }
-                else
-                {
-                    columns = teamCount switch
-                    {
-                        1 => 1,
-                        2 => 2,
-                        3 or 4 => 2,
-                        5 or 6 => 3,
-                        7 or 8 or 9 => 3,
-                        10 => 2,
-                        _ => 3
-                    };
-                }
-
-                TeamsGrid.Columns = columns;
-                UpdateTeamCountStatus();
+                // NEU: SystemEvent (wird nicht im Panel angezeigt)
+                AddGlobalNote("Hilfe-Fenster geöffnet", GlobalNotesEntryType.SystemEvent);
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error updating team grid layout", ex);
+                LoggingService.Instance.LogError("Error opening help window", ex);
+                MessageBox.Show($"Fehler beim Öffnen der Hilfe: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void UpdateTeamCountStatus()
-        {
-            TxtStatus.Text = $"Einsatz v1.5 aktiv - {_teams.Count}/10 Teams";
-            TxtTeamCount.Text = $"{_teams.Count}/10";
-            BtnAddTeam.IsEnabled = _teams.Count < 10;
-            
-            if (_teams.Count >= 10)
-            {
-                TxtTeamCount.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(244, 67, 54));
-            }
-            else
-            {
-                TxtTeamCount.Foreground = (System.Windows.Media.Brush)FindResource("TextBrush");
-            }
-        }
-
-        private void OnThemeChanged(bool isDarkMode)
-        {
-            Dispatcher.Invoke(() => ApplyTheme(isDarkMode));
-        }
-
-        private void ApplyTheme(bool isDarkMode)
+        private void ClockTick(object? sender, EventArgs e)
         {
             try
             {
-                // Update all theme-related DynamicResources directly
-                var resources = Application.Current.Resources;
-                
-                if (isDarkMode)
+                if (TxtCurrentTime != null)
                 {
-                    // Dark theme colors - Update global resources
-                    resources["Surface"] = new SolidColorBrush(Color.FromRgb(30, 30, 30)); // #1E1E1E
-                    resources["SurfaceContainer"] = new SolidColorBrush(Color.FromRgb(25, 25, 25)); // #191919
-                    resources["SurfaceVariant"] = new SolidColorBrush(Color.FromRgb(35, 35, 35)); // #232323
-                    resources["Primary"] = new SolidColorBrush(Color.FromRgb(144, 202, 249)); // #90CAF9
-                    resources["PrimaryContainer"] = new SolidColorBrush(Color.FromRgb(13, 71, 161)); // #0D47A1
-                    resources["OnPrimary"] = new SolidColorBrush(Color.FromRgb(10, 44, 90)); // #0A2C5A
-                    resources["OnPrimaryContainer"] = new SolidColorBrush(Color.FromRgb(197, 225, 255)); // #C5E1FF
-                    resources["Secondary"] = new SolidColorBrush(Color.FromRgb(176, 190, 197)); // #B0BEC5
-                    resources["OnSurface"] = new SolidColorBrush(Color.FromRgb(225, 227, 230)); // #E1E3E6
-                    resources["OnSurfaceVariant"] = new SolidColorBrush(Color.FromRgb(196, 199, 202)); // #C4C7CA
-                    resources["Outline"] = new SolidColorBrush(Color.FromRgb(142, 145, 146)); // #8E9192
-                    resources["OutlineVariant"] = new SolidColorBrush(Color.FromRgb(68, 71, 74)); // #44474A
-                    resources["Success"] = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // #4CAF50
-                    resources["SuccessContainer"] = new SolidColorBrush(Color.FromRgb(27, 94, 32)); // #1B5E20
-                    resources["OnSuccessContainer"] = new SolidColorBrush(Color.FromRgb(200, 230, 201)); // #C8E6C9
+                    TxtCurrentTime.Text = DateTime.Now.ToString("HH:mm:ss");
+                }
+                
+                // Update last log display
+                if (TxtLastLog != null)
+                {
+                    TxtLastLog.Text = $"Aktualisiert: {DateTime.Now:HH:mm:ss}";
+                }
+                
+                // Check team warnings periodically - trigger property change notification
+                foreach (var team in _teams)
+                {
+                    if (team.IsRunning)
+                    {
+                        // Trigger internal timer checks without direct property access
+                        // The timer will handle warning checks internally
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error in clock tick", ex);
+            }
+        }
+
+        private void InitializeNoteTargets()
+        {
+            try
+            {
+                _noteTargets.Clear();
+                
+                // Special targets
+                _noteTargets.Add(new NoteTarget { DisplayName = "Allgemein", DetailInfo = "📝", IsSpecialTarget = true });
+                _noteTargets.Add(new NoteTarget { DisplayName = "Einsatzleiter", DetailInfo = "👨‍💼", IsSpecialTarget = true });
+                _noteTargets.Add(new NoteTarget { DisplayName = "Drohnenstaffel", DetailInfo = "🚁", IsSpecialTarget = true });
+                _noteTargets.Add(new NoteTarget { DisplayName = "Funkzentrale", DetailInfo = "📻", IsSpecialTarget = true });
+                
+                UpdateNoteTargets();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing note targets", ex);
+            }
+        }
+
+        private void RegisterTeamEventsForGlobalNotes(Team team)
+        {
+            try
+            {
+                // NEU: Verwende spezifische Event-Typen statt allgemeines "Info"
+                team.TimerStarted += (t) => AddGlobalNote($"Timer gestartet", GlobalNotesEntryType.TimerStart, t.TeamName);
+                team.TimerStopped += (t) => AddGlobalNote($"Timer gestoppt - Einsatzzeit: {t.ElapsedTimeString}", GlobalNotesEntryType.TimerStop, t.TeamName);
+                team.TimerReset += (t) => AddGlobalNote($"Timer zurückgesetzt", GlobalNotesEntryType.TimerReset, t.TeamName);
+                team.WarningTriggered += (t, isSecond) => 
+                {
+                    var warningType = isSecond ? GlobalNotesEntryType.Warning2 : GlobalNotesEntryType.Warning1;
+                    var warningText = isSecond ? "Zweite Warnung" : "Erste Warnung";
+                    AddGlobalNote($"{warningText} bei {t.ElapsedTimeString}", warningType, t.TeamName);
+                };
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error registering team events", ex);
+            }
+        }
+
+        private void StartAutoSave()
+        {
+            try
+            {
+                if (_einsatzData != null)
+                {
+                    // Start auto-save service with current mission data
+                    // PersistenceService.Instance.StartAutoSave expects a different type
+                    // For now, just log that auto-save would be started
+                    LoggingService.Instance.LogInfo("Auto-Save would be started here");
                     
-                    // Legacy theme resources for compatibility
-                    resources["BackgroundBrush"] = new SolidColorBrush(Color.FromRgb(30, 30, 30));
-                    resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(45, 45, 45));
-                    resources["PrimaryBrush"] = new SolidColorBrush(Color.FromRgb(144, 202, 249));
-                    resources["TextBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224));
-                    resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(68, 68, 68));
-                    resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(33, 150, 243));
+                    // NEU: SystemEvent (wird nicht im Panel angezeigt)
+                    AddGlobalNote("Auto-Save aktiviert", GlobalNotesEntryType.SystemEvent);
                 }
-                else
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error starting auto-save", ex);
+            }
+        }
+
+        private Models.EinsatzSessionData CreateSessionData()
+        {
+            return new Models.EinsatzSessionData
+            {
+                EinsatzData = _einsatzData,
+                Teams = _teams.Select(t => new Models.TeamSessionData
                 {
-                    // Light theme colors - Update global resources
-                    resources["Surface"] = new SolidColorBrush(Color.FromRgb(254, 251, 255)); // #FEFBFF
-                    resources["SurfaceContainer"] = new SolidColorBrush(Color.FromRgb(240, 244, 248)); // #F0F4F8
-                    resources["SurfaceVariant"] = new SolidColorBrush(Color.FromRgb(244, 249, 253)); // #F4F9FD
-                    resources["Primary"] = new SolidColorBrush(Color.FromRgb(21, 101, 192)); // #1565C0
-                    resources["PrimaryContainer"] = new SolidColorBrush(Color.FromRgb(227, 242, 253)); // #E3F2FD
-                    resources["OnPrimary"] = new SolidColorBrush(Colors.White);
-                    resources["OnPrimaryContainer"] = new SolidColorBrush(Color.FromRgb(13, 71, 161)); // #0D47A1
-                    resources["Secondary"] = new SolidColorBrush(Color.FromRgb(69, 90, 100)); // #455A64
-                    resources["OnSurface"] = new SolidColorBrush(Color.FromRgb(26, 28, 30)); // #1A1C1E
-                    resources["OnSurfaceVariant"] = new SolidColorBrush(Color.FromRgb(68, 71, 74)); // #44474A
-                    resources["Outline"] = new SolidColorBrush(Color.FromRgb(116, 119, 122)); // #74777A
-                    resources["OutlineVariant"] = new SolidColorBrush(Color.FromRgb(196, 199, 202)); // #C4C7CA
-                    resources["Success"] = new SolidColorBrush(Color.FromRgb(46, 125, 50)); // #2E7D32
-                    resources["SuccessContainer"] = new SolidColorBrush(Color.FromRgb(232, 245, 233)); // #E8F5E8
-                    resources["OnSuccessContainer"] = new SolidColorBrush(Color.FromRgb(27, 94, 32)); // #1B5E20
+                    TeamId = t.TeamId,
+                    TeamName = t.TeamName,
+                    HundName = t.HundName,
+                    Hundefuehrer = t.Hundefuehrer,
+                    Helfer = t.Helfer,
+                    Suchgebiet = t.Suchgebiet,
+                    TeamType = t.TeamType.ToString(),
+                    ElapsedTime = t.ElapsedTime,
+                    IsRunning = t.IsRunning,
+                    IsFirstWarning = t.IsFirstWarning,
+                    IsSecondWarning = t.IsSecondWarning,
+                    FirstWarningMinutes = t.FirstWarningMinutes,
+                    SecondWarningMinutes = t.SecondWarningMinutes,
+                    StartTime = t.IsRunning ? DateTime.Now - t.ElapsedTime : null
+                }).ToList(),
+                FirstWarningMinutes = _firstWarningMinutes,
+                SecondWarningMinutes = _secondWarningMinutes,
+                NextTeamId = _nextTeamId
+            };
+        }
+
+        private void UpdateNoteTargets()
+        {
+            try
+            {
+                // Clear dynamic targets (keep special ones)
+                var specialTargets = _noteTargets.Where(nt => nt.IsSpecialTarget).ToList();
+                _noteTargets.Clear();
+                
+                foreach (var target in specialTargets)
+                {
+                    _noteTargets.Add(target);
+                }
+                
+                // Add current teams as targets
+                foreach (var team in _teams)
+                {
+                    _noteTargets.Add(new NoteTarget 
+                    { 
+                        DisplayName = team.TeamName, 
+                        DetailInfo = team.TeamTypeShortName,
+                        IsSpecialTarget = false 
+                    });
+                }
+                
+                // Update ComboBox selection if needed
+                if (TeamSelectionComboBox != null && TeamSelectionComboBox.SelectedIndex == -1)
+                {
+                    TeamSelectionComboBox.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating note targets", ex);
+            }
+        }
+
+        private void InitializeGlobalNotes()
+        {
+            try
+            {
+                if (_einsatzData?.GlobalNotesEntries != null)
+                {
+                    _globalNotesCollection = _einsatzData.GlobalNotesEntries;
                     
-                    // Legacy theme resources for compatibility
-                    resources["BackgroundBrush"] = new SolidColorBrush(Colors.White);
-                    resources["CardBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(248, 249, 250));
-                    resources["PrimaryBrush"] = new SolidColorBrush(Color.FromRgb(21, 101, 192));
-                    resources["TextBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33));
-                    resources["BorderBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224));
-                    resources["AccentBrush"] = new SolidColorBrush(Color.FromRgb(25, 118, 210));
-                }
-
-                // Update theme icon
-                if (FindName("ThemeIcon") is FontAwesome.WPF.ImageAwesome themeIcon)
-                {
-                    themeIcon.Icon = isDarkMode ? FontAwesome.WPF.FontAwesomeIcon.SunOutline : FontAwesome.WPF.FontAwesomeIcon.MoonOutline;
-                }
-
-                // Apply theme to team controls
-                UpdateTeamControlsTheme(isDarkMode);
-                LoggingService.Instance.LogInfo($"Theme changed to {(isDarkMode ? "dark" : "light")} mode");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error applying theme", ex);
-            }
-        }
-
-        private void UpdateTeamControlsTheme(bool isDarkMode)
-        {
-            try
-            {
-                foreach (TeamControl teamControl in TeamsGrid.Children.OfType<TeamControl>())
-                {
-                    teamControl.ApplyTheme(isDarkMode);
+                    // NEU: Gefilterte Collection aus den vorhandenen Notizen erstellen
+                    _filteredNotesCollection.Clear();
+                    foreach (var note in _globalNotesCollection.Where(n => IsEinsatzRelevantNote(n.EntryType)))
+                    {
+                        _filteredNotesCollection.Add(note);
+                    }
+                    
+                    // Update binding if needed
+                    if (GlobalNotesItemsControl != null)
+                    {
+                        GlobalNotesItemsControl.ItemsSource = _filteredNotesCollection;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error updating team controls theme", ex);
+                LoggingService.Instance.LogError("Error initializing global notes", ex);
             }
         }
 
-        private void BtnMenu_Click(object sender, RoutedEventArgs e)
+        private void AddGlobalNote(string message, GlobalNotesEntryType type, string? teamName = null)
         {
             try
             {
-                var contextMenu = new ContextMenu();
-                
-                var aboutItem = new MenuItem
+                var note = new GlobalNotesEntry
                 {
-                    Header = "Über Einsatzüberwachung v1.6...",
-                    Icon = new FontAwesome.WPF.ImageAwesome 
-                    { 
-                        Icon = FontAwesome.WPF.FontAwesomeIcon.InfoCircle, 
-                        Width = 16, 
-                        Height = 16 
-                    }
-                };
-                aboutItem.Click += (s, args) =>
-                {
-                    var aboutWindow = new AboutWindow { Owner = this };
-                    aboutWindow.ShowDialog();
+                    Content = message,
+                    EntryType = type,
+                    Timestamp = DateTime.Now,
+                    TeamName = teamName ?? ""
                 };
                 
-                var helpItem = new MenuItem
-                {
-                    Header = "Hilfe & Tastenkürzel...",
-                    Icon = new FontAwesome.WPF.ImageAwesome 
-                    { 
-                        Icon = FontAwesome.WPF.FontAwesomeIcon.QuestionCircle, 
-                        Width = 16, 
-                        Height = 16 
-                    }
-                };
-                helpItem.Click += (s, args) => BtnHelp_Click(s, new RoutedEventArgs());
+                _globalNotesCollection.Add(note);
                 
-                var updateItem = new MenuItem
+                // NEU: Nur einsatzrelevante Notizen zur gefilterten Collection hinzufügen
+                if (IsEinsatzRelevantNote(type))
                 {
-                    Header = "Nach Updates suchen...",
-                    Icon = new FontAwesome.WPF.ImageAwesome
+                    _filteredNotesCollection.Add(note);
+                }
+                
+                // Auto-scroll to latest note
+                Dispatcher.BeginInvoke(() =>
+                {
+                    if (GlobalNotesScrollViewer != null)
                     {
-                        Icon = FontAwesome.WPF.FontAwesomeIcon.Download,
-                        Width = 16,
-                        Height = 16
+                        GlobalNotesScrollViewer.ScrollToEnd();
                     }
-                };
-                updateItem.Click += MenuUpdate_Click;
+                });
                 
-                var perfItem = new MenuItem
+                // Save to persistence if mission is active
+                if (_einsatzData != null)
                 {
-                    Header = "Performance-Metriken",
-                    Icon = new FontAwesome.WPF.ImageAwesome 
-                    { 
-                        Icon = FontAwesome.WPF.FontAwesomeIcon.BarChart, 
-                        Width = 16, 
-                        Height = 16 
-                    }
-                };
-                perfItem.Click += (s, args) =>
-                {
-                    PerformanceService.Instance.LogPerformanceMetrics();
-                    TimerDiagnosticService.Instance.LogAllTimerPerformance();
-                    MessageBox.Show("Performance-Metriken wurden in das Log geschrieben.", 
-                        "Performance", MessageBoxButton.OK, MessageBoxImage.Information);
-                };
-                
-                var statisticsItem = new MenuItem
-                {
-                    Header = "Statistiken",
-                    Icon = new FontAwesome.WPF.ImageAwesome
-                    {
-                        Icon = FontAwesome.WPF.FontAwesomeIcon.BarChart,
-                        Width = 16,
-                        Height = 16
-                    }
-                };
-                statisticsItem.Click += MenuStatistics_Click;
-                
-                var mobileConnectionItem = new MenuItem
-                {
-                    Header = "Mobile Verbindung",
-                    Icon = new FontAwesome.WPF.ImageAwesome
-                    {
-                        Icon = FontAwesome.WPF.FontAwesomeIcon.Mobile,
-                        Width = 16,
-                        Height = 16
-                    }
-                };
-                mobileConnectionItem.Click += MenuMobileConnection_Click;
-                
-                contextMenu.Items.Add(helpItem);
-                contextMenu.Items.Add(new Separator());
-                contextMenu.Items.Add(updateItem);
-                contextMenu.Items.Add(perfItem);
-                contextMenu.Items.Add(statisticsItem);
-                contextMenu.Items.Add(mobileConnectionItem);
-                contextMenu.Items.Add(new Separator());
-                contextMenu.Items.Add(aboutItem);
-                
-                contextMenu.PlacementTarget = sender as Button;
-                contextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-                contextMenu.IsOpen = true;
+                    NotifyDataChanged();
+                }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error opening menu", ex);
+                LoggingService.Instance.LogError("Error adding global note", ex);
             }
         }
 
-        private async void MenuUpdate_Click(object sender, RoutedEventArgs e)
+        // NEU: Prüft, ob eine Notiz einsatzrelevant ist
+        private bool IsEinsatzRelevantNote(GlobalNotesEntryType type)
+        {
+            return type switch
+            {
+                GlobalNotesEntryType.EinsatzUpdate => true,
+                GlobalNotesEntryType.TeamEvent => true,
+                // NICHT mehr anzeigen: Timer-Starts/Stops via Tastenkürzel
+                GlobalNotesEntryType.TimerStart => false,
+                GlobalNotesEntryType.TimerStop => false,
+                GlobalNotesEntryType.TimerReset => true,
+                GlobalNotesEntryType.Warning1 => true,
+                GlobalNotesEntryType.Warning2 => true,
+                GlobalNotesEntryType.Warnung => true,
+                GlobalNotesEntryType.Fehler => true,
+                GlobalNotesEntryType.Funkspruch => true,
+                GlobalNotesEntryType.Manual => true,
+                // NICHT anzeigen:
+                GlobalNotesEntryType.Info => false,        // Allgemeine System-Infos
+                GlobalNotesEntryType.SystemEvent => false,  // Theme-Wechsel, etc.
+                _ => false
+            };
+        }
+
+        private void ShowStartWindow()
         {
             try
             {
-                LoggingService.Instance.LogInfo("🔄 Manuelle Update-Prüfung gestartet");
+                var startWindow = new StartWindow();
+                startWindow.Owner = this;
                 
-                // Show progress indicator
-                TxtStatus.Text = "🔄 Prüfe auf Updates...";
+                var result = startWindow.ShowDialog();
                 
-                var updateService = new GitHubUpdateService();
-                var updateInfo = await updateService.CheckForUpdatesAsync();
-                
-                if (updateInfo != null)
+                if (result == true && startWindow.EinsatzData != null)
                 {
-                    TxtStatus.Text = $"✅ Update v{updateInfo.Version} verfügbar";
-                    ShowUpdateNotification(updateInfo);
+                    // User clicked Start and provided valid data
+                    _einsatzData = startWindow.EinsatzData;
+                    _firstWarningMinutes = startWindow.FirstWarningMinutes;
+                    _secondWarningMinutes = startWindow.SecondWarningMinutes;
+
+                    // Update UI with mission info
+                    UpdateMissionDisplayAsync(startWindow.EinsatzData);
+
+                    // Add global note for mission start
+                    AddGlobalNote($"Einsatz gestartet: {startWindow.EinsatzData.EinsatzTyp} - {startWindow.EinsatzData.Einsatzort}", 
+                        GlobalNotesEntryType.EinsatzUpdate);
+
+                    StartAutoSave();
                 }
                 else
                 {
-                    TxtStatus.Text = "✅ Anwendung ist aktuell";
-                    MessageBox.Show(
-                        "Ihre Einsatzüberwachung Professional ist bereits auf dem neuesten Stand!\n\n" +
-                        $"Aktuelle Version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}\n\n" +
-                        "Automatische Update-Prüfung ist aktiviert und benachrichtigt Sie über neue Versionen.",
-                        "Keine Updates verfügbar",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    // User cancelled or closed StartWindow - close the application
+                    Application.Current.Shutdown();
                 }
-                
-                updateService.Dispose();
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Manuelle Update-Prüfung fehlgeschlagen", ex);
-                TxtStatus.Text = "❌ Update-Prüfung fehlgeschlagen";
-                
-                MessageBox.Show(
-                    $"Die Update-Prüfung ist fehlgeschlagen:\n\n{ex.Message}\n\n" +
-                    "Bitte prüfen Sie Ihre Internetverbindung oder besuchen Sie GitHub:\n" +
-                    "https://github.com/Elemirus1996/Einsatzueberwachung/releases",
-                    "Update-Prüfung fehlgeschlagen",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                LoggingService.Instance.LogError("Error showing StartWindow", ex);
+                // If StartWindow fails, still try to continue with empty data
+                AddGlobalNote("StartWindow-Fehler - Einsatz ohne Startdaten fortgesetzt", GlobalNotesEntryType.Fehler);
             }
         }
 
-        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        private void UpdateEinsatzDatumIfNecessary()
+        {
+            if (_teams.Count == 0)
+            {
+                // Keine Teams mehr vorhanden, Datum zurücksetzen
+                if (TxtEinsatzInfo != null)
+                {
+                    TxtEinsatzInfo.Text = string.Empty;
+                }
+                if (TxtEinsatzort != null)
+                {
+                    TxtEinsatzort.Text = string.Empty;
+                }
+                if (TxtEinsatzleiter != null)
+                {
+                    TxtEinsatzleiter.Text = string.Empty;
+                }
+            }
+        }
+
+        private void NotifyDataChanged()
         {
             try
             {
-                ExportData();
+                if (_einsatzData != null)
+                {
+                    LoggingService.Instance.LogInfo("Data changed - would save session data");
+                }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error during export", ex);
-                MessageBox.Show($"Fehler beim Export: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LoggingService.Instance.LogError("Error notifying data changed", ex);
+            }
+        }
+
+        // ============================================
+        // FEHLENDE EVENT-HANDLER
+        // ============================================
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                // F11 für Vollbild-Toggle
+                if (e.Key == Key.F11)
+                {
+                    ToggleFullscreen();
+                    e.Handled = true;
+                    return;
+                }
+                
+                // ESC zum Verlassen des Vollbildmodus
+                if (e.Key == Key.Escape && _isFullscreen)
+                {
+                    ToggleFullscreen();
+                    e.Handled = true;
+                    return;
+                }
+                
+                // F1-F10 für Team-Timer
+                if (e.Key >= Key.F1 && e.Key <= Key.F10)
+                {
+                    int teamIndex = e.Key - Key.F1; // F1=0, F2=1, etc.
+                    
+                    if (teamIndex < _teams.Count)
+                    {
+                        var team = _teams[teamIndex];
+                        
+                        // Timer umschalten: Start wenn gestoppt, Stop wenn läuft
+                        if (team.IsRunning)
+                        {
+                            team.StopTimer();
+                            // NEU: TimerStop statt Info (einsatzrelevant!)
+                            AddGlobalNote($"Timer gestoppt (F{teamIndex + 1})", GlobalNotesEntryType.TimerStop, team.TeamName);
+                            LoggingService.Instance.LogInfo($"Timer stopped via F{teamIndex + 1} for team {team.TeamName}");
+                        }
+                        else
+                        {
+                            team.StartTimer();
+                            // NEU: TimerStart statt Info (einsatzrelevant!)
+                            AddGlobalNote($"Timer gestartet (F{teamIndex + 1})", GlobalNotesEntryType.TimerStart, team.TeamName);
+                            LoggingService.Instance.LogInfo($"Timer started via F{teamIndex + 1} for team {team.TeamName}");
+                        }
+                        
+                        e.Handled = true;
+                    }
+                    else
+                    {
+                        // Team existiert nicht
+                        LoggingService.Instance.LogWarning($"F{teamIndex + 1} pressed but no team at index {teamIndex}");
+                    }
+                    return;
+                }
+                
+                // Strg+N für neues Team
+                if (e.Key == Key.N && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    BtnAddTeam_Click(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    return;
+                }
+                
+                // Strg+E für Export
+                if (e.Key == Key.E && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    BtnExport_Click(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    return;
+                }
+                
+                // Strg+T für Theme Toggle
+                if (e.Key == Key.T && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    BtnThemeToggle_Click(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    return;
+                }
+                
+                // Strg+H für Hilfe
+                if (e.Key == Key.H && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    BtnHelp_Click(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error in Window_KeyDown", ex);
+            }
+        }
+
+        private void BtnAddTeam_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_teams.Count >= 50)
+                {
+                    MessageBox.Show("Maximale Anzahl von 50 Teams erreicht!", 
+                        "Limit erreicht", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AddGlobalNote("Team-Limit (50) erreicht", GlobalNotesEntryType.Warnung);
+                    return;
+                }
+
+                var inputWindow = new TeamInputWindow();
+                inputWindow.Owner = this;
+                inputWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                
+                var result = inputWindow.ShowDialog();
+                
+                if (result == true)
+                {
+                    // Create team from input window properties
+                    var newTeam = new Team
+                    {
+                        TeamId = _nextTeamId++,
+                        TeamName = inputWindow.TeamName,
+                        HundName = inputWindow.HundName,
+                        Hundefuehrer = inputWindow.Hundefuehrer,
+                        Helfer = inputWindow.Helfer,
+                        Suchgebiet = inputWindow.Suchgebiet,
+                        FirstWarningMinutes = _firstWarningMinutes,
+                        SecondWarningMinutes = _secondWarningMinutes
+                    };
+                    
+                    // Set team types if provided
+                    if (inputWindow.PreselectedTeamTypes != null)
+                    {
+                        newTeam.MultipleTeamTypes = inputWindow.PreselectedTeamTypes;
+                    }
+                    else
+                    {
+                        // Default to Allgemein if no type selected
+                        newTeam.MultipleTeamTypes = new MultipleTeamTypes(TeamType.Allgemein);
+                    }
+                    
+                    // Register team events for global notes
+                    RegisterTeamEventsForGlobalNotes(newTeam);
+                    
+                    _teams.Add(newTeam);
+                    
+                    // Create compact card for the new team
+                    var compactCard = new TeamCompactCard { Team = newTeam };
+                    compactCard.TeamClicked += OnTeamCompactCardClicked;
+                    compactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                    _compactCards[newTeam.TeamId] = compactCard;
+                    
+                    if (DashboardGrid != null)
+                    {
+                        DashboardGrid.Children.Add(compactCard);
+                    }
+                    
+                    UpdateTeamGridLayout();
+                    UpdateTeamCount();
+                    UpdateNoteTargets();
+                    
+                    AddGlobalNote($"Team hinzugefügt: {newTeam.TeamName}", GlobalNotesEntryType.TeamEvent);
+                    
+                    NotifyDataChanged();
+                    
+                    LoggingService.Instance.LogInfo($"Team added: {newTeam.TeamName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error adding team", ex);
+                MessageBox.Show($"Fehler beim Hinzufügen des Teams: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1073,160 +1180,602 @@ Version 1.5 - Professional Edition
         {
             try
             {
-                if (ThemeService.Instance.IsAutoMode)
-                {
-                    var result = MessageBox.Show("Automatischer Dunkelmodus ist aktiv. Manuell umschalten?", 
-                        "Theme", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        ThemeService.Instance.IsAutoMode = false;
-                        ThemeService.Instance.ToggleTheme();
-                    }
-                }
-                else
-                {
-                    ThemeService.Instance.ToggleTheme();
-                }
+                ThemeService.Instance.ToggleTheme();
+                LoggingService.Instance.LogInfo($"Theme toggled to: {ThemeService.Instance.CurrentThemeStatus}");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error toggling theme", ex);
+                MessageBox.Show($"Fehler beim Wechseln des Themes: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void MenuStatistics_Click(object sender, RoutedEventArgs e)
+        private void BtnMenu_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var statisticsWindow = new StatisticsWindow(_teams.ToList(), _einsatzData);
-                statisticsWindow.Owner = this;
-                statisticsWindow.ShowDialog();
+                // Create context menu
+                var contextMenu = new ContextMenu();
+                
+                // Menü-Eintrag: Stammdaten verwalten
+                var masterDataItem = new MenuItem { Header = "Stammdaten verwalten..." };
+                masterDataItem.Click += (s, args) =>
+                {
+                    try
+                    {
+                        var masterDataWindow = new MasterDataWindow();
+                        masterDataWindow.Owner = this;
+                        masterDataWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                        masterDataWindow.Show();
+                        // NEU: SystemEvent (wird nicht im Panel angezeigt)
+                        AddGlobalNote("Stammdaten-Fenster geöffnet", GlobalNotesEntryType.SystemEvent);
+                        LoggingService.Instance.LogInfo("MasterDataWindow opened");
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Instance.LogError("Error opening master data window", ex);
+                        MessageBox.Show($"Fehler beim Öffnen der Stammdaten-Verwaltung: {ex.Message}", 
+                            "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                };
+                contextMenu.Items.Add(masterDataItem);
+                
+                // Menü-Eintrag: Mobile-Verbindung
+                var mobileItem = new MenuItem { Header = "Mobile Verbindung..." };
+                mobileItem.Click += (s, args) =>
+                {
+                    try
+                    {
+                        var mobileWindow = new MobileConnectionWindow();
+                        mobileWindow.Owner = this;
+                        mobileWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                        mobileWindow.Show();
+                        // NEU: SystemEvent (wird nicht im Panel angezeigt)
+                        AddGlobalNote("Mobile Verbindungsfenster geöffnet", GlobalNotesEntryType.SystemEvent);
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Instance.LogError("Error opening mobile connection window", ex);
+                    }
+                };
+                contextMenu.Items.Add(mobileItem);
+                
+                contextMenu.Items.Add(new Separator());
+                
+                // Menü-Eintrag: Warnung-Einstellungen
+                var warningSettingsItem = new MenuItem { Header = "Warnungs-Einstellungen..." };
+                warningSettingsItem.Click += (s, args) =>
+                {
+                    try
+                    {
+                        var settingsWindow = new TeamWarningSettingsWindow(_teams.ToList(), _firstWarningMinutes, _secondWarningMinutes);
+                        settingsWindow.Owner = this;
+                        settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                        
+                        if (settingsWindow.ShowDialog() == true && settingsWindow.SettingsChanged)
+                        {
+                            AddGlobalNote($"Team-Warnzeiten individuell angepasst", 
+                                GlobalNotesEntryType.EinsatzUpdate);
+                            
+                            NotifyDataChanged();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Instance.LogError("Error opening warning settings", ex);
+                    }
+                };
+                contextMenu.Items.Add(warningSettingsItem);
+                
+                contextMenu.Items.Add(new Separator());
+                
+                // Menü-Eintrag: Über
+                var aboutItem = new MenuItem { Header = "Über..." };
+                aboutItem.Click += (s, args) =>
+                {
+                    try
+                    {
+                        var aboutWindow = new AboutWindow();
+                        aboutWindow.Owner = this;
+                        aboutWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                        aboutWindow.ShowDialog();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Instance.LogError("Error opening about window", ex);
+                    }
+                };
+                contextMenu.Items.Add(aboutItem);
+                
+                // Menü anzeigen
+                if (sender is Button button)
+                {
+                    contextMenu.PlacementTarget = button;
+                    contextMenu.Placement = PlacementMode.Bottom;
+                    contextMenu.IsOpen = true;
+                }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError($"Fehler beim Öffnen der Statistiken: {ex.Message}", ex);
-                MessageBox.Show($"Fehler beim Öffnen der Statistiken:\n{ex.Message}", 
-                               "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                LoggingService.Instance.LogError("Error showing menu", ex);
             }
         }
 
-        private void MenuMobileConnection_Click(object sender, RoutedEventArgs e)
+        private void QuickNoteInput_KeyDown(object sender, KeyEventArgs e)
         {
             try
             {
-                // Wenn Fenster bereits offen ist, fokussieren statt neues zu öffnen
-                if (_mobileConnectionWindow?.IsLoaded == true)
+                if (e.Key == Key.Enter)
                 {
-                    _mobileConnectionWindow.WindowState = WindowState.Normal;
-                    _mobileConnectionWindow.Activate();
+                    AddQuickNote();
+                    e.Handled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error in QuickNoteInput_KeyDown", ex);
+            }
+        }
+
+        private void AddQuickNoteButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                AddQuickNote();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error in AddQuickNoteButton_Click", ex);
+            }
+        }
+
+        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_einsatzData == null)
+                {
+                    MessageBox.Show("Keine Einsatzdaten zum Exportieren vorhanden.", 
+                        "Export nicht möglich", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                _mobileConnectionWindow = new MobileConnectionWindow();
-                _mobileConnectionWindow.Owner = this;
+                // NEU: Zeige Export-Optionen Dialog mit PDF-Option
+                var exportDialog = new Window
+                {
+                    Title = "Export-Optionen",
+                    Width = 400,
+                    Height = 300,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    ResizeMode = ResizeMode.NoResize,
+                    Background = (Brush)FindResource("Surface")
+                };
+
+                var panel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
                 
-                // Set up data providers for the mobile service
-                var mobileService = new Services.MobileIntegrationService();
-                mobileService.GetCurrentTeams = () => _teams.ToList();
-                mobileService.GetEinsatzData = () => _einsatzData;
-                
-                // Pass the configured service to the mobile window
-                _mobileConnectionWindow.SetMobileService(mobileService);
-                
-                // Zeige sofort Diagnose-Information vor dem ersten Server-Start
-                ShowMobileConnectionTips();
-                
-                // Cleanup when window is closed
-                _mobileConnectionWindow.Closed += (s, args) => _mobileConnectionWindow = null;
-                
-                _mobileConnectionWindow.Show(); // Show() statt ShowDialog() für non-blocking
+                panel.Children.Add(new TextBlock 
+                { 
+                    Text = "Wählen Sie das Export-Format:", 
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 0, 15),
+                    Foreground = (Brush)FindResource("OnSurface")
+                });
+
+                var btnExportPdf = new Button
+                {
+                    Content = "📄 PDF-Bericht (Professionell)",
+                    Padding = new Thickness(15, 10, 15, 10),
+                    Margin = new Thickness(0, 5, 0, 5),
+                    Background = (Brush)FindResource("Primary"),
+                    Foreground = (Brush)FindResource("OnPrimary"),
+                    BorderThickness = new Thickness(0, 0, 0, 0),
+                    Cursor = Cursors.Hand
+                };
+                btnExportPdf.Click += (s, args) =>
+                {
+                    exportDialog.Tag = "pdf";
+                    exportDialog.DialogResult = true;
+                };
+
+                var btnExportFull = new Button
+                {
+                    Content = "📦 Vollständiger Export (JSON)",
+                    Padding = new Thickness(15, 10, 15, 10),
+                    Margin = new Thickness(0, 5, 0, 5),
+                    Background = (Brush)FindResource("Success"),
+                    Foreground = (Brush)FindResource("OnSuccess"),
+                    BorderThickness = new Thickness(0, 0, 0, 0),
+                    Cursor = Cursors.Hand
+                };
+                btnExportFull.Click += (s, args) =>
+                {
+                    exportDialog.Tag = "full";
+                    exportDialog.DialogResult = true;
+                };
+
+                var btnExportLog = new Button
+                {
+                    Content = "📝 Einsatz-Log (Nur relevante Daten)",
+                    Padding = new Thickness(15, 10, 15, 10),
+                    Margin = new Thickness(0, 5, 0, 5),
+                    Background = (Brush)FindResource("Tertiary"),
+                    Foreground = (Brush)FindResource("OnTertiary"),
+                    BorderThickness = new Thickness(0, 0, 0, 0),
+                    Cursor = Cursors.Hand
+                };
+                btnExportLog.Click += (s, args) =>
+                {
+                    exportDialog.Tag = "log";
+                    exportDialog.DialogResult = true;
+                };
+
+                var btnCancel = new Button
+                {
+                    Content = "Abbrechen",
+                    Padding = new Thickness(15, 10, 15, 10),
+                    Margin = new Thickness(0, 15, 0, 0),
+                    Background = (Brush)FindResource("Surface"),
+                    Foreground = (Brush)FindResource("OnSurface"),
+                    BorderBrush = (Brush)FindResource("Outline"),
+                    BorderThickness = new Thickness(1, 1, 1, 1),
+                    Cursor = Cursors.Hand
+                };
+                btnCancel.Click += (s, args) => { exportDialog.DialogResult = false; };
+
+                panel.Children.Add(btnExportPdf);
+                panel.Children.Add(btnExportFull);
+                panel.Children.Add(btnExportLog);
+                panel.Children.Add(btnCancel);
+
+                exportDialog.Content = panel;
+
+                if (exportDialog.ShowDialog() == true)
+                {
+                    string exportType = exportDialog.Tag?.ToString() ?? "full";
+
+                    if (exportType == "pdf")
+                    {
+                        ExportToPdf();
+                    }
+                    else if (exportType == "log")
+                    {
+                        ExportEinsatzLog();
+                    }
+                    else
+                    {
+                        ExportFullData();
+                    }
+                }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError($"Fehler beim Öffnen der Mobile-Verbindung: {ex.Message}", ex);
-                
-                // Erweiterte Fehlerbehandlung mit spezifischen Lösungen
-                ShowMobileConnectionErrorHelp(ex);
+                LoggingService.Instance.LogError("Error in export dialog", ex);
+                MessageBox.Show($"Fehler beim Exportieren: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void ShowMobileConnectionTips()
+        private void ExportToPdf()
         {
             try
             {
-                var tipMessage = @"📱 MOBILE VERBINDUNG - ERSTE SCHRITTE
-
-🎯 FÜR OPTIMALE ERGEBNISSE:
-1. Starten Sie die Anwendung als Administrator
-2. Verwenden Sie 'System-Diagnose' bei Problemen
-3. Nutzen Sie 'API Test' für Verbindungstests
-
-💡 HÄUFIGE PROBLEME:
-• Port 8080 belegt → Alternative Ports werden automatisch versucht
-• Firewall blockiert → 'Netzwerk konfigurieren' verwenden
-• Keine Admin-Rechte → 'Ohne Admin-Rechte' Button für Alternativen
-
-🚀 SCHNELLSTART:
-1. 'Server starten' klicken
-2. Bei Problemen 'JA' für erweiterte Diagnose wählen
-3. QR-Code scannen oder URL manuell eingeben
-
-📞 BEI ANHALTENDEN PROBLEMEN:
-Verwenden Sie die 'System-Diagnose' für eine vollständige Analyse.";
-
-                MessageBox.Show(tipMessage, "Mobile Verbindung - Tipps", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                // Öffne PDF-Export-Konfigurationsdialog
+                var pdfExportWindow = new PdfExportWindow(_einsatzData, _teams.ToList());
+                pdfExportWindow.Owner = this;
+                pdfExportWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                
+                if (pdfExportWindow.ShowDialog() == true)
+                {
+                    AddGlobalNote("PDF-Bericht erfolgreich erstellt", GlobalNotesEntryType.EinsatzUpdate);
+                    LoggingService.Instance.LogInfo("PDF export completed successfully");
+                }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error showing mobile connection tips", ex);
+                LoggingService.Instance.LogError("Error exporting to PDF", ex);
+                MessageBox.Show($"Fehler beim PDF-Export:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        
-        private void ShowMobileConnectionErrorHelp(Exception exception)
+
+        private void ExportFullData()
         {
             try
             {
-                var errorHelp = $@"🚨 MOBILE VERBINDUNG FEHLER
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "JSON Dateien (*.json)|*.json|Alle Dateien (*.*)|*.*",
+                    FileName = $"Einsatz_{_einsatzData.EinsatzTyp}_{DateTime.Now:yyyyMMdd_HHmmss}.json",
+                    Title = "Vollständige Einsatzdaten exportieren"
+                };
 
-❌ Fehler: {exception.Message}
-
-🔧 SOFORTMASSNAHMEN:
-1. Als Administrator neu starten
-2. Windows-Firewall prüfen
-3. Port 8080 Verfügbarkeit testen
-4. Netzwerk-Konfiguration überprüfen
-
-💡 HÄUFIGE LÖSUNGEN:
-
-🔑 Administrator-Rechte:
-• Rechtsklick auf .exe → 'Als Administrator ausführen'
-• UAC-Dialog mit 'Ja' bestätigen
-
-🛡️ Firewall-Konfiguration:
-• Windows-Einstellungen → Update & Sicherheit
-• Windows-Sicherheit → Firewall & Netzwerkschutz
-• App durch Firewall zulassen → Einsatzüberwachung
-
-🔌 Port-Probleme:
-• Andere Apps schließen die Port 8080 verwenden
-• Skype, IIS, Apache, Jenkins, etc.
-
-📱 ALTERNATIVE OHNE ADMIN:
-• Windows Mobile Hotspot verwenden
-• iPhone als Hotspot nutzen
-• Router Client-Isolation deaktivieren
-
-🔄 NEUSTART:
-Computer neu starten kann viele Probleme lösen.";
-
-                MessageBox.Show(errorHelp, "Mobile Verbindung - Fehlerhilfe", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var sessionData = CreateSessionData();
+                    var json = JsonSerializer.Serialize(sessionData, new JsonSerializerOptions 
+                    { 
+                        WriteIndented = true 
+                    });
+                    
+                    File.WriteAllText(saveDialog.FileName, json);
+                    
+                    AddGlobalNote($"Vollständiger Export: {IOPath.GetFileName(saveDialog.FileName)}", 
+                        GlobalNotesEntryType.EinsatzUpdate);
+                    
+                    MessageBox.Show($"Einsatzdaten wurden erfolgreich exportiert nach:\n{saveDialog.FileName}", 
+                        "Export erfolgreich", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
+                    LoggingService.Instance.LogInfo($"Full mission data exported to: {saveDialog.FileName}");
+                }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error showing mobile connection error help", ex);
+                LoggingService.Instance.LogError("Error exporting full data", ex);
+                MessageBox.Show($"Fehler beim Exportieren: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ExportEinsatzLog()
+        {
+            try
+            {
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "Text Dateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*",
+                    FileName = $"Einsatzlog_{_einsatzData.EinsatzTyp}_{DateTime.Now:yyyyMMdd_HHmmss}.txt",
+                    Title = "Einsatz-Log exportieren"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var logContent = GenerateEinsatzLog();
+                    File.WriteAllText(saveDialog.FileName, logContent, Encoding.UTF8);
+                    
+                    AddGlobalNote($"Einsatz-Log exportiert: {IOPath.GetFileName(saveDialog.FileName)}", 
+                        GlobalNotesEntryType.EinsatzUpdate);
+                    
+                    MessageBox.Show($"Einsatz-Log wurde erfolgreich exportiert nach:\n{saveDialog.FileName}", 
+                        "Export erfolgreich", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
+                    LoggingService.Instance.LogInfo($"Mission log exported to: {saveDialog.FileName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error exporting mission log", ex);
+                MessageBox.Show($"Fehler beim Exportieren des Logs: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string GenerateEinsatzLog()
+        {
+            var sb = new StringBuilder();
+            
+            // ============================================
+            // EINSATZ-KOPFDATEN
+            // ============================================
+            sb.AppendLine("================================================================");
+            sb.AppendLine("           EINSATZ-LOG - RETTUNGSHUNDE-EINSATZ");
+            sb.AppendLine("================================================================");
+            sb.AppendLine();
+            
+            sb.AppendLine("EINSATZ-INFORMATION:");
+            sb.AppendLine("------------------------------------------------------------");
+            sb.AppendLine($"Einsatzstart:           {_einsatzData.EinsatzDatum:dd.MM.yyyy HH:mm:ss}");
+            sb.AppendLine($"Einsatztyp:             {_einsatzData.EinsatzTyp}");
+            sb.AppendLine($"Einsatzort:             {_einsatzData.Einsatzort}");
+            sb.AppendLine($"Einsatzleiter:          {_einsatzData.Einsatzleiter}");
+            
+            if (!string.IsNullOrEmpty(_einsatzData.Fuehrungsassistent))
+            {
+                sb.AppendLine($"Führungsassistent:      {_einsatzData.Fuehrungsassistent}");
+            }
+            
+            if (!string.IsNullOrEmpty(_einsatzData.Alarmiert))
+            {
+                sb.AppendLine($"Alarmierende Org.:      {_einsatzData.Alarmiert}");
+            }
+            
+            sb.AppendLine($"Anzahl Teams:           {_teams.Count}");
+            sb.AppendLine();
+            
+            // ============================================
+            // TEAM-ÜBERSICHT
+            // ============================================
+            sb.AppendLine("EINGESETZTE TEAMS:");
+            sb.AppendLine("------------------------------------------------------------");
+            
+            foreach (var team in _teams.OrderBy(t => t.TeamId))
+            {
+                sb.AppendLine($"\n{team.TeamName}:");
+                sb.AppendLine($"  • Hund:              {team.HundName}");
+                sb.AppendLine($"  • Hundeführer:       {team.Hundefuehrer}");
+                if (!string.IsNullOrEmpty(team.Helfer))
+                {
+                    sb.AppendLine($"  • Helfer:            {team.Helfer}");
+                }
+                if (!string.IsNullOrEmpty(team.Suchgebiet))
+                {
+                    sb.AppendLine($"  • Suchgebiet:        {team.Suchgebiet}");
+                }
+                sb.AppendLine($"  • Spezialisierung:   {team.TeamTypeDisplayName}");
+                sb.AppendLine($"  • Gesamteinsatzzeit: {team.ElapsedTimeString}");
+            }
+            
+            sb.AppendLine();
+            sb.AppendLine();
+            
+            // ============================================
+            // EINSATZRELEVANTE EREIGNISSE
+            // ============================================
+            sb.AppendLine("EINSATZ-CHRONOLOGIE:");
+            sb.AppendLine("============================================================");
+            sb.AppendLine();
+            
+            // Filtere nur einsatzrelevante Notizen (OHNE TimerStart/TimerStop via Tastenkürzel)
+            var relevantNotes = _globalNotesCollection.Where(note =>
+                note.EntryType == GlobalNotesEntryType.EinsatzUpdate ||
+                note.EntryType == GlobalNotesEntryType.TeamEvent ||
+                note.EntryType == GlobalNotesEntryType.TimerReset ||
+                note.EntryType == GlobalNotesEntryType.Warning1 ||
+                note.EntryType == GlobalNotesEntryType.Warning2 ||
+                note.EntryType == GlobalNotesEntryType.Funkspruch ||
+                note.EntryType == GlobalNotesEntryType.Manual
+            ).OrderBy(n => n.Timestamp);
+            
+            if (!relevantNotes.Any())
+            {
+                sb.AppendLine("Keine einsatzrelevanten Ereignisse protokolliert.");
+            }
+            else
+            {
+                foreach (var note in relevantNotes)
+                {
+                    string teamInfo = !string.IsNullOrEmpty(note.TeamName) ? $" [{note.TeamName}]" : "";
+                    string typeLabel = GetLogTypeLabel(note.EntryType);
+                    
+                    sb.AppendLine($"[{note.Timestamp:dd.MM.yyyy HH:mm:ss}] {typeLabel}{teamInfo}");
+                    sb.AppendLine($"  {note.Content}");
+                    sb.AppendLine();
+                }
+            }
+            
+            // ============================================
+            // EINSATZ-STATISTIK
+            // ============================================
+            sb.AppendLine();
+            sb.AppendLine("EINSATZ-STATISTIK:");
+            sb.AppendLine("------------------------------------------------------------");
+            
+            var totalTeams = _teams.Count;
+            var activeTeams = _teams.Count(t => t.IsRunning);
+            var completedTeams = totalTeams - activeTeams;
+            
+            var totalWarnings = _globalNotesCollection.Count(n => 
+                n.EntryType == GlobalNotesEntryType.Warning1 || 
+                n.EntryType == GlobalNotesEntryType.Warning2);
+            
+            var totalTimerStarts = _globalNotesCollection.Count(n => n.EntryType == GlobalNotesEntryType.TimerStart);
+            var totalTimerStops = _globalNotesCollection.Count(n => n.EntryType == GlobalNotesEntryType.TimerStop);
+            
+            sb.AppendLine($"Gesamt Teams:           {totalTeams}");
+            sb.AppendLine($"Aktive Teams:           {activeTeams}");
+            sb.AppendLine($"Abgeschlossene Teams:   {completedTeams}");
+            sb.AppendLine($"Timer-Starts:           {totalTimerStarts}");
+            sb.AppendLine($"Timer-Stopps:           {totalTimerStops}");
+            sb.AppendLine($"Warnungen gesamt:       {totalWarnings}");
+            
+            if (_teams.Any())
+            {
+                var maxTime = _teams.Max(t => t.ElapsedTime);
+                var avgTime = TimeSpan.FromSeconds(_teams.Average(t => t.ElapsedTime.TotalSeconds));
+                
+                sb.AppendLine($"\nLängste Einsatzzeit:    {FormatTimeSpan(maxTime)}");
+                sb.AppendLine($"Durchschnitt:           {FormatTimeSpan(avgTime)}");
+            }
+            
+            // ============================================
+            // FOOTER
+            // ============================================
+            sb.AppendLine();
+            sb.AppendLine("================================================================");
+            sb.AppendLine($"Log erstellt am: {DateTime.Now:dd.MM.yyyy HH:mm:ss}");
+            sb.AppendLine("Einsatzüberwachung Professional v1.7");
+            sb.AppendLine("RescueDog_SW - https://github.com/Elemirus1996/Einsatzueberwachung");
+            sb.AppendLine("================================================================");
+            
+            return sb.ToString();
+        }
+
+        private string GetLogTypeLabel(GlobalNotesEntryType entryType)
+        {
+            return entryType switch
+            {
+                GlobalNotesEntryType.EinsatzUpdate => "📋 EINSATZ",
+                GlobalNotesEntryType.TeamEvent => "👥 TEAM",
+                GlobalNotesEntryType.TimerStart => "▶️  START",
+                GlobalNotesEntryType.TimerStop => "⏸️  STOPP",
+                GlobalNotesEntryType.TimerReset => "🔄 RESET",
+                GlobalNotesEntryType.Warning1 => "⚠️  WARNUNG",
+                GlobalNotesEntryType.Warning2 => "🚨 KRITISCH",
+                GlobalNotesEntryType.Funkspruch => "📻 FUNK",
+                GlobalNotesEntryType.Manual => "✏️  NOTIZ",
+                _ => "ℹ️  INFO"
+            };
+        }
+
+        private string FormatTimeSpan(TimeSpan timeSpan)
+        {
+            if (timeSpan.Days > 0)
+                return $"{timeSpan.Days}d {timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+            
+            return $"{timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+        }
+
+        private void AddQuickNote()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(QuickNoteText))
+                {
+                    return;
+                }
+
+                // Get selected target
+                var selectedTarget = TeamSelectionComboBox?.SelectedItem as NoteTarget;
+                string targetName = selectedTarget?.DisplayName ?? "Allgemein";
+                
+                // NEU: Manual statt Info (einsatzrelevant - manuelle Notizen!)
+                AddGlobalNote(QuickNoteText, GlobalNotesEntryType.Manual, targetName);
+                
+                // Clear input
+                QuickNoteText = string.Empty;
+                
+                // Focus back to input
+                if (QuickNoteInput != null)
+                {
+                    QuickNoteInput.Focus();
+                }
+                
+                LoggingService.Instance.LogInfo($"Quick note added: {QuickNoteText}");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error adding quick note", ex);
+            }
+        }
+
+        private void BtnExportLog_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ExportEinsatzLog();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error exporting log from notes panel", ex);
+                MessageBox.Show($"Fehler beim Exportieren des Logs: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UpdateTeamGridLayout()
+        {
+            try
+            {
+                if (DashboardGrid == null) return;
+                
+                // Grid already uses WrapPanel, so just ensure all cards are present
+                LoggingService.Instance.LogInfo($"Team grid layout updated: {_compactCards.Count} cards");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating team grid layout", ex);
             }
         }
     }

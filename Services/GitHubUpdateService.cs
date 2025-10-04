@@ -13,14 +13,15 @@ namespace Einsatzueberwachung.Services
     /// <summary>
     /// GitHub-basierter Update-Service für automatische Updates über GitHub Releases
     /// </summary>
-    public class GitHubUpdateService
+    public class GitHubUpdateService : IDisposable
     {
         private const string GITHUB_REPO = "Elemirus1996/Einsatzueberwachung";
         private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/releases/latest";
         private const string UPDATE_INFO_URL = "https://github.com/{0}/releases/latest/download/update-info.json";
-        private const string USER_AGENT = "Einsatzueberwachung-Professional-v1.6";
+        private const string USER_AGENT = "Einsatzueberwachung-Professional-v1.7";
 
         private readonly HttpClient _httpClient;
+        private bool _disposed = false;
 
         public GitHubUpdateService()
         {
@@ -318,7 +319,20 @@ namespace Einsatzueberwachung.Services
 
         public void Dispose()
         {
-            _httpClient?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _httpClient?.Dispose();
+                }
+                _disposed = true;
+            }
         }
     }
 

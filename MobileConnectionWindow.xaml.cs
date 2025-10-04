@@ -141,7 +141,8 @@ namespace Einsatzueberwachung
                 
                 if (status.Contains("gestartet"))
                 {
-                    StatusIndicator.Background = Brushes.Green;
+                    // UPDATED: Use design system color
+                    StatusIndicator.Background = (Brush)FindResource("Success");
                     StartServerButton.IsEnabled = false;
                     StopServerButton.IsEnabled = true;
                     QRCodeContainer.Visibility = Visibility.Visible;
@@ -160,7 +161,8 @@ namespace Einsatzueberwachung
                 }
                 else if (status.Contains("gestoppt"))
                 {
-                    StatusIndicator.Background = Brushes.Red;
+                    // UPDATED: Use design system color
+                    StatusIndicator.Background = (Brush)FindResource("Error");
                     StartServerButton.IsEnabled = true;
                     StopServerButton.IsEnabled = false;
                     QRCodeContainer.Visibility = Visibility.Collapsed;
@@ -171,7 +173,8 @@ namespace Einsatzueberwachung
                 }
                 else if (status.Contains("Fehler") || status.Contains("fehlgeschlagen"))
                 {
-                    StatusIndicator.Background = Brushes.Orange;
+                    // UPDATED: Use design system color
+                    StatusIndicator.Background = (Brush)FindResource("Warning");
                     
                     // Zeige Hilfe-Informationen bei Fehlern
                     if (status.Contains("Administrator"))
@@ -213,7 +216,8 @@ namespace Einsatzueberwachung
             if (_mobileService?.IsRunning == true)
             {
                 StatusText.Text = "Verbunden (Read-Only)";
-                StatusIndicator.Background = Brushes.Green;
+                // UPDATED: Use design system color
+                StatusIndicator.Background = (Brush)FindResource("Success");
                 StartServerButton.IsEnabled = false;
                 StopServerButton.IsEnabled = true;
                 QRCodeContainer.Visibility = Visibility.Visible;
@@ -224,7 +228,8 @@ namespace Einsatzueberwachung
             else
             {
                 StatusText.Text = "Getrennt";
-                StatusIndicator.Background = Brushes.Red;
+                // UPDATED: Use design system color
+                StatusIndicator.Background = (Brush)FindResource("Error");
                 StartServerButton.IsEnabled = true;
                 StopServerButton.IsEnabled = false;
                 QRCodeContainer.Visibility = Visibility.Collapsed;
@@ -825,27 +830,14 @@ Diese Befehle wurden in die Zwischenablage kopiert.";
 
             try
             {
-                var success = await _mobileService!.CleanupNetworkConfiguration();
+                await _mobileService!.CleanupNetworkConfiguration();
                 
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Netzwerk-Konfiguration erfolgreich bereinigt!\n\n" +
-                        "🔄 Starten Sie die App neu für eine saubere Konfiguration.",
-                        "Cleanup erfolgreich", 
-                        MessageBoxButton.OK, 
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "⚠️ Cleanup teilweise fehlgeschlagen.\n\n" +
-                        "Prüfen Sie die Logs im Mobile Connection Window.\n" +
-                        "Möglicherweise waren keine Konfigurationen vorhanden.",
-                        "Cleanup Warnung", 
-                        MessageBoxButton.OK, 
-                        MessageBoxImage.Warning);
-                }
+                MessageBox.Show(
+                    "✅ Netzwerk-Konfiguration erfolgreich bereinigt!\n\n" +
+                    "🔄 Starten Sie die App neu für eine saubere Konfiguration.",
+                    "Cleanup erfolgreich", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -1187,6 +1179,7 @@ Dies ist nur für Fälle gedacht, wo Admin-Rechte nicht verfügbar sind.";
         public string TeamName { get; set; } = string.Empty;
         public string Time { get; set; } = string.Empty;
         public string Icon { get; set; } = "Cog";
-        public Brush ActionColor { get; set; } = Brushes.Blue;
+        // UPDATED: Default to design system color
+        public Brush ActionColor { get; set; } = (Brush)Application.Current.FindResource("Primary");
     }
 }

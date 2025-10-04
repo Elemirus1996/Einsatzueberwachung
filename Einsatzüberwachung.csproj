@@ -12,14 +12,14 @@
     <AssemblyName>Einsatzueberwachung</AssemblyName>
     
     <!-- Application Metadata -->
-    <AssemblyTitle>Einsatzüberwachung Professional v1.6</AssemblyTitle>
-    <AssemblyDescription>Professionelle Einsatzüberwachung für Rettungshunde-Teams mit automatischer Mobile-Konfiguration</AssemblyDescription>
+    <AssemblyTitle>Einsatzüberwachung Professional v1.7</AssemblyTitle>
+    <AssemblyDescription>Professionelle Einsatzüberwachung für Rettungshunde-Teams mit automatischer Mobile-Konfiguration und GitHub Auto-Updates</AssemblyDescription>
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
-    <AssemblyProduct>Einsatzüberwachung Professional v1.6</AssemblyProduct>
+    <AssemblyProduct>Einsatzüberwachung Professional v1.7</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2024 RescueDog_SW</AssemblyCopyright>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
-    <FileVersion>1.6.0.0</FileVersion>
-    <Version>1.6.0</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
+    <Version>1.7.0</Version>
     
     <!-- Release Configuration -->
     <PublishSingleFile>true</PublishSingleFile>
@@ -49,11 +49,19 @@
   <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="QuestPDF" Version="2024.12.3" />
   </ItemGroup>
 
   <!-- Include Resources -->
   <ItemGroup>
     <Resource Include="Resources\**\*" />
+  </ItemGroup>
+
+  <!-- Copy Mobile HTML Template to output directory -->
+  <ItemGroup>
+    <None Include="Services\MobileHTMLTemplate.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <!-- Clean up problematic files -->

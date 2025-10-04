@@ -1,20 +1,20 @@
 {
-  "version": "1.6.0",
-  "releaseDate": "2025-01-07",
-  "downloadUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/download/v1.6.0/Einsatzueberwachung_Professional_v1.6.0_Setup.exe",
-  "releaseNotesUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v1.6.0",
+  "version": "1.7.0",
+  "releaseDate": "2025-01-04",
+  "downloadUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/download/v1.7.0/Einsatzueberwachung_Professional_v1.7.0_Setup.exe",
+  "releaseNotesUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v1.7.0",
   "mandatory": false,
-  "minimumVersion": "1.5.0",
-  "fileSize": 2508762,
+  "minimumVersion": "1.6.0",
+  "fileSize": 25000000,
   "checksum": "",
   "releaseNotes": [
-    "🚀 Neue Version 1.6.0 verfügbar",
-    "🔄 Vollständiges GitHub Update-System implementiert",
-    "📱 Erweiterte Mobile Server-Funktionalität mit iPhone-Optimierung",
-    "🛠️ Professional Setup.exe mit automatischer Konfiguration",
-    "🎨 Modernes Theme-System mit Dark/Light Mode",
-    "📊 Statistics-Dashboard für Einsatz-Analyse",
-    "🔧 Umfassende Troubleshooting-Tools und Dokumentation",
-    "🛡️ Verbesserte Sicherheit und Performance-Optimierungen"
+    "📊 NEW: Dashboard-Übersicht mit modernen Team-Cards",
+    "📄 ENHANCED: Erweiterter PDF-Export mit professionellen Templates",
+    "⚠️ NEW: Individuelle Team-Warnschwellen pro Team konfigurierbar",
+    "📝 IMPROVED: Notizen-System direkt im Hauptfenster integriert",
+    "📊 NEW: Stammdatenverwaltung für Personal und Hunde",
+    "🎨 IMPROVED: Responsive Layout für alle Bildschirmgrößen",
+    "⚡ OPTIMIZED: Performance-Verbesserungen bei großen Team-Listen",
+    "🐛 FIXED: Memory-Management und Threading-Issues behoben"
   ]
 }

@@ -1,9 +1,9 @@
-; Einsatzüberwachung Professional v1.6 - Inno Setup Script mit GitHub Updates
+; Einsatzüberwachung Professional v1.7 - Inno Setup Script mit GitHub Updates
 ; Professionelle Installation mit automatischer Mobile Server Konfiguration und Update-Support
 ; Erstellt: 2024 - RescueDog_SW
 
 #define MyAppName "Einsatzüberwachung Professional"
-#define MyAppVersion "1.6.0"
+#define MyAppVersion "1.7.0"
 #define MyAppPublisher "RescueDog_SW"
 #define MyAppURL "https://github.com/Elemirus1996/Einsatzueberwachung"
 #define MyAppExeName "Einsatzueberwachung.exe"

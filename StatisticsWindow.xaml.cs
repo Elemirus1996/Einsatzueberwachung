@@ -70,7 +70,10 @@ namespace Einsatzueberwachung
                     TeamName = $"{team.TeamName} ({string.Join(", ", team.MultipleTeamTypes?.SelectedTypes?.Select(t => t.ToString()) ?? new[] { "Unbekannt" })})",
                     Einsatzzeit = FormatTimeSpan(team.ElapsedTime),
                     Status = team.IsRunning ? "Aktiv" : "Bereit",
-                    StatusColor = team.IsRunning ? Brushes.Green : Brushes.Gray
+                    // UPDATED: Use design system colors instead of hardcoded Brushes
+                    StatusColor = team.IsRunning 
+                        ? (Brush)Application.Current.FindResource("Success") 
+                        : (Brush)Application.Current.FindResource("OnSurfaceVariant")
                 })
                 .OrderByDescending(r => _teams.FirstOrDefault(t => r.TeamName.Contains(t.TeamName))?.ElapsedTime ?? TimeSpan.Zero)
                 .ToList();
@@ -123,7 +126,8 @@ namespace Einsatzueberwachung
                 {
                     Title = "Lange Einsatzzeiten erkannt",
                     Description = "Einige Teams sind bereits über 60 Minuten im Einsatz. Erwägen Sie eine Pause oder Rotation.",
-                    Priority = Brushes.Orange
+                    // UPDATED: Use Tertiary (Orange) statt Brushes.Orange
+                    Priority = (Brush)Application.Current.FindResource("Tertiary")
                 });
             }
 
@@ -133,7 +137,8 @@ namespace Einsatzueberwachung
                 {
                     Title = "Keine aktiven Teams",
                     Description = "Aktuell sind keine Teams aktiv. Starten Sie Teams für den Einsatz.",
-                    Priority = Brushes.Red
+                    // UPDATED: Use Error (Rot) statt Brushes.Red
+                    Priority = (Brush)Application.Current.FindResource("Error")
                 });
             }
 
@@ -150,7 +155,8 @@ namespace Einsatzueberwachung
                 Time = _einsatzData.EinsatzDatum.ToString("HH:mm"),
                 EventType = "Start",
                 TeamName = "Einsatzleitung",
-                EventColor = Brushes.Green
+                // UPDATED: Use design system color
+                EventColor = (Brush)Application.Current.FindResource("Success")
             });
 
             // Team-Events (vereinfacht - in echter Implementierung würden wir Timer-Events tracken)
@@ -161,7 +167,8 @@ namespace Einsatzueberwachung
                     Time = DateTime.Now.AddMinutes(-team.ElapsedTime.TotalMinutes).ToString("HH:mm"),
                     EventType = "Timer Start",
                     TeamName = team.TeamName,
-                    EventColor = Brushes.Blue
+                    // UPDATED: Use design system color
+                    EventColor = (Brush)Application.Current.FindResource("Primary")
                 });
             }
 
@@ -178,28 +185,31 @@ namespace Einsatzueberwachung
 
         private Brush GetTeamTypeColor(string teamType)
         {
+            // UPDATED: Use design system colors instead of hardcoded Brushes
             return teamType switch
             {
-                "Flächensuchhund" => Brushes.Blue,
-                "Trümmersuchhund" => Brushes.Orange,
-                "Mantrailer" => Brushes.Green,
-                "Wasserortung" => Brushes.Cyan,
-                "Lawinensuchhund" => Brushes.Purple,
-                "Allgemein" => Brushes.Gray,
-                _ => Brushes.DarkGray
+                "Flächensuchhund" => (Brush)Application.Current.FindResource("FlächeColor"),
+                "Trümmersuchhund" => (Brush)Application.Current.FindResource("TrümmerColor"),
+                "Mantrailer" => (Brush)Application.Current.FindResource("MantrailerColor"),
+                "Wasserortung" => (Brush)Application.Current.FindResource("WasserColor"),
+                "Lawinensuchhund" => (Brush)Application.Current.FindResource("LawineColor"),
+                "Allgemein" => (Brush)Application.Current.FindResource("AllgemeinColor"),
+                _ => (Brush)Application.Current.FindResource("OnSurfaceVariant")
             };
         }
 
         private Brush GetRecommendationPriority(string recommendation)
         {
+            // UPDATED: Use design system colors - ORANGE statt Lila
             if (recommendation.Contains("⚠️") || recommendation.Contains("Warnung"))
-                return Brushes.Red;
+                return (Brush)Application.Current.FindResource("Error");
             if (recommendation.Contains("🔄") || recommendation.Contains("⏰"))
-                return Brushes.Orange;
+                return (Brush)Application.Current.FindResource("Warning");
             if (recommendation.Contains("🏆"))
-                return Brushes.Green;
+                return (Brush)Application.Current.FindResource("Success");
             
-            return Brushes.Blue;
+            // UPDATED: Verwende Tertiary (Orange) statt Primary
+            return (Brush)Application.Current.FindResource("Tertiary");
         }
 
         private string ExtractTitle(string recommendation)
@@ -261,7 +271,8 @@ namespace Einsatzueberwachung
         public string TeamName { get; set; } = string.Empty;
         public string Einsatzzeit { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
-        public Brush StatusColor { get; set; } = Brushes.Gray;
+        // UPDATED: Default to design system color
+        public Brush StatusColor { get; set; } = (Brush)Application.Current.FindResource("OnSurfaceVariant");
     }
 
     public class TeamTypeDistributionItem
@@ -269,7 +280,8 @@ namespace Einsatzueberwachung
         public string TeamType { get; set; } = string.Empty;
         public int Count { get; set; }
         public double Percentage { get; set; }
-        public Brush Color { get; set; } = Brushes.Gray;
+        // UPDATED: Default to design system color
+        public Brush Color { get; set; } = (Brush)Application.Current.FindResource("OnSurfaceVariant");
         public string DetailText { get; set; } = string.Empty;
     }
 
@@ -277,7 +289,8 @@ namespace Einsatzueberwachung
     {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public Brush Priority { get; set; } = Brushes.Blue;
+        // UPDATED: Default to design system color
+        public Brush Priority { get; set; } = (Brush)Application.Current.FindResource("Primary");
     }
 
     public class TimelineEvent
@@ -285,6 +298,7 @@ namespace Einsatzueberwachung
         public string Time { get; set; } = string.Empty;
         public string EventType { get; set; } = string.Empty;
         public string TeamName { get; set; } = string.Empty;
-        public Brush EventColor { get; set; } = Brushes.Blue;
+        // UPDATED: Default to design system color
+        public Brush EventColor { get; set; } = (Brush)Application.Current.FindResource("Primary");
     }
 }

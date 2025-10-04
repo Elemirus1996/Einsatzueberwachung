@@ -5,57 +5,74 @@
              x:Name="TeamControlRoot">
 
     <UserControl.Resources>
-        <!-- Professional Team Card Style using global design system -->
+        <!-- KOMPAKTE Professional Team Card Style -->
         <Style x:Key="TeamCard" TargetType="Border" BasedOn="{StaticResource CardElevated}">
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Padding" Value="20"/>
-            <Setter Property="MinHeight" Value="360"/>
+            <Setter Property="MinHeight" Value="280"/>
         </Style>
         
-        <!-- Enhanced Timer Button -->
+        <!-- KOMPAKTE Enhanced Timer Button -->
         <Style x:Key="TimerButton" TargetType="Button" BasedOn="{StaticResource FilledButton}">
-            <Setter Property="Width" Value="70"/>
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Margin" Value="3"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Width" Value="85"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Padding" Value="8,6"/>
         </Style>
 
-        <!-- Icon Button for Delete -->
+        <!-- KOMPAKTE Icon Button for Delete -->
         <Style x:Key="DeleteButton" TargetType="Button" BasedOn="{StaticResource FAB}">
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
             <Setter Property="Background" Value="{DynamicResource Error}"/>
         </Style>
 
-        <!-- Team Type Badge -->
+        <!-- KOMPAKTE Team Type Badge -->
         <Style x:Key="TeamTypeBadge" TargetType="Button" BasedOn="{StaticResource TextButton}">
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
-        <!-- Enhanced Input Field -->
+        <!-- KOMPAKTE Enhanced Input Field -->
         <Style x:Key="TeamTextField" TargetType="TextBox" BasedOn="{StaticResource TextField}">
-            <Setter Property="Margin" Value="0,0,0,8"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="8,6"/>
         </Style>
 
-        <!-- Professional Label -->
+        <!-- KOMPAKTE Professional Label -->
         <Style x:Key="TeamLabel" TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Margin" Value="0,4,0,2"/>
+            <Setter Property="Padding" Value="0"/>
         </Style>
 
         <!-- Enhanced Animations -->
+        <Storyboard x:Key="BlinkingAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                           From="1.0" To="0.3" Duration="0:0:0.8" AutoReverse="True"/>
+        </Storyboard>
+
         <Storyboard x:Key="WarningPulse" RepeatBehavior="Forever">
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
                            From="1.0" To="0.5" Duration="0:0:0.8" AutoReverse="True"/>
         </Storyboard>
 
         <Storyboard x:Key="CardEntrance">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                           From="0" To="1" Duration="0:0:0.6"/>
+            <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                           From="0.9" To="1" Duration="0:0:0.6"/>
+            <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                           From="0.9" To="1" Duration="0:0:0.6"/>
+        </Storyboard>
+        
+        <!-- Alias for CardEntrance to match code reference -->
+        <Storyboard x:Key="CardEntranceAnimation" RepeatBehavior="1x">
             <DoubleAnimation Storyboard.TargetProperty="Opacity"
                            From="0" To="1" Duration="0:0:0.6"/>
             <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
@@ -76,12 +93,11 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- 🏷️ Team Header with Professional Layout -->
-            <Grid Grid.Row="0" Margin="0,0,0,16">
+            <!-- 🏷️ KOMPAKTER Team Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -89,8 +105,8 @@
 
                 <!-- Team Info & Status -->
                 <StackPanel Grid.Column="0">
-                    <!-- Warning Indicator & Team Name -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <!-- Warning Indicator & Team Name in ONE LINE -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                         <Border x:Name="WarningIndicator" 
                                Width="12" Height="12" CornerRadius="6" 
                                Background="Transparent" 
@@ -99,34 +115,56 @@
 
                         <TextBlock x:Name="TeamNameText"
                                   Text="{Binding TeamName, ElementName=TeamControlRoot}" 
-                                  Style="{StaticResource TitleMedium}"
+                                  FontSize="18"
+                                  FontWeight="Bold"
                                   Foreground="{DynamicResource OnSurface}"
+                                  VerticalAlignment="Center"/>
+                                  
+                        <TextBlock x:Name="WarningStatusText"
+                                  FontSize="14"
+                                  FontWeight="Bold"
+                                  Margin="8,0,0,0"
                                   VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- Team Type Badge with Professional Styling -->
-                    <Button x:Name="TeamTypeBadgeButton" 
-                           Style="{StaticResource TeamTypeBadge}"
-                           Click="TeamTypeBadgeButton_Click"
-                           HorizontalAlignment="Left"
-                           ToolTip="Spezialisierung bearbeiten">
-                        <Border x:Name="TeamTypeBadge" 
-                               Background="{DynamicResource Primary}"
-                               CornerRadius="16" Padding="12,6">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="TeamTypeText"
-                                          Foreground="White" 
-                                          Style="{StaticResource LabelSmall}"/>
-                                <fa:ImageAwesome Icon="Edit" Width="10" Height="10" 
-                                               Foreground="White" Margin="8,0,0,0" Opacity="0.8"/>
-                            </StackPanel>
-                        </Border>
-                    </Button>
+                    <!-- Team Type Badge & Warning Settings HORIZONTAL -->
+                    <StackPanel Orientation="Horizontal">
+                        <!-- Team Type Badge -->
+                        <Button x:Name="TeamTypeBadgeButton" 
+                               Style="{StaticResource TeamTypeBadge}"
+                               Click="TeamTypeBadgeButton_Click"
+                               ToolTip="Spezialisierung bearbeiten"
+                               Margin="0,0,6,0">
+                            <Border x:Name="TeamTypeBadge" 
+                                   Background="{DynamicResource Primary}"
+                                   CornerRadius="12" Padding="10,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="TeamTypeText"
+                                              Foreground="White" 
+                                              FontSize="12"/>
+                                    <fa:ImageAwesome Icon="Edit" Width="10" Height="10" 
+                                                   Foreground="White" Margin="6,0,0,0" Opacity="0.8"/>
+                                </StackPanel>
+                            </Border>
+                        </Button>
 
-                    <!-- Warning Status -->
-                    <TextBlock x:Name="WarningStatusText"
-                              Style="{StaticResource LabelMedium}"
-                              Margin="0,4,0,0"/>
+                        <!-- Warnschwellen-Button -->
+                        <Button x:Name="BtnWarningSettings" 
+                               Style="{StaticResource TeamTypeBadge}"
+                               Click="BtnWarningSettings_Click"
+                               ToolTip="Warnschwellen">
+                            <Border Background="{DynamicResource Warning}"
+                                   CornerRadius="12" Padding="10,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <fa:ImageAwesome Icon="ClockOutline" Width="10" Height="10" 
+                                                   Foreground="White" Margin="0,0,6,0"/>
+                                    <TextBlock x:Name="WarningSettingsText"
+                                              Foreground="White" 
+                                              FontSize="12"/>
+                                </StackPanel>
+                            </Border>
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Delete Button -->
@@ -139,19 +177,20 @@
                 </Button>
             </Grid>
 
-            <!-- ⏱️ Timer Section with Modern Design -->
+            <!-- ⏱️ KOMPAKTER Timer Section -->
             <Border Grid.Row="1" Style="{StaticResource Card}"
                    Background="{DynamicResource SurfaceVariant}"
-                   Margin="0,0,0,16" Padding="16">
+                   Margin="0,0,0,12" Padding="12">
                 <StackPanel>
                     <!-- Timer Display -->
                     <TextBlock x:Name="TimerDisplay" 
                               Text="{Binding ElapsedTimeString, ElementName=TeamControlRoot}" 
-                              Style="{StaticResource DisplaySmall}"
+                              FontSize="32"
+                              FontWeight="Bold"
                               Foreground="{DynamicResource Primary}"
                               HorizontalAlignment="Center" 
                               FontFamily="Consolas"
-                              Margin="0,0,0,12"/>
+                              Margin="0,0,0,8"/>
                     
                     <!-- Timer Controls -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -159,9 +198,9 @@
                                Style="{StaticResource TimerButton}" 
                                Background="{DynamicResource Success}">
                             <StackPanel Orientation="Horizontal">
-                                <fa:ImageAwesome Icon="Play" Width="10" Height="10" 
+                                <fa:ImageAwesome Icon="Play" Width="12" Height="12" 
                                                Margin="0,0,4,0" Foreground="White"/>
-                                <TextBlock Text="Start" Foreground="White" Style="{StaticResource LabelSmall}"/>
+                                <TextBlock Text="Start" Foreground="White" FontSize="13"/>
                             </StackPanel>
                         </Button>
                         
@@ -169,9 +208,9 @@
                                Style="{StaticResource TimerButton}" 
                                Background="{DynamicResource Warning}">
                             <StackPanel Orientation="Horizontal">
-                                <fa:ImageAwesome Icon="Stop" Width="10" Height="10" 
+                                <fa:ImageAwesome Icon="Stop" Width="12" Height="12" 
                                                Margin="0,0,4,0" Foreground="White"/>
-                                <TextBlock Text="Stop" Foreground="White" Style="{StaticResource LabelSmall}"/>
+                                <TextBlock Text="Stop" Foreground="White" FontSize="13"/>
                             </StackPanel>
                         </Button>
                         
@@ -179,17 +218,17 @@
                                Style="{StaticResource TimerButton}" 
                                Background="{DynamicResource Error}">
                             <StackPanel Orientation="Horizontal">
-                                <fa:ImageAwesome Icon="Refresh" Width="10" Height="10" 
+                                <fa:ImageAwesome Icon="Refresh" Width="12" Height="12" 
                                                Margin="0,0,4,0" Foreground="White"/>
-                                <TextBlock Text="Reset" Foreground="White" Style="{StaticResource LabelSmall}"/>
+                                <TextBlock Text="Reset" Foreground="White" FontSize="13"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <!-- 👥 Team Information -->
-            <Grid Grid.Row="2" Margin="0,0,0,16">
+            <!-- 👥 KOMPAKTE Team Information - 2 SPALTEN -->
+            <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -197,12 +236,10 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Dog Information -->
-                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,0">
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,4,0">
                     <Label Style="{StaticResource TeamLabel}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Paw" Width="12" Height="12" 
@@ -216,7 +253,7 @@
                 </StackPanel>
 
                 <!-- Handler Information -->
-                <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,0">
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="4,0,0,0">
                     <Label Style="{StaticResource TeamLabel}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="User" Width="12" Height="12" 
@@ -230,7 +267,7 @@
                 </StackPanel>
 
                 <!-- Helpers Information -->
-                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,4,0">
                     <Label Style="{StaticResource TeamLabel}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Users" Width="12" Height="12" 
@@ -242,78 +279,21 @@
                             Text="{Binding Helfer, ElementName=TeamControlRoot, UpdateSourceTrigger=PropertyChanged}"
                             Style="{StaticResource TeamTextField}"/>
                 </StackPanel>
-            </Grid>
 
-            <!-- 📝 Enhanced Notes Section -->
-            <Grid Grid.Row="3">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Notes Header -->
-                <Label Grid.Row="0" Style="{StaticResource TeamLabel}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="CommentOutline" Width="12" Height="12" 
-                                       Foreground="{DynamicResource OnSurfaceVariant}" Margin="0,0,4,0"/>
-                        <TextBlock Text="Funksprüche / Notizen" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Label>
-                
-                <!-- Quick Note Input -->
-                <Grid Grid.Row="1" Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <TextBox x:Name="TxtQuickNote" Grid.Column="0" 
-                            Style="{StaticResource TeamTextField}" 
-                            Margin="0,0,8,0"
-                            KeyDown="TxtQuickNote_KeyDown"
-                            Text="{Binding QuickNoteText, ElementName=TeamControlRoot, UpdateSourceTrigger=PropertyChanged}"
-                            ToolTip="Enter-Taste oder '+' zum Hinzufügen"/>
-                    
-                    <Button x:Name="BtnAddNote" Grid.Column="1" Click="BtnAddNote_Click"
-                           Style="{StaticResource FAB}"
-                           Width="32" Height="32"
-                           Background="{DynamicResource Success}"
-                           ToolTip="Notiz mit Zeitstempel hinzufügen">
-                        <fa:ImageAwesome Icon="Plus" Width="12" Height="12" Foreground="White"/>
-                    </Button>
-                </Grid>
-
-                <!-- Notes Display -->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="100"
-                             Margin="0,0,0,8">
-                    <ItemsControl x:Name="NotesItemsControl" 
-                                 ItemsSource="{Binding Team.NotesEntries, ElementName=TeamControlRoot}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{DynamicResource SurfaceVariant}" 
-                                       BorderBrush="{DynamicResource OutlineVariant}" 
-                                       BorderThickness="1" CornerRadius="8" 
-                                       Margin="0,2" Padding="8,4">
-                                    <TextBlock Text="{Binding FormattedEntry}" 
-                                              Style="{StaticResource BodySmall}"
-                                              Foreground="{DynamicResource OnSurface}"
-                                              TextWrapping="Wrap"/>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-
-                <!-- Legacy Notes Field -->
-                <TextBox Grid.Row="3" x:Name="TxtNotizen" 
-                        Text="{Binding Notizen, ElementName=TeamControlRoot, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource TeamTextField}" 
-                        AcceptsReturn="True" 
-                        VerticalScrollBarVisibility="Auto" 
-                        Height="60" 
-                        TextWrapping="Wrap"/>
+                <!-- Suchgebiet -->
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="4,0,0,0">
+                    <Label Style="{StaticResource TeamLabel}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="MapMarker" Width="12" Height="12" 
+                                           Foreground="{DynamicResource OnSurfaceVariant}" Margin="0,0,4,0"/>
+                            <TextBlock Text="Suchgebiet" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Label>
+                    <TextBox x:Name="TxtSuchgebiet" 
+                            Text="{Binding Suchgebiet, ElementName=TeamControlRoot, UpdateSourceTrigger=PropertyChanged}"
+                            Style="{StaticResource TeamTextField}"
+                            ToolTip="Suchgebiet (z.B. Sektor A)"/>
+                </StackPanel>
             </Grid>
         </Grid>
     </Border>

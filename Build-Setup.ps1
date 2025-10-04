@@ -1,4 +1,4 @@
-# Build-Script für Einsatzüberwachung Professional v1.6 Setup
+# Build-Script für Einsatzüberwachung Professional v1.7 Setup
 # Automatische Erstellung von Release und Setup.exe
 # PowerShell Script für kompletten Build-Prozess
 
@@ -6,15 +6,15 @@ param(
     [switch]$CleanBuild = $false,
     [switch]$SkipTests = $false,
     [string]$Configuration = "Release",
-    [string]$Version = "1.6.0"
+    [string]$Version = "1.7.0"
 )
 
-Write-Host "Einsatzueberwachung Professional v1.6 - Build Script" -ForegroundColor Cyan
+Write-Host "Einsatzueberwachung Professional v1.7 - Build Script" -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""
 
 $ErrorActionPreference = "Continue"
-$ProjectName = "Einsatzüberwachung V1.5.csproj"
+$ProjectName = "Einsatzüberwachung.csproj"
 $OutputDir = "bin\$Configuration\net8.0-windows"
 $SetupDir = "Setup"
 $SetupOutput = "$SetupDir\Output"
@@ -67,7 +67,7 @@ try {
     # License und ReadMe im Setup-Verzeichnis erstellen
     Write-Host "   Erstelle Setup-Dokumentation..." -ForegroundColor Blue
     
-    $licenseText = "MIT License`n`nCopyright (c) 2024 RescueDog_SW`n`nPermission is hereby granted, free of charge, to any person obtaining a copy of this software..."
+    $licenseText = "MIT License`n`nCopyright (c) 2024-2025 RescueDog_SW`n`nPermission is hereby granted, free of charge, to any person obtaining a copy of this software..."
     
     $readmeText = @"
 Einsatzueberwachung Professional v$Version
@@ -80,21 +80,30 @@ System-Anforderungen:
 - .NET 8 Runtime (wird automatisch installiert)
 - Mindestens 500 MB freier Speicherplatz
 - Administrator-Rechte fuer Mobile Server-Funktionalitaet
+- Internetverbindung für automatische Updates
 
 Was wird installiert:
 - Einsatzueberwachung Professional v$Version Hauptanwendung
 - .NET 8 Desktop Runtime (falls nicht vorhanden)
+- GitHub Auto-Update-System
 - Mobile Server Netzwerk-Konfiguration
 - Firewall-Regeln fuer iPhone/Android-Zugriff
 - PowerShell-Scripts fuer Troubleshooting
 - Automatische GitHub Update-Pruefung
 - Vollstaendige Dokumentation und Hilfe-Dateien
 
+Neue Features v1.7:
+- Automatische Update-Prüfung über GitHub Releases
+- Ein-Klick Update-Installation
+- Silent Update-Modus für IT-Administratoren
+- Vollautomatische Setup-Konfiguration
+- Erweiterte Troubleshooting-Tools
+
 Erste Schritte nach Installation:
-1. Anwendung als Administrator starten
-2. Mobile Verbindung oeffnen
-3. Server starten
-4. QR-Code mit iPhone scannen
+1. Anwendung starten (automatische Update-Prüfung)
+2. Einsatzleiter und Ort eingeben
+3. Teams hinzufügen und Timer starten
+4. Optional: Mobile Verbindung für Smartphone-Zugriff
 
 Viel Erfolg mit der Einsatzueberwachung Professional v$Version!
 "@
@@ -104,13 +113,22 @@ Einsatzueberwachung Professional v$Version erfolgreich installiert!
 
 Installation abgeschlossen:
 - Hauptanwendung installiert und konfiguriert
+- GitHub Auto-Update-System aktiviert
 - Mobile Server automatisch eingerichtet
 - Firewall-Regeln erstellt
 - PowerShell-Scripts installiert
-- Automatische GitHub Updates aktiviert
+- Automatische Update-Benachrichtigungen aktiviert
 - Dokumentation verfuegbar
 
 Die Anwendung ist jetzt vollstaendig einsatzbereit!
+
+Neue Features in v1.7:
+- Automatische Updates aus GitHub
+- Professional Setup mit Auto-Konfiguration
+- Verbesserte Mobile Server Integration
+- Erweiterte Troubleshooting-Tools
+
+Starten Sie die Anwendung und genießen Sie die neuen Features!
 "@
     
     # Erstelle Dateien im Setup-Verzeichnis
@@ -179,9 +197,9 @@ Die Anwendung ist jetzt vollstaendig einsatzbereit!
     Write-Host ""
     Write-Host "NAECHSTE SCHRITTE FUER GITHUB RELEASE:" -ForegroundColor Cyan
     Write-Host "1. git add ." -ForegroundColor White
-    Write-Host "2. git commit -m 'Release v$Version mit Setup.exe'" -ForegroundColor White
+    Write-Host "2. git commit -m 'Release v$Version - GitHub Auto-Updates & Professional Setup'" -ForegroundColor White
     Write-Host "3. git tag v$Version" -ForegroundColor White
-    Write-Host "4. git push origin master" -ForegroundColor White
+    Write-Host "4. git push origin V1.7" -ForegroundColor White
     Write-Host "5. git push --tags" -ForegroundColor White
     Write-Host "6. GitHub Actions erstellt automatisch Release!" -ForegroundColor White
     Write-Host ""

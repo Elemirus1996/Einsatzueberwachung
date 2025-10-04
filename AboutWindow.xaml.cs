@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
+using Einsatzueberwachung.Services;
 
 namespace Einsatzueberwachung
 {
@@ -18,20 +20,17 @@ namespace Einsatzueberwachung
             {
                 var assembly = Assembly.GetExecutingAssembly();
                 var version = assembly.GetName().Version;
-                var fileVersion = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
-                var buildDate = System.IO.File.GetCreationTime(assembly.Location);
-
-                TxtVersion.Text = $"Version {version?.ToString(3) ?? "Unknown"}";
                 
-                // You can also add build date
-                var buildInfo = $"Build {buildDate:yyyy.MM.dd}";
-                // Update build info if needed
+                // Update version display for v1.7.0
+                TxtVersion.Text = $"Version {version?.ToString(3) ?? "1.7.0"}";
+                
+                LoggingService.Instance?.LogInfo($"AboutWindow loaded - Version: {TxtVersion.Text}");
             }
             catch (Exception ex)
             {
-                TxtVersion.Text = "Version Information Unavailable";
+                TxtVersion.Text = "Version 1.7.0";
                 // Log error if logging service is available
-                Services.LoggingService.Instance?.LogError("Error loading version info", ex);
+                LoggingService.Instance?.LogError("Error loading version info in AboutWindow", ex);
             }
         }
 
