@@ -52,10 +52,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
-Name: "autostart"; Description: "Mobile Server automatisch konfigurieren (empfohlen)"; GroupDescription: "Mobile Server Konfiguration"
-Name: "firewall"; Description: "Firewall-Regeln automatisch erstellen"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked
-Name: "urlreservation"; Description: "URL-Reservierungen für Mobile Server"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked
-Name: "autoupdates"; Description: "Automatische Update-Prüfung aktivieren (empfohlen)"; GroupDescription: "Update-Konfiguration"; Flags: checked
+Name: "autostart"; Description: "Mobile Server automatisch konfigurieren (empfohlen)"; GroupDescription: "Mobile Server Konfiguration"; Flags: checked
+Name: "firewall"; Description: "Firewall-Regeln automatisch erstellen"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked checkablealone
+Name: "urlreservation"; Description: "URL-Reservierungen für Mobile Server"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked checkablealone
+Name: "autoupdates"; Description: "Automatische Update-Prüfung aktivieren (empfohlen)"; GroupDescription: "Update-Konfiguration"; Flags: checked checkablealone
 
 [Files]
 ; Hauptanwendung
