@@ -52,6 +52,16 @@
     <Resource Include="Resources\**\*" />
   </ItemGroup>
 
+  <!-- Copy Mobile HTML Template to output directory -->
+  <ItemGroup>
+    <None Include="Einsatzüberwachung_Clean.csproj" />
+=======
+>>>>>>> 3e04e591bbe091410a21d73e1a200906d6219c54
+    <None Include="Services\MobileHTMLTemplate.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <!-- Clean up problematic files -->
   <ItemGroup>
     <None Remove="HelpWindowSimple.xaml" />
