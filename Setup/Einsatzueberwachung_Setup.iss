@@ -29,7 +29,6 @@ OutputDir=Setup\Output
 OutputBaseFilename=Einsatzueberwachung_Professional_v{#MyAppVersion}_Setup
 Compression=lzma
 SolidCompression=yes
-WizardStyle=modern
 ArchitecturesInstallIn64BitMode=x64
 MinVersion=0,6.1sp1
 
@@ -43,7 +42,6 @@ CloseApplications=yes
 RestartApplications=yes
 
 ; Moderne UI-Konfiguration
-WizardImageBackColor=$FFFFFF
 ShowLanguageDialog=no
 
 [Languages]

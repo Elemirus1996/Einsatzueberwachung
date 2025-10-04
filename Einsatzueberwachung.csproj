@@ -70,6 +70,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".github\workflows\build-and-release.yml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Update="Resources\DesignSystem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
