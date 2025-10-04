@@ -28,7 +28,7 @@ jobs:
     - name: Setup Inno Setup
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
       with:
-        path: 'Setup\Einsatzueberwachung_Setup.iss'
+        path: 'Setup/Einsatzueberwachung_Setup.iss'
 
     - name: Get installer path
       id: get_installer_path
