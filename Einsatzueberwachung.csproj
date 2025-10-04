@@ -52,6 +52,12 @@
   <ItemGroup>
     <Resource Include="Resources\**\*" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove=".github\workflows\**" />
+    <EmbeddedResource Remove=".github\workflows\**" />
+    <None Remove=".github\workflows\**" />
+    <Page Remove=".github\workflows\**" />
+  </ItemGroup>
 
   <!-- Clean up problematic files -->
   <ItemGroup>
@@ -70,13 +76,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include=".github\workflows\build-and-release.yml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Update="Resources\DesignSystem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".github\workflows\build-and-release.yml" />
   </ItemGroup>
 
 </Project>
