@@ -17,9 +17,9 @@
             <Setter Property="Margin" Value="0,0,8,0"/>
         </Style>
         
-        <!-- QR Code Container -->
+        <!-- QR Code Container - UPDATED for Dark Mode -->
         <Style x:Key="QRContainer" TargetType="Border" BasedOn="{StaticResource Card}">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -36,29 +36,39 @@
         <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
             <StackPanel>
                 <!-- Header -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                    <Border Width="48" Height="48" CornerRadius="24" 
-                           Background="{DynamicResource Primary}" Margin="0,0,12,0">
-                        <fa:ImageAwesome Icon="Mobile" Width="24" Height="24" 
-                                       Foreground="White"/>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="📱 Mobile Verbindung" Style="{StaticResource TitleLarge}"
-                                  Foreground="{DynamicResource OnSurface}"/>
-                        <StackPanel Orientation="Horizontal">
-                            <Border x:Name="StatusIndicator" Style="{StaticResource StatusIndicator}" 
-                                   Background="Red"/>
-                            <TextBlock x:Name="StatusText" Text="Getrennt" 
-                                      Style="{StaticResource BodyMedium}"
-                                      Foreground="{DynamicResource OnSurfaceVariant}"/>
+                <Border CornerRadius="12,12,0,0" Margin="-20,-20,-20,20" Padding="20">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FF7043" Offset="0"/>
+                            <GradientStop Color="#F4511E" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="48" Height="48" CornerRadius="24" 
+                               Background="White" Opacity="0.9" Margin="0,0,12,0">
+                            <fa:ImageAwesome Icon="Mobile" Width="24" Height="24" 
+                                           Foreground="#F4511E"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📱 Mobile Verbindung" Style="{StaticResource TitleLarge}"
+                                      Foreground="White"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Border x:Name="StatusIndicator" Style="{StaticResource StatusIndicator}" 
+                                       Background="Red"/>
+                                <TextBlock x:Name="StatusText" Text="Getrennt" 
+                                          Style="{StaticResource BodyMedium}"
+                                          Foreground="White" Opacity="0.9"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Border>
 
                 <!-- Connection Controls -->
                 <StackPanel Margin="0,0,0,20">
                     <Button x:Name="StartServerButton" Click="StartServer_Click" 
-                           Style="{StaticResource FilledButton}" Margin="0,0,0,8">
+                           Style="{StaticResource FilledButton}"
+                           Background="#4CAF50"
+                           Margin="0,0,0,8">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Play" Width="16" Height="16" Margin="0,0,8,0"/>
                             <TextBlock Text="Server starten"/>
@@ -79,17 +89,17 @@
                        Visibility="Collapsed">
                     <StackPanel>
                         <TextBlock Text="📱 QR-Code scannen" Style="{StaticResource TitleMedium}"
-                                  Foreground="Black" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                  Foreground="{DynamicResource OnSurface}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
                         
-                        <!-- Real QR Code Display -->
+                        <!-- Real QR Code Display - UPDATED for Dark Mode -->
                         <Border Width="200" Height="200" Background="White" 
-                               BorderBrush="Black" BorderThickness="1" CornerRadius="8">
+                                BorderBrush="Black" BorderThickness="1" CornerRadius="8">
                             <Image x:Name="QRCodeImage" Stretch="Uniform" Margin="10"/>
                         </Border>
-                        
+
                         <TextBlock x:Name="QRCodeUrl" Text="http://localhost:8080/mobile" 
                                   Style="{StaticResource BodySmall}"
-                                  Foreground="Black" HorizontalAlignment="Center" 
+                                  Foreground="{DynamicResource OnSurface}" HorizontalAlignment="Center" 
                                   Margin="0,12,0,0" TextAlignment="Center" TextWrapping="Wrap"/>
                         
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
@@ -190,28 +200,35 @@
                           Foreground="{DynamicResource OnSurface}" Margin="0,20,0,8"/>
                 
                 <UniformGrid Columns="2" Margin="0,0,0,16">
-                    <Border Style="{StaticResource Card}" Background="{DynamicResource PrimaryContainer}"
-                           Margin="0,0,4,0">
+                    <Border Style="{StaticResource Card}" 
+                           Margin="0,0,4,0" Padding="16">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#FF7043" Offset="0"/>
+                                <GradientStop Color="#F4511E" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
                         <StackPanel>
                             <TextBlock x:Name="TotalViewsValue" Text="0" 
                                       Style="{StaticResource TitleLarge}"
-                                      Foreground="{DynamicResource OnPrimaryContainer}"
+                                      Foreground="White"
                                       HorizontalAlignment="Center"/>
                             <TextBlock Text="Seitenaufrufe" Style="{StaticResource BodySmall}"
-                                      Foreground="{DynamicResource OnPrimaryContainer}"
+                                      Foreground="White"
                                       HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     
-                    <Border Style="{StaticResource Card}" Background="{DynamicResource SuccessContainer}"
-                           Margin="4,0,0,0">
+                    <Border Style="{StaticResource Card}" 
+                           Margin="4,0,0,0" Padding="16"
+                           Background="#4CAF50">
                         <StackPanel>
                             <TextBlock x:Name="ActiveViewersValue" Text="0" 
                                       Style="{StaticResource TitleLarge}"
-                                      Foreground="{DynamicResource OnSuccessContainer}"
+                                      Foreground="White"
                                       HorizontalAlignment="Center"/>
                             <TextBlock Text="Aktive Betrachter" Style="{StaticResource BodySmall}"
-                                      Foreground="{DynamicResource OnSuccessContainer}"
+                                      Foreground="White"
                                       HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>

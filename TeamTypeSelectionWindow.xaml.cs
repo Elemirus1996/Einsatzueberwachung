@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Einsatzueberwachung.Models;
+using Einsatzueberwachung.Services;
 
 namespace Einsatzueberwachung
 {
@@ -39,7 +40,7 @@ namespace Einsatzueberwachung
             }
             catch (Exception ex)
             {
-                Services.LoggingService.Instance.LogError("Error applying theme to TeamTypeSelectionWindow", ex);
+                LoggingService.Instance.LogError("Error applying theme to TeamTypeSelectionWindow", ex);
             }
         }
 
@@ -88,11 +89,11 @@ namespace Einsatzueberwachung
                     TypeCheckBoxPanel.Children.Add(checkBox);
                 }
 
-                Services.LoggingService.Instance.LogInfo($"TeamTypeSelection v1.5 - Created {teamTypes.Count()} type options (excluding Allgemein)");
+                LoggingService.Instance.LogInfo($"TeamTypeSelection v1.5 - Created {teamTypes.Count()} type options (excluding Allgemein)");
             }
             catch (Exception ex)
             {
-                Services.LoggingService.Instance.LogError("Error creating type checkboxes", ex);
+                LoggingService.Instance.LogError("Error creating type checkboxes", ex);
             }
         }
 
@@ -118,7 +119,7 @@ namespace Einsatzueberwachung
             }
             catch (Exception ex)
             {
-                Services.LoggingService.Instance.LogError("Error handling type selection change", ex);
+                LoggingService.Instance.LogError("Error handling type selection change", ex);
             }
         }
 
@@ -129,17 +130,19 @@ namespace Einsatzueberwachung
                 if (!SelectedMultipleTeamTypes.SelectedTypes.Any())
                 {
                     TxtSelectedTypes.Text = "Keine Auswahl";
-                    TxtSelectedTypes.Foreground = new SolidColorBrush(Colors.Gray);
+                    // UPDATED: Use design system color
+                    TxtSelectedTypes.Foreground = (System.Windows.Media.Brush)FindResource("OnSurfaceVariant");
                 }
                 else
                 {
                     TxtSelectedTypes.Text = SelectedMultipleTeamTypes.DisplayName;
-                    TxtSelectedTypes.Foreground = new SolidColorBrush(Colors.Black);
+                    // UPDATED: Use design system color
+                    TxtSelectedTypes.Foreground = (System.Windows.Media.Brush)FindResource("OnSurface");
                 }
             }
             catch (Exception ex)
             {
-                Services.LoggingService.Instance.LogError("Error updating selected types display", ex);
+                LoggingService.Instance.LogError("Error updating selected types display", ex);
             }
         }
 
@@ -154,7 +157,7 @@ namespace Einsatzueberwachung
             }
             catch (Exception ex)
             {
-                Services.LoggingService.Instance.LogError("Error clearing all selections", ex);
+                LoggingService.Instance.LogError("Error clearing all selections", ex);
             }
         }
 
@@ -174,12 +177,12 @@ namespace Einsatzueberwachung
                     return;
                 }
 
-                Services.LoggingService.Instance.LogInfo($"Team types selected: {SelectedMultipleTeamTypes.DisplayName}");
+                LoggingService.Instance.LogInfo($"Team types selected: {SelectedMultipleTeamTypes.DisplayName}");
                 DialogResult = true;
             }
             catch (Exception ex)
             {
-                Services.LoggingService.Instance.LogError("Error confirming type selection", ex);
+                LoggingService.Instance.LogError("Error confirming type selection", ex);
                 MessageBox.Show($"Fehler beim Bestätigen der Auswahl: {ex.Message}", 
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }

@@ -1,0 +1,142 @@
+<UserControl x:Class="Einsatzueberwachung.TeamCompactCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             x:Name="TeamCompactCardRoot">
+
+    <UserControl.Resources>
+        <!-- DASHBOARD VIEW: Ultra-kompakte Karte -->
+        <Style x:Key="CompactCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Margin" Value="6"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="MinHeight" Value="220"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border x:Name="CompactBorder" 
+            Style="{StaticResource CompactCard}"
+            MouseEnter="CompactBorder_MouseEnter"
+            MouseLeave="CompactBorder_MouseLeave"
+            MouseLeftButtonDown="CompactBorder_Click">
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header: Team Name + Type Badge -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!-- Warning Indicator -->
+                    <Border x:Name="WarningIndicator" 
+                           Width="12" Height="12" CornerRadius="6" 
+                           Background="Transparent" 
+                           VerticalAlignment="Center" 
+                           Margin="0,0,8,0"/>
+
+                    <!-- Team Name -->
+                    <TextBlock x:Name="TeamNameText"
+                              Text="{Binding Team.TeamName, ElementName=TeamCompactCardRoot}" 
+                              FontSize="18"
+                              FontWeight="Bold"
+                              Foreground="{DynamicResource OnSurface}"
+                              VerticalAlignment="Center"
+                              TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <!-- Team Type Badge -->
+                <Border Grid.Column="1"
+                       x:Name="TeamTypeBadge" 
+                       Background="{DynamicResource Primary}"
+                       CornerRadius="12" 
+                       Padding="10,4">
+                    <TextBlock x:Name="TeamTypeText"
+                              Foreground="White" 
+                              FontSize="11"
+                              FontWeight="Bold"/>
+                </Border>
+            </Grid>
+
+            <!-- Timer Display - GROSS & ZENTRAL -->
+            <Border Grid.Row="1" 
+                   Background="{DynamicResource SurfaceVariant}"
+                   CornerRadius="10"
+                   Padding="12"
+                   VerticalAlignment="Center">
+                <TextBlock x:Name="TimerDisplay" 
+                          Text="{Binding Team.ElapsedTimeString, ElementName=TeamCompactCardRoot}" 
+                          FontSize="32"
+                          FontWeight="Bold"
+                          Foreground="{DynamicResource Primary}"
+                          HorizontalAlignment="Center"
+                          FontFamily="Consolas"/>
+            </Border>
+
+            <!-- Team-Informationen: Hundeführer, Helfer -->
+            <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                <!-- Hundeführer -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:ImageAwesome Icon="User" Width="12" Height="12" 
+                                   Foreground="{DynamicResource OnSurfaceVariant}" 
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="HF: " FontSize="12" FontWeight="SemiBold"
+                              Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    <TextBlock x:Name="HundefuehrerText"
+                              Text="{Binding Team.Hundefuehrer, ElementName=TeamCompactCardRoot}" 
+                              FontSize="12"
+                              Foreground="{DynamicResource OnSurface}"
+                              TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <!-- Helfer -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <fa:ImageAwesome Icon="UserPlus" Width="12" Height="12" 
+                                   Foreground="{DynamicResource OnSurfaceVariant}" 
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="Helfer: " FontSize="12" FontWeight="SemiBold"
+                              Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    <TextBlock x:Name="HelferText"
+                              Text="{Binding Team.Helfer, ElementName=TeamCompactCardRoot}" 
+                              FontSize="12"
+                              Foreground="{DynamicResource OnSurface}"
+                              TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <!-- Suchgebiet -->
+                <StackPanel Orientation="Horizontal">
+                    <fa:ImageAwesome Icon="MapMarker" Width="12" Height="12" 
+                                   Foreground="{DynamicResource OnSurfaceVariant}" 
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="Gebiet: " FontSize="12" FontWeight="SemiBold"
+                              Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    <TextBlock x:Name="SuchgebietText"
+                              Text="{Binding Team.Suchgebiet, ElementName=TeamCompactCardRoot}" 
+                              FontSize="12"
+                              Foreground="{DynamicResource OnSurface}"
+                              TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Status Indicator -->
+            <Grid Grid.Row="3" Margin="0,10,0,0">
+                <Border x:Name="StatusIndicator"
+                       CornerRadius="10"
+                       Padding="8,3"
+                       HorizontalAlignment="Right">
+                    <TextBlock x:Name="StatusText"
+                              FontSize="11"
+                              FontWeight="Bold"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

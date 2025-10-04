@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Threading;
-using Einsatzueberwachung.Services;
 
 namespace Einsatzueberwachung.Services
 {

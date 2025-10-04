@@ -11,6 +11,7 @@ namespace Einsatzueberwachung.Services
         private static LoggingService? _instance;
         private readonly string _logFilePath;
         private string _lastLogEntry = string.Empty;
+        private bool _verboseLogging = false;
 
         public static LoggingService Instance => _instance ??= new LoggingService();
 
@@ -25,6 +26,17 @@ namespace Einsatzueberwachung.Services
         {
             get => _lastLogEntry;
             private set { _lastLogEntry = value; OnPropertyChanged(); }
+        }
+
+        public void Initialize(string logFileName, LogLevel logLevel)
+        {
+            LogInfo($"LoggingService initialized with {logLevel} level");
+        }
+
+        public void SetVerboseLogging(bool enabled)
+        {
+            _verboseLogging = enabled;
+            LogInfo($"Verbose logging {(_verboseLogging ? "enabled" : "disabled")}");
         }
 
         public void LogInfo(string message)
@@ -56,6 +68,11 @@ namespace Einsatzueberwachung.Services
 
                 // Write to file
                 File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
+
+                if (_verboseLogging)
+                {
+                    System.Diagnostics.Debug.WriteLine(logEntry);
+                }
             }
             catch (Exception ex)
             {

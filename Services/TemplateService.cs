@@ -38,7 +38,7 @@ namespace Einsatzueberwachung.Services
                 var standardTemplate = new EinsatzTemplate
                 {
                     Name = "Standard Einsatz",
-                    Description = "Standardkonfiguration f¸r normale Eins‰tze",
+                    Description = "Standardkonfiguration f√ºr normale Eins√§tze",
                     StandardTeamCount = 3,
                     FirstWarningMinutes = 10,
                     SecondWarningMinutes = 20,
@@ -46,22 +46,22 @@ namespace Einsatzueberwachung.Services
                 };
                 Templates.Add(standardTemplate);
 
-                // ‹bung Template
+                // √úbung Template
                 var uebungTemplate = new EinsatzTemplate
                 {
-                    Name = "‹bung",
-                    Description = "Konfiguration f¸r Trainings¸bungen",
+                    Name = "√úbung",
+                    Description = "Konfiguration f√ºr Trainings√ºbungen",
                     StandardTeamCount = 2,
                     FirstWarningMinutes = 15,
                     SecondWarningMinutes = 30
                 };
                 Templates.Add(uebungTemplate);
 
-                // Groﬂeinsatz Template
+                // Gro√üeinsatz Template
                 var grosseinsatzTemplate = new EinsatzTemplate
                 {
-                    Name = "Groﬂeinsatz",
-                    Description = "Konfiguration f¸r grˆﬂere Eins‰tze",
+                    Name = "Gro√üeinsatz",
+                    Description = "Konfiguration f√ºr gr√∂√üere Eins√§tze",
                     StandardTeamCount = 6,
                     FirstWarningMinutes = 8,
                     SecondWarningMinutes = 15

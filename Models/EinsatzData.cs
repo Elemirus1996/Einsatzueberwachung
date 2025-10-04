@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -14,6 +15,12 @@ namespace Einsatzueberwachung.Models
         private bool _istEinsatz = true;
         private int _anzahlTeams = 1;
         private DateTime _einsatzDatum = DateTime.Now;
+        
+        // NEU v1.7: PDF-Export Felder
+        private string _einsatzNummer = string.Empty;
+        private string _staffelName = string.Empty;
+        private string _staffelLogoPfad = string.Empty;
+        private DateTime? _alarmierungsZeit = null;
 
         public string Einsatzleiter
         {
@@ -51,7 +58,7 @@ namespace Einsatzueberwachung.Models
             set { _istEinsatz = value; OnPropertyChanged(); OnPropertyChanged(nameof(EinsatzTyp)); }
         }
 
-        public string EinsatzTyp => IstEinsatz ? "Einsatz" : "�bung";
+        public string EinsatzTyp => IstEinsatz ? "Einsatz" : "Übung";
 
         public int AnzahlTeams
         {
@@ -64,6 +71,36 @@ namespace Einsatzueberwachung.Models
             get => _einsatzDatum;
             set { _einsatzDatum = value; OnPropertyChanged(); }
         }
+
+        // NEU v1.7: PDF-Export Properties
+        public string EinsatzNummer
+        {
+            get => _einsatzNummer;
+            set { _einsatzNummer = value; OnPropertyChanged(); }
+        }
+
+        public string StaffelName
+        {
+            get => _staffelName;
+            set { _staffelName = value; OnPropertyChanged(); }
+        }
+
+        public string StaffelLogoPfad
+        {
+            get => _staffelLogoPfad;
+            set { _staffelLogoPfad = value; OnPropertyChanged(); }
+        }
+
+        public DateTime? AlarmierungsZeit
+        {
+            get => _alarmierungsZeit;
+            set { _alarmierungsZeit = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// NEU v1.7: Globale Notizen-Collection für die Mobile Website
+        /// </summary>
+        public ObservableCollection<GlobalNotesEntry> GlobalNotesEntries { get; } = new ObservableCollection<GlobalNotesEntry>();
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

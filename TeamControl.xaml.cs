@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
 using Einsatzueberwachung.Models;
 using Einsatzueberwachung.Services;
 
@@ -44,13 +43,12 @@ namespace Einsatzueberwachung
             get => Team?.Helfer ?? "";
             set { if (Team != null) { Team.Helfer = value; OnPropertyChanged(nameof(Helfer)); } }
         }
-        public string Notizen
+        public string Suchgebiet
         {
-            get => Team?.Notizen ?? "";
-            set { if (Team != null) { Team.Notizen = value; OnPropertyChanged(nameof(Notizen)); } }
+            get => Team?.Suchgebiet ?? "";
+            set { if (Team != null) { Team.Suchgebiet = value; OnPropertyChanged(nameof(Suchgebiet)); } }
         }
         public string ElapsedTimeString => Team?.ElapsedTimeString ?? "00:00:00";
-        public string QuickNoteText { get; set; } = string.Empty;
 
         public TeamControl()
         {
@@ -64,17 +62,17 @@ namespace Einsatzueberwachung
             
             if (isDarkMode)
             {
-                // Dark theme colors
-                Resources["TeamBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(30, 30, 30)); // #1E1E1E
-                Resources["TeamBorderBrush"] = new SolidColorBrush(Color.FromRgb(51, 51, 51)); // #333333
-                Resources["TeamTextBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224)); // #E0E0E0
+                // Dark theme colors - use design system
+                Resources["TeamBackgroundBrush"] = FindResource("DarkSurfaceContainer");
+                Resources["TeamBorderBrush"] = FindResource("DarkOutline");
+                Resources["TeamTextBrush"] = FindResource("DarkOnSurface");
             }
             else
             {
-                // Light theme colors
-                Resources["TeamBackgroundBrush"] = new SolidColorBrush(Colors.White);
-                Resources["TeamBorderBrush"] = new SolidColorBrush(Color.FromRgb(224, 224, 224)); // #E0E0E0
-                Resources["TeamTextBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
+                // Light theme colors - use design system
+                Resources["TeamBackgroundBrush"] = FindResource("Surface");
+                Resources["TeamBorderBrush"] = FindResource("Outline");
+                Resources["TeamTextBrush"] = FindResource("OnSurface");
             }
             
             // Re-apply warning state to maintain warning colors
@@ -124,8 +122,8 @@ namespace Einsatzueberwachung
                     OnPropertyChanged(nameof(Helfer));
                     NotifyDataChanged();
                     break;
-                case nameof(Team.Notizen):
-                    OnPropertyChanged(nameof(Notizen));
+                case nameof(Team.Suchgebiet):
+                    OnPropertyChanged(nameof(Suchgebiet));
                     NotifyDataChanged();
                     break;
                 case nameof(Team.IsFirstWarning):
@@ -182,45 +180,30 @@ namespace Einsatzueberwachung
 
             if (_team.IsSecondWarning)
             {
-                // Red blinking background - same for both themes (urgent)
-                TeamBorder.Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Bright Red
-                TeamBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(211, 47, 47)); // Darker Red Border
+                // Red blinking background - use design system Error colors
+                TeamBorder.Background = (Brush)FindResource("Error");
+                TeamBorder.BorderBrush = (Brush)FindResource("OnError");
                 TeamBorder.BorderThickness = new Thickness(3);
                 
                 // Update warning indicators
-                WarningIndicator.Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Red dot
+                WarningIndicator.Background = (Brush)FindResource("Error");
                 WarningStatusText.Text = "KRITISCH!";
-                WarningStatusText.Foreground = new SolidColorBrush(Colors.White);
+                WarningStatusText.Foreground = (Brush)FindResource("OnError");
                 
                 StartBlinking();
             }
             else if (_team.IsFirstWarning)
             {
-                // Different warning colors for light vs dark theme
-                if (_isDarkMode)
-                {
-                    // Dark mode: Orange/Amber - very visible on dark background
-                    TeamBorder.Background = new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Bright Orange
-                    TeamBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(255, 193, 7)); // Golden border
-                    
-                    // Dark mode warning indicators
-                    WarningIndicator.Background = new SolidColorBrush(Color.FromRgb(255, 193, 7)); // Golden dot
-                    WarningStatusText.Text = "WARNUNG!";
-                    WarningStatusText.Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // Dark text
-                }
-                else
-                {
-                    // Light mode: Yellow/Amber - good contrast on white
-                    TeamBorder.Background = new SolidColorBrush(Color.FromRgb(255, 235, 59)); // Yellow
-                    TeamBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(255, 193, 7)); // Amber border
-                    
-                    // Light mode warning indicators
-                    WarningIndicator.Background = new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Orange dot
-                    WarningStatusText.Text = "WARNUNG!";
-                    WarningStatusText.Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // Dark text
-                }
-                
+                // Warning colors - use design system Warning colors
+                TeamBorder.Background = (Brush)FindResource("Warning");
+                TeamBorder.BorderBrush = (Brush)FindResource("OnWarning");
                 TeamBorder.BorderThickness = new Thickness(2);
+                
+                // Warning indicators
+                WarningIndicator.Background = (Brush)FindResource("WarningContainer");
+                WarningStatusText.Text = "WARNUNG!";
+                WarningStatusText.Foreground = (Brush)FindResource("OnWarning");
+                
                 StopBlinking();
             }
             else
@@ -228,17 +211,17 @@ namespace Einsatzueberwachung
                 // Normal background - use theme colors
                 if (_isDarkMode)
                 {
-                    TeamBorder.Background = new SolidColorBrush(Color.FromRgb(30, 30, 30)); // #1E1E1E
-                    TeamBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(51, 51, 51)); // #333333
+                    TeamBorder.Background = (Brush)FindResource("DarkSurfaceContainer");
+                    TeamBorder.BorderBrush = (Brush)FindResource("DarkOutline");
                 }
                 else
                 {
-                    TeamBorder.Background = new SolidColorBrush(Colors.White);
-                    TeamBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)); // #E0E0E0
+                    TeamBorder.Background = (Brush)FindResource("Surface");
+                    TeamBorder.BorderBrush = (Brush)FindResource("Outline");
                 }
                 
                 // Normal state - no warning indicators
-                WarningIndicator.Background = new SolidColorBrush(Colors.Transparent);
+                WarningIndicator.Background = Brushes.Transparent;
                 WarningStatusText.Text = "";
                 
                 TeamBorder.BorderThickness = new Thickness(1);
@@ -248,20 +231,43 @@ namespace Einsatzueberwachung
 
         private void StartBlinking()
         {
-            if (_blinkingStoryboard == null)
+            try
             {
-                _blinkingStoryboard = FindResource("BlinkingAnimation") as Storyboard;
-            }
+                // Stoppe zuerst alle laufenden Animationen
+                StopBlinking();
+                
+                if (_blinkingStoryboard == null)
+                {
+                    _blinkingStoryboard = FindResource("BlinkingAnimation") as Storyboard;
+                }
 
-            _blinkingStoryboard?.Begin(TeamBorder);
+                if (_blinkingStoryboard != null)
+                {
+                    _blinkingStoryboard.Begin(TeamBorder, true);
+                    LoggingService.Instance.LogInfo($"Blinking animation started for team {_team?.TeamName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error starting blinking animation for team {_team?.TeamName}", ex);
+            }
         }
 
         private void StopBlinking()
         {
             try
             {
-                _blinkingStoryboard?.Stop(TeamBorder);
-                // Explizit Opacity auf 1.0 setzen für den Fall, dass die Animation unterbrochen wurde
+                if (_blinkingStoryboard != null)
+                {
+                    // Stop the storyboard completely and remove it
+                    _blinkingStoryboard.Stop(TeamBorder);
+                    _blinkingStoryboard.Remove(TeamBorder);
+                    
+                    LoggingService.Instance.LogInfo($"Blinking animation stopped for team {_team?.TeamName}");
+                }
+                
+                // Explizit Opacity auf 1.0 setzen, um sicherzustellen, dass das Element vollständig sichtbar ist
+                TeamBorder.BeginAnimation(UIElement.OpacityProperty, null);
                 TeamBorder.Opacity = 1.0;
                 
                 // Sicherstellen, dass alle Transform-Eigenschaften zurückgesetzt werden
@@ -270,8 +276,14 @@ namespace Einsatzueberwachung
             catch (Exception ex)
             {
                 // Fallback: Mindestens Opacity zurücksetzen
-                TeamBorder.Opacity = 1.0;
-                LoggingService.Instance.LogError("Error stopping blinking animation", ex);
+                try
+                {
+                    TeamBorder.BeginAnimation(UIElement.OpacityProperty, null);
+                    TeamBorder.Opacity = 1.0;
+                }
+                catch { }
+                
+                LoggingService.Instance.LogError($"Error stopping blinking animation for team {_team?.TeamName}", ex);
             }
         }
 
@@ -281,13 +293,67 @@ namespace Einsatzueberwachung
             OnPropertyChanged(nameof(HundName));
             OnPropertyChanged(nameof(Hundefuehrer));
             OnPropertyChanged(nameof(Helfer));
-            OnPropertyChanged(nameof(Notizen));
+            OnPropertyChanged(nameof(Suchgebiet));
             OnPropertyChanged(nameof(ElapsedTimeString));
             UpdateTeamTypeBadge();
+            UpdateWarningSettingsDisplay();
             UpdateWarningState();
             
             // Trigger entrance animation
             TriggerEntranceAnimation();
+        }
+
+        // NEU: Update Warning Settings Display
+        private void UpdateWarningSettingsDisplay()
+        {
+            if (_team != null)
+            {
+                WarningSettingsText.Text = $"{_team.FirstWarningMinutes}/{_team.SecondWarningMinutes}";
+            }
+        }
+
+        // NEU: Warning Settings Button Click Handler
+        private void BtnWarningSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_team != null)
+                {
+                    // Create a list with just this team for the settings window
+                    var teams = new List<Team> { _team };
+                    
+                    // Get global warning settings from MainWindow
+                    int globalFirst = 10;
+                    int globalSecond = 20;
+                    
+                    if (Window.GetWindow(this) is MainWindow mainWindow)
+                    {
+                        globalFirst = mainWindow.GlobalFirstWarningMinutes;
+                        globalSecond = mainWindow.GlobalSecondWarningMinutes;
+                    }
+                    
+                    var warningSettingsWindow = new TeamWarningSettingsWindow(teams, globalFirst, globalSecond)
+                    {
+                        Owner = Window.GetWindow(this),
+                        Title = $"Warnschwellen - {_team.TeamName}"
+                    };
+                    
+                    if (warningSettingsWindow.ShowDialog() == true)
+                    {
+                        UpdateWarningSettingsDisplay();
+                        NotifyDataChanged();
+                        
+                        LoggingService.Instance.LogInfo($"Warning settings updated for {_team.TeamName}: " +
+                            $"{_team.FirstWarningMinutes}/{_team.SecondWarningMinutes} minutes");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error opening warning settings for team {_team?.TeamName}", ex);
+                MessageBox.Show($"Fehler beim Öffnen der Warnschwellen-Einstellungen: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void TriggerEntranceAnimation()
@@ -322,7 +388,7 @@ namespace Einsatzueberwachung
                 catch (Exception ex)
                 {
                     LoggingService.Instance.LogError("Error updating team type badge", ex);
-                    TeamTypeBadge.Background = new SolidColorBrush(System.Windows.Media.Colors.Gray);
+                    TeamTypeBadge.Background = (Brush)FindResource("OnSurfaceVariant");
                     TeamTypeText.Text = "AL";
                 }
             }
@@ -424,70 +490,6 @@ namespace Einsatzueberwachung
             {
                 LoggingService.Instance.LogError($"Error deleting team {_team?.TeamName}", ex);
             }
-        }
-
-        private void BtnAddNote_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                AddQuickNote();
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError($"Error adding note for team {_team?.TeamName}", ex);
-            }
-        }
-
-        private void TxtQuickNote_KeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                if (e.Key == Key.Enter && !string.IsNullOrWhiteSpace(QuickNoteText))
-                {
-                    AddQuickNote();
-                    e.Handled = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError($"Error handling quick note keydown for team {_team?.TeamName}", ex);
-            }
-        }
-
-        private void AddQuickNote()
-        {
-            if (_team != null && !string.IsNullOrWhiteSpace(QuickNoteText))
-            {
-                _team.AddTimestampedNote(QuickNoteText.Trim());
-                QuickNoteText = string.Empty;
-                OnPropertyChanged(nameof(QuickNoteText));
-                NotifyDataChanged();
-                
-                // Auto-scroll to bottom of notes
-                Dispatcher.BeginInvoke(() =>
-                {
-                    if (NotesItemsControl.Items.Count > 0)
-                    {
-                        var scrollViewer = FindVisualChild<ScrollViewer>(NotesItemsControl);
-                        scrollViewer?.ScrollToEnd();
-                    }
-                }, DispatcherPriority.Background);
-            }
-        }
-
-        private T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T result)
-                    return result;
-                
-                var childOfChild = FindVisualChild<T>(child);
-                if (childOfChild != null)
-                    return childOfChild;
-            }
-            return null;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
