@@ -26,12 +26,9 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Setup Inno Setup
-      uses: crazy-max/ghaction-inno-setup@v3
+      uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
       with:
-        version: '6.2.2'
-
-    - name: Compile Inno Setup script
-      run: iscc "Setup\Einsatzueberwachung_Setup.iss"
+        path: 'Setup\Einsatzueberwachung_Setup.iss'
 
     - name: Get installer path
       id: get_installer_path
