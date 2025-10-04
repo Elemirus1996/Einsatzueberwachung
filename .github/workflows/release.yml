@@ -1,7 +1,7 @@
 # GitHub Actions Workflow für automatische Releases
 # Erstellt automatisch Setup.exe und veröffentlicht Updates über GitHub Releases
 
-name: 🚀 Create Release with Setup
+name: Create Release with Setup
 
 on:
   push:
@@ -10,9 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release Version (z.B. 1.6.1)'
-        required: true
-        default: '1.6.1'
+        description: 'Release Version (z.B. 1.7.0)'
+        required: false
 
 env:
   DOTNET_VERSION: '8.0.x'
@@ -24,58 +23,62 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - name: 📥 Checkout Repository
+    - name: Checkout Repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: 🔧 Setup .NET
+    - name: Read project version
+      id: project_version
+      run: |
+        $projectFile = Get-Content -Path "${{ env.PROJECT_FILE }}" -Raw
+        $version = [regex]::Match($projectFile, '<Version>(.*?)<\/Version>').Groups[1].Value
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+      shell: powershell
+
+    - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 📋 Publish Application
+    - name: Publish Application
       run: dotnet publish "${{ env.PROJECT_FILE }}" --configuration Release --runtime win-x64 --output "publish/"
 
-    - name: 🛠️ Setup Inno Setup
+    - name: Setup Inno Setup
       run: |
         $innoSetupUrl = "https://files.jrsoftware.org/is/6/innosetup-6.2.2.exe"
         $innoSetupPath = "$env:TEMP\innosetup.exe"
         
-        Write-Host "📥 Download Inno Setup..."
+        Write-Host "Download Inno Setup..."
         Invoke-WebRequest -Uri $innoSetupUrl -OutFile $innoSetupPath
         
-        Write-Host "⚙️ Install Inno Setup..."
+        Write-Host "Install Inno Setup..."
         Start-Process -FilePath $innoSetupPath -ArgumentList "/SILENT", "/SUPPRESSMSGBOXES" -Wait
         
-        Write-Host "✅ Inno Setup installiert"
+        Write-Host "Inno Setup installiert"
       shell: powershell
 
-    - name: 📄 Create Setup Documentation
+    - name: Create Setup Documentation
       run: |
         $version = "${{ steps.project_version.outputs.version }}"
-        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+        if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ github.event.inputs.version }}") {
           $version = "${{ github.event.inputs.version }}"
         }
         
-        Write-Host "📋 Erstelle Setup-Dokumentation für Version $version"
+        Write-Host "Erstelle Setup-Dokumentation für Version $version"
         
         # License.txt
         $licenseText = @"
         MIT License
-
         Copyright (c) 2024 RescueDog_SW
-
         Permission is hereby granted, free of charge, to any person obtaining a copy
         of this software and associated documentation files (the "Software"), to deal
         in the Software without restriction, including without limitation the rights
         to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
         copies of the Software, and to permit persons to whom the Software is
         furnished to do so, subject to the following conditions:
-
         The above copyright notice and this permission notice shall be included in all
         copies or substantial portions of the Software.
-
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
         IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
         FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -87,142 +90,59 @@ jobs:
         
         # ReadMe.txt
         $readmeText = @"
-        Einsatzüberwachung Professional v$version
+        Einsatzueberwachung Professional v$version
         =====================================
-
         WICHTIGE INFORMATIONEN VOR DER INSTALLATION:
-
-        📋 SYSTEM-ANFORDERUNGEN:
-        • Windows 10 oder neuer (Windows 11 empfohlen)
-        • .NET 8 Runtime (wird automatisch installiert)
-        • Mindestens 500 MB freier Speicherplatz
-        • Administrator-Rechte für Mobile Server-Funktionalität
-
-        🔧 WAS WIRD INSTALLIERT:
-        • Einsatzüberwachung Professional v$version Hauptanwendung
-        • .NET 8 Desktop Runtime (falls nicht vorhanden)
-        • Mobile Server Netzwerk-Konfiguration
-        • Firewall-Regeln für iPhone/Android-Zugriff
-        • PowerShell-Scripts für Troubleshooting
-        • Automatische GitHub Update-Prüfung
-        • Vollständige Dokumentation und Hilfe-Dateien
-
-        🛡️ ADMINISTRATOR-RECHTE:
-        Für die vollständige Mobile Server-Funktionalität werden Administrator-Rechte benötigt.
-        Die Installation konfiguriert automatisch:
-        • URL-Reservierungen für Port 8080
-        • Windows Firewall-Regeln
-        • PowerShell-Ausführungsrichtlinien
-
-        📱 MOBILE SERVER:
-        Nach der Installation können Sie sofort den Mobile Server starten und
-        iPhones/Android-Geräte über WLAN verbinden. QR-Code-Zugriff inklusive!
-
-        🔄 AUTOMATISCHE UPDATES:
-        Diese Version unterstützt automatische Updates über GitHub Releases.
-        Sie werden automatisch über neue Versionen benachrichtigt.
-
-        💡 ERSTE SCHRITTE NACH INSTALLATION:
-        1. Anwendung als Administrator starten
-        2. Mobile Verbindung öffnen
-        3. Server starten
-        4. QR-Code mit iPhone scannen
-
-        🆘 SUPPORT:
-        Bei Problemen nutzen Sie die installierten Troubleshooting-Tools:
-        • Mobile Server Reparatur (im Startmenü)
-        • System Diagnose (im Startmenü)
-        • Vollständige Dokumentation (im Installationsordner)
-
-        Viel Erfolg mit der Einsatzüberwachung Professional v$version!
+        SYSTEM-ANFORDERUNGEN:
+        - Windows 10 oder neuer (Windows 11 empfohlen)
+        - .NET 8 Runtime (wird automatisch installiert)
+        - Mindestens 500 MB freier Speicherplatz
+        - Administrator-Rechte für Mobile Server-Funktionalität
         "@
         
         # Installation_Complete.txt
         $installCompleteText = @"
-        🎉 EINSATZÜBERWACHUNG PROFESSIONAL v$version ERFOLGREICH INSTALLIERT!
-
-        ✅ INSTALLATION ABGESCHLOSSEN:
-        • Hauptanwendung installiert und konfiguriert
-        • Mobile Server automatisch eingerichtet
-        • Firewall-Regeln erstellt
-        • PowerShell-Scripts installiert
-        • Automatische GitHub Updates aktiviert
-        • Dokumentation verfügbar
-
-        🚀 NÄCHSTE SCHRITTE:
-
-        1️⃣ ERSTE VERWENDUNG:
-           • Starten Sie "Einsatzüberwachung Professional" vom Desktop
-           • Beim ersten Start als Administrator starten (empfohlen)
-           • Einsatzdaten eingeben und Teams hinzufügen
-
-        2️⃣ MOBILE SERVER AKTIVIEREN:
-           • Menü → Mobile Verbindung
-           • "Server starten" klicken
-           • QR-Code mit iPhone/Android scannen
-           • URL: Wird automatisch angezeigt
-
-        3️⃣ AUTOMATISCHE UPDATES:
-           • Updates werden automatisch beim Start geprüft
-           • Sie erhalten Benachrichtigungen über neue Versionen
-           • Ein-Klick-Update direkt aus der Anwendung
-
-        4️⃣ BEI PROBLEMEN:
-           • Startmenü → Einsatzüberwachung Professional → Mobile Server Reparatur
-           • Oder: Startmenü → Einsatzüberwachung Professional → System Diagnose
-           • Dokumentation: [Installationsordner]\Documentation\
-
-        💡 TIPPS:
-        • Für beste Mobile Server-Performance: Als Administrator starten
-        • Beide Geräte (PC + iPhone) müssen im gleichen WLAN sein
-        • Bei Firewall-Problemen: Automatische Reparatur verwenden
-        • Update-Prüfung: Menü → Nach Updates suchen
-
-        📱 MOBILE ACCESS:
-        Nach dem Server-Start erhalten Sie eine URL und einen QR-Code.
-        Scannen Sie den QR-Code mit der iPhone-Kamera oder geben Sie
-        die URL manuell in Safari ein.
-
-        🔄 GITHUB UPDATES:
-        Diese Version erhält automatische Updates über GitHub Releases.
-        Keine manuelle Suche nach neuen Versionen mehr erforderlich!
-
-        🎯 Die Anwendung ist jetzt vollständig einsatzbereit!
-
-        Viel Erfolg bei Ihren Einsätzen!
+        EINSATZUEBERWACHUNG PROFESSIONAL v$version ERFOLGREICH INSTALLIERT!
+        INSTALLATION ABGESCHLOSSEN:
+        - Hauptanwendung installiert und konfiguriert
+        - Mobile Server automatisch eingerichtet
+        - Firewall-Regeln erstellt
+        - PowerShell-Scripts installiert
+        - Automatische GitHub Updates aktiviert
+        - Dokumentation verfügbar
         "@
         
         $licenseText | Out-File -FilePath "License.txt" -Encoding UTF8
         $readmeText | Out-File -FilePath "ReadMe.txt" -Encoding UTF8
         $installCompleteText | Out-File -FilePath "Installation_Complete.txt" -Encoding UTF8
         
-        Write-Host "✅ Setup-Dokumentation erstellt"
+        Write-Host "Setup-Dokumentation erstellt"
       shell: powershell
 
-    - name: 📦 Create Setup.exe
+    - name: Create Setup.exe
       run: |
         $innoCompiler = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
         
         if (Test-Path $innoCompiler) {
-          Write-Host "📦 Kompiliere Setup mit Inno Setup..."
+          Write-Host "Kompiliere Setup mit Inno Setup..."
           & $innoCompiler "Setup\Einsatzueberwachung_Setup.iss"
           
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Setup.exe erfolgreich erstellt"
+            Write-Host "Setup.exe erfolgreich erstellt"
           } else {
-            Write-Host "❌ Setup-Kompilierung fehlgeschlagen (Exit Code: $LASTEXITCODE)"
+            Write-Host "Setup-Kompilierung fehlgeschlagen (Exit Code: $LASTEXITCODE)"
             exit 1
           }
         } else {
-          Write-Host "❌ Inno Setup Compiler nicht gefunden!"
+          Write-Host "Inno Setup Compiler nicht gefunden!"
           exit 1
         }
       shell: powershell
 
-    - name: 📋 Create update-info.json
+    - name: Create update-info.json
       run: |
         $version = "${{ steps.project_version.outputs.version }}"
-        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+        if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ github.event.inputs.version }}") {
           $version = "${{ github.event.inputs.version }}"
           $tagName = "v$version"
         } else {
@@ -231,7 +151,7 @@ jobs:
         
         $setupFiles = Get-ChildItem "Setup\Output\*Setup*.exe"
         if ($setupFiles.Count -eq 0) {
-          Write-Host "❌ Keine Setup-Datei gefunden!"
+          Write-Host "Keine Setup-Datei gefunden!"
           exit 1
         }
         
@@ -240,7 +160,7 @@ jobs:
         $releaseDate = Get-Date -Format "yyyy-MM-dd"
         $fileName = $setupFile.Name
         
-        Write-Host "📋 Erstelle update-info.json für Version $version"
+        Write-Host "Erstelle update-info.json für Version $version"
         Write-Host "   Setup-Datei: $fileName ($([math]::Round($fileSize/1MB, 2)) MB)"
         
         $updateInfo = @{
@@ -253,109 +173,48 @@ jobs:
             fileSize = $fileSize
             checksum = ""
             releaseNotes = @(
-                "🚀 Neue Version $version verfügbar",
-                "📱 Verbesserte Mobile Server-Funktionalität", 
-                "🔧 Performance-Optimierungen und Bugfixes",
-                "🛡️ Sicherheits-Updates",
-                "🔄 Verbesserte GitHub Update-Integration"
+                "Neue Version $version verfügbar",
+                "Verbesserte Mobile Server-Funktionalität", 
+                "Performance-Optimierungen und Bugfixes",
+                "Sicherheits-Updates",
+                "Verbesserte GitHub Update-Integration"
             )
         } | ConvertTo-Json -Depth 3
         
         $updateInfo | Out-File -FilePath "update-info.json" -Encoding UTF8
         
-        Write-Host "✅ update-info.json erstellt"
+        Write-Host "update-info.json erstellt"
       shell: powershell
 
-    - name: 📊 Generate Release Notes
+    - name: Generate Release Notes
       run: |
         $version = "${{ steps.project_version.outputs.version }}"
-        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+        if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ github.event.inputs.version }}") {
           $version = "${{ github.event.inputs.version }}"
         }
         
         $releaseNotes = @"
-        # 🚀 Einsatzüberwachung Professional v$version
+        # Einsatzueberwachung Professional v$version
 
-        ## ✨ Was ist neu?
+        ## Was ist neu?
 
-        ### 🔄 GitHub Update-System
-        - **Automatische Update-Prüfung** beim App-Start
-        - **Ein-Klick-Updates** direkt aus der Anwendung
-        - **Rollback-Funktionalität** bei Update-Problemen
-        - **Backup-System** für Konfigurationen
-
-        ### 📱 Mobile Server Verbesserungen
-        - **Verbesserte Stabilität** bei iPhone-Verbindungen
-        - **Automatische Firewall-Konfiguration** während Installation
-        - **Erweiterte Diagnose-Tools** für Troubleshooting
-        - **Performance-Optimierungen** für große Einsätze
-
-        ### 🛡️ Sicherheit & Stabilität
-        - **Sicherheits-Updates** für alle Komponenten
-        - **Verbesserte Fehlerbehandlung** 
-        - **Erweiterte Logging-Funktionalität**
-        - **Performance-Metriken** und Diagnose
-
-        ## 📥 Installation
-
-        ### 🔧 Neue Installation:
-        1. **Setup.exe herunterladen** (siehe Assets unten)
-        2. **Als Administrator ausführen**
-        3. **Setup-Wizard folgen** (vollautomatisch)
-        4. **Mobile Server** funktioniert sofort
-
-        ### 🔄 Update von vorheriger Version:
-        - **Automatisches Update** über die Anwendung (empfohlen)
-        - **Oder: Setup.exe** mit `/UPDATE` Parameter
-        - **Konfiguration** bleibt vollständig erhalten
-        - **Rollback** möglich bei Problemen
-
-        ## 📋 System-Anforderungen
-
-        - **Windows 10** oder neuer (Windows 11 empfohlen)
-        - **.NET 8 Runtime** (wird automatisch installiert)
-        - **500 MB** freier Speicherplatz
-        - **Administrator-Rechte** für Mobile Server-Funktionalität
-
-        ## 📱 Mobile Server Features
-
-        - **Automatische Netzwerk-Konfiguration**
-        - **QR-Code-Zugriff** für iPhone/Android
-        - **Firewall-Integration** ohne manuelle Konfiguration
-        - **Troubleshooting-Tools** integriert
-
-        ## 🆘 Support & Hilfe
-
-        ### 📚 Dokumentation:
-        - **Vollständige Anleitungen** im Installationsordner
-        - **Troubleshooting-Guides** für häufige Probleme
-        - **PowerShell-Scripts** für automatische Reparatur
-
-        ### 🔧 Tools:
-        - **Mobile Server Reparatur** (Startmenü)
-        - **System Diagnose** (Startmenü)
-        - **Update-Prüfung** (in der Anwendung)
-
-        ## 📊 Technische Details
-
-        - **.NET 8** für maximale Performance
-        - **GitHub Releases** für Updates
-        - **Inno Setup** für professionelle Installation
-        - **Automatische Konfiguration** aller Komponenten
-
-        ---
-
-        **🎯 Diese Version bringt die Einsatzüberwachung Professional auf ein neues Level mit vollständig automatisierten Updates und verbesserter Mobile Server-Funktionalität!**
-
-        **📱 Nach der Installation: QR-Code scannen und sofort loslegen!**
+        ### GitHub Update-System
+        - Automatische Update-Prüfung beim App-Start
+        - Ein-Klick-Updates direkt aus der Anwendung
+        ### Mobile Server Verbesserungen
+        - Verbesserte Stabilität bei iPhone-Verbindungen
+        - Automatische Firewall-Konfiguration während Installation
+        ### Sicherheit & Stabilität
+        - Sicherheits-Updates für alle Komponenten
+        - Verbesserte Fehlerbehandlung
         "@
         
         $releaseNotes | Out-File -FilePath "RELEASE_NOTES.md" -Encoding UTF8
         
-        Write-Host "✅ Release Notes erstellt"
+        Write-Host "Release Notes erstellt"
       shell: powershell
 
-    - name: 🏷️ Create Git Tag (für workflow_dispatch)
+    - name: Create Git Tag (fuer workflow_dispatch)
       if: github.event_name == 'workflow_dispatch'
       run: |
         $version = "${{ github.event.inputs.version }}"
@@ -367,32 +226,31 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         
-        Write-Host "🏷️ Erstelle Tag: $tagName"
+        Write-Host "Erstelle Tag: $tagName"
         git tag $tagName
         git push origin $tagName
         
-        Write-Host "✅ Tag erstellt und gepusht"
+        Write-Host "Tag erstellt und gepusht"
       shell: powershell
 
-    - name: 📤 Create GitHub Release
+    - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version || steps.project_version.outputs.version) || github.ref_name }}
-        name: 🚀 Einsatzüberwachung Professional ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.version || steps.project_version.outputs.version) || github.ref_name }}
+        name: Einsatzueberwachung Professional ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.version || steps.project_version.outputs.version) || github.ref_name }}
         body_path: RELEASE_NOTES.md
         files: |
           Setup/Output/Einsatzueberwachung_Professional_v*_Setup.exe
           update-info.json
         draft: false
         prerelease: false
-        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: 📊 Release Summary
+    - name: Release Summary
       run: |
         $version = "${{ steps.project_version.outputs.version }}"
-        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+        if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ github.event.inputs.version }}") {
           $version = "${{ github.event.inputs.version }}"
         }
         
@@ -401,16 +259,16 @@ jobs:
         $fileSize = [math]::Round($setupFile.Length/1MB, 2)
         
         Write-Host ""
-        Write-Host "🎉 RELEASE ERFOLGREICH ERSTELLT!" -ForegroundColor Green
-        Write-Host "=================================" -ForegroundColor Green
+        Write-Host "RELEASE ERFOLGREICH ERSTELLT!"
+        Write-Host "================================="
         Write-Host ""
-        Write-Host "📋 Release-Details:" -ForegroundColor Cyan
-        Write-Host "   Version: $version" -ForegroundColor White
-        Write-Host "   Setup-Datei: $($setupFile.Name)" -ForegroundColor White
-        Write-Host "   Größe: $fileSize MB" -ForegroundColor White
-        Write-Host "   GitHub URL: https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v$version" -ForegroundColor White
+        Write-Host "Release-Details:"
+        Write-Host "   Version: $version"
+        Write-Host "   Setup-Datei: $($setupFile.Name)"
+        Write-Host "   Groesse: $fileSize MB"
+        Write-Host "   GitHub URL: https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v$version"
         Write-Host ""
-        Write-Host "🚀 Das Release ist jetzt verfügbar!" -ForegroundColor Green
-        Write-Host "📱 Benutzer erhalten automatische Update-Benachrichtigungen!" -ForegroundColor Green
+        Write-Host "Das Release ist jetzt verfuegbar!"
+        Write-Host "Benutzer erhalten automatische Update-Benachrichtigungen!"
         Write-Host ""
       shell: powershell
