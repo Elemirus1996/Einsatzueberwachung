@@ -34,22 +34,8 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Read project version
-      id: project_version
-      run: |
-        $projectFile = Get-Content -Path "${{ env.PROJECT_FILE }}" -Raw
-        $version = [regex]::Match($projectFile, '<Version>(.*?)<\/Version>').Groups[1].Value
-        echo "version=$version" >> $env:GITHUB_OUTPUT
-      shell: powershell
-
-    - name: 📦 Restore Dependencies
-      run: dotnet restore "${{ env.PROJECT_FILE }}"
-
-    - name: 🔨 Build Release
-      run: dotnet build "${{ env.PROJECT_FILE }}" --configuration Release --no-restore
-
     - name: 📋 Publish Application
-      run: dotnet publish "${{ env.PROJECT_FILE }}" --configuration Release --output "bin/Release/net8.0-windows" --no-build
+      run: dotnet publish "${{ env.PROJECT_FILE }}" --configuration Release --runtime win-x64 --output "publish/"
 
     - name: 🛠️ Setup Inno Setup
       run: |
