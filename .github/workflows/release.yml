@@ -16,7 +16,7 @@ on:
 
 env:
   DOTNET_VERSION: '8.0.x'
-  PROJECT_FILE: 'Einsatzüberwachung V1.5.csproj'
+  PROJECT_FILE: 'Einsatzüberwachung.csproj'
   SOLUTION_DIR: '.'
 
 jobs:
