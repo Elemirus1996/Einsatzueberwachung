@@ -1,9 +1,10 @@
 name: Release
 
 on:
+  workflow_dispatch: # Ermöglicht manuellen Start im "Actions"-Tab auf GitHub
   push:
     tags:
-      - 'v*' # Trigger on version tags like v1.7.1
+      - 'v*' # Trigger on version tags like v1.0.0
 
 jobs:
   build:
