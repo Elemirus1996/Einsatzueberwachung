@@ -70,66 +70,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include=".github\workflows\release.yml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Update="Resources\DesignSystem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
   </ItemGroup>
-
-  <!-- Setup-Files für Deployment -->
-  <ItemGroup>
-    <SetupFiles Include="Fix-MobileServer.ps1" />
-    <SetupFiles Include="Setup-MobileNetwork.ps1" />
-    <SetupFiles Include="SERVER_START_LOESUNGSANLEITUNG_FINAL.md" />
-    <SetupFiles Include="SETUP_INSTALLATION_GUIDE.md" />
-    <SetupFiles Include="HTTP_400_TROUBLESHOOTING.md" />
-    <SetupFiles Include="MOBILE_SETUP_GUIDE.md" />
-    <SetupFiles Include="AUTOMATIC_NETWORK_SETUP.md" />
-  </ItemGroup>
-
-  <!-- Custom MSBuild Target für Setup-Erstellung -->
-  <Target Name="CreateSetup" AfterTargets="Publish" Condition="'$(GenerateSetup)' == 'true'">
-    <Message Text="🚀 Bereite Setup-Erstellung vor..." Importance="high" />
-    
-    <!-- Erstelle Setup-Verzeichnisse -->
-    <MakeDir Directories="$(SetupOutputDir)" />
-    <MakeDir Directories="Setup\Resources" />
-    
-    <!-- Kopiere Setup-Dateien -->
-    <Copy SourceFiles="@(SetupFiles)" DestinationFolder="Setup\Documentation" />
-    
-    <!-- Erstelle License.txt und ReadMe.txt falls nicht vorhanden -->
-    <WriteLinesToFile File="License.txt" Lines="MIT License%0D%0A%0D%0ACopyright (c) 2024 RescueDog_SW%0D%0A%0D%0APermission is hereby granted, free of charge, to any person obtaining a copy of this software..." Condition="!Exists('License.txt')" />
-    
-    <Message Text="✅ Setup-Dateien vorbereitet" Importance="high" />
-    
-    <!-- Prüfe ob Inno Setup verfügbar ist -->
-    <PropertyGroup>
-      <InnoSetupPath Condition="Exists('$(ProgramFiles)\Inno Setup 6\ISCC.exe')">$(ProgramFiles)\Inno Setup 6\ISCC.exe</InnoSetupPath>
-      <InnoSetupPath Condition="'$(InnoSetupPath)' == '' AND Exists('$(MSBuildProgramFiles32)\Inno Setup 6\ISCC.exe')">$(MSBuildProgramFiles32)\Inno Setup 6\ISCC.exe</InnoSetupPath>
-    </PropertyGroup>
-    
-    <!-- Führe Inno Setup aus falls verfügbar -->
-    <Exec Command="&quot;$(InnoSetupPath)&quot; &quot;$(SetupScriptPath)&quot;" Condition="'$(InnoSetupPath)' != '' AND Exists('$(SetupScriptPath)')" ContinueOnError="false" />
-    
-    <Message Text="🎉 Setup.exe erfolgreich erstellt: $(SetupOutputDir)\Einsatzueberwachung_Professional_v1.6_Setup.exe" Importance="high" Condition="'$(InnoSetupPath)' != ''" />
-    
-    <Warning Text="Inno Setup nicht gefunden. Laden Sie es von https://jrsoftware.org/isinfo.php herunter und führen Sie Setup\Einsatzueberwachung_Setup.iss manuell aus." Condition="'$(InnoSetupPath)' == ''" />
-  </Target>
-
-  <!-- Target für PowerShell Build-Script -->
-  <Target Name="RunBuildScript">
-    <Message Text="🚀 Führe Build-Script aus..." Importance="high" />
-    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File Build-Setup.ps1" />
-  </Target>
-
-  <!-- Target für Silent Setup Creation -->
-  <Target Name="CreateSilentSetup" AfterTargets="Publish">
-    <Message Text="📦 Erstelle Setup ohne Benutzerinteraktion..." Importance="high" />
-    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File Build-Setup.ps1 -CleanBuild -SkipTests" />
-  </Target>
 
 </Project>
