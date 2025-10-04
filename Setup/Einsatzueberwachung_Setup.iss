@@ -51,7 +51,7 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checked
 Name: "autostart"; Description: "Mobile Server automatisch konfigurieren (empfohlen)"; GroupDescription: "Mobile Server Konfiguration"; Flags: checked
 Name: "firewall"; Description: "Firewall-Regeln automatisch erstellen"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked
 Name: "urlreservation"; Description: "URL-Reservierungen für Mobile Server"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked
