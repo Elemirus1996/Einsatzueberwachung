@@ -54,7 +54,7 @@ Name: "autoupdates"; Description: "Automatische Update-Prüfung aktivieren (empf
 
 [Files]
 ; Hauptanwendung
-Source: "bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 ; PowerShell-Scripts
 Source: "Fix-MobileServer.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
 Source: "Setup-MobileNetwork.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
