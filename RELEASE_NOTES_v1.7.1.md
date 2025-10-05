@@ -1,4 +1,4 @@
-# 🚀 Release v1.7.01 - GitHub Auto-Update-System
+# 🚀 Release v1.7.1 - GitHub Auto-Update-System
 
 ## ✨ Hauptfeatures dieser Version
 
