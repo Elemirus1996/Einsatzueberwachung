@@ -277,11 +277,16 @@ namespace Einsatzueberwachung.Services
             try
             {
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
-                return version?.ToString() ?? "1.0.0.0";
+                if (version != null)
+                {
+                    // Konvertiere zu 3-teiliger Version (X.Y.Z) für Vergleich mit update-info.json
+                    return $"{version.Major}.{version.Minor}.{version.Build}";
+                }
+                return "1.0.0";
             }
             catch
             {
-                return "1.0.0.0";
+                return "1.0.0";
             }
         }
 
