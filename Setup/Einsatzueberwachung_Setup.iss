@@ -29,7 +29,6 @@ OutputDir=Setup\Output
 OutputBaseFilename=Einsatzueberwachung_Professional_v{#MyAppVersion}_Setup
 Compression=lzma
 SolidCompression=yes
-ArchitecturesInstallIn64BitMode=x64
 MinVersion=0,6.1sp1
 
 ; Wichtig: Admin-Rechte für Mobile Server Konfiguration
@@ -40,8 +39,6 @@ PrivilegesRequiredOverridesAllowed=dialog
 AppMutex=EinsatzueberwachungProfessional_UpdateMutex
 CloseApplications=yes
 RestartApplications=yes
-
-; Moderne UI-Konfiguration
 ShowLanguageDialog=no
 
 [Languages]
