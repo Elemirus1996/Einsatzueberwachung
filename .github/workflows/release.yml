@@ -135,7 +135,7 @@ jobs:
             downloadUrl = "$repoUrl/releases/download/${{ github.ref_name }}/$installerName"
             releaseNotesUrl = "$repoUrl/releases/tag/${{ github.ref_name }}"
             mandatory = $false
-            minimumVersion = "1.7.0"
+            minimumVersion = "1.5.0"
             fileSize = $fileSize
             releaseNotes = @(
                 "🚀 Neue Version $version verfügbar",
