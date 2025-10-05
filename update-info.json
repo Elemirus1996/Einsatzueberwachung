@@ -1,0 +1,15 @@
+{
+  "version": "1.7.1",
+  "releaseDate": "2025-01-05",
+  "downloadUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/download/v1.7.1/Einsatzueberwachung_Professional_v1.7.1.0_Setup.exe",
+  "releaseNotesUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v1.7.1",
+  "mandatory": false,
+  "minimumVersion": "1.7.0",
+  "fileSize": 36700160,
+  "releaseNotes": [
+    "🚀 Version System Fix - Automatische Versionskonsistenz",
+    "🔧 Setup liest Version automatisch aus Assembly",
+    "✅ GitHub Actions Validierung implementiert",
+    "🛡️ Verhindert zukünftige Versionskonflikte"
+  ]
+}
