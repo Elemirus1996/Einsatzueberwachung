@@ -25,10 +25,22 @@ jobs:
     - name: Build application
       run: dotnet build Einsatzueberwachung.csproj --configuration Release --no-restore
 
+    - name: List directory structure (Debug)
+      run: |
+        Write-Host "=== Root Directory ==="
+        Get-ChildItem -Path . -Recurse -Depth 2 | Select-Object FullName
+        Write-Host "`n=== Checking bin/Release folder ==="
+        if (Test-Path "bin\Release\net8.0-windows") {
+          Write-Host "✓ bin\Release\net8.0-windows exists"
+          Get-ChildItem "bin\Release\net8.0-windows" | Select-Object Name
+        } else {
+          Write-Host "✗ bin\Release\net8.0-windows NOT FOUND"
+        }
+
     - name: Setup Inno Setup
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
       with:
-        path: 'Setup/Einsatzueberwachung_Setup.iss'
+        path: Setup/Einsatzueberwachung_Setup.iss
 
     - name: Get installer path
       id: get_installer_path
