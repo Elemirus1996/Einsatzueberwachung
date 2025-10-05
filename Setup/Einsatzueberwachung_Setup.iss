@@ -69,11 +69,11 @@ Source: "MOBILE_SETUP_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignoreve
 Source: "GITHUB_UPDATE_SYSTEM.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"; Flags: runasoriginaluser
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"; Flags: runasoriginaluser
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
 
 ; Admin-Verknüpfung für Mobile Server
-Name: "{autoprograms}\{#MyAppName} (Administrator)"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription} - Als Administrator für Mobile Server"; Flags: runascurrentuser
+Name: "{autoprograms}\{#MyAppName} (Administrator)"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription} - Als Administrator für Mobile Server"
 
 ; Troubleshooting Tools
 Name: "{autoprograms}\{#MyAppName}\Mobile Server Reparatur"; Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Scripts\Fix-MobileServer.ps1"""; WorkingDir: "{app}\Scripts"; Comment: "Mobile Server Probleme automatisch reparieren"
@@ -90,7 +90,7 @@ Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""Einsatzuebe
 Filename: "powershell"; Parameters: "-Command ""Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force"""; StatusMsg: "Konfiguriere PowerShell für Troubleshooting-Scripts..."; Flags: runhidden
 
 ; Optional: Anwendung nach Installation starten
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 ; Cleanup bei Deinstallation
