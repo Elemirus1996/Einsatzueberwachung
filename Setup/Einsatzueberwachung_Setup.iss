@@ -3,7 +3,7 @@
 ; Erstellt: 2024 - RescueDog_SW
 
 #define MyAppName "Einsatzüberwachung Professional"
-#define MyAppVersion "1.7.0"
+#define MyAppVersion "1.7.1"
 #define MyAppPublisher "RescueDog_SW"
 #define MyAppURL "https://github.com/Elemirus1996/Einsatzueberwachung"
 #define MyAppExeName "Einsatzueberwachung.exe"
