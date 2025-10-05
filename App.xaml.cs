@@ -1,7 +1,6 @@
-using System.Configuration;
-using System.Data;
-using System.Windows;
+using System;
 using System.Threading.Tasks;
+using System.Windows;
 using Einsatzueberwachung.Services;
 
 namespace Einsatzueberwachung
@@ -21,8 +20,11 @@ namespace Einsatzueberwachung
                 // Initialize theme system early
                 var themeService = ThemeService.Instance;
                 
+                // Initialize master data service
+                _ = InitializeMasterDataAsync();
+                
                 // Log startup
-                LoggingService.Instance.LogInfo("🚀 Einsatzüberwachung Professional v1.7 starting up...");
+                LoggingService.Instance.LogInfo("🚀 Einsatzüberwachung Professional v1.9 starting up...");
                 LoggingService.Instance.LogInfo($"📍 Startup Time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 LoggingService.Instance.LogInfo($"💻 OS: {Environment.OSVersion}");
                 LoggingService.Instance.LogInfo($"🔧 .NET: {Environment.Version}");
@@ -41,6 +43,20 @@ namespace Einsatzueberwachung
                 
                 // Still try to start the app
                 base.OnStartup(e);
+            }
+        }
+
+        private async Task InitializeMasterDataAsync()
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo("📊 Initializing master data service...");
+                await MasterDataService.Instance.LoadDataAsync();
+                LoggingService.Instance.LogInfo("✅ Master data service initialized");
+            }
+            catch (System.Exception ex)
+            {
+                LoggingService.Instance.LogError("❌ Error initializing master data service", ex);
             }
         }
 

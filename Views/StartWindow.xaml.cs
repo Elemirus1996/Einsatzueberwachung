@@ -21,68 +21,83 @@ namespace Einsatzueberwachung.Views
             DataContext = _viewModel;
             
             // Subscribe to ViewModel events
-            _viewModel.EinsatzStarted += OnEinsatzStarted;
-            _viewModel.Cancelled += OnCancelled;
+            _viewModel.RequestClose += OnRequestClose;
+            _viewModel.ShowMessage += OnShowMessage;
             
             InitializeTheme();
             
             LoggingService.Instance?.LogInfo("StartWindow v1.9 initialized with MVVM pattern and Orange design");
         }
 
-        private void OnEinsatzStarted(object? sender, EinsatzData einsatzData)
+        private void OnRequestClose(object? sender, EventArgs e)
         {
             try
             {
-                EinsatzData = einsatzData;
-                FirstWarningMinutes = _viewModel.FirstWarningMinutes;
-                SecondWarningMinutes = _viewModel.SecondWarningMinutes;
-                
-                // Check if this window was opened as dialog or as startup window
-                if (Owner != null)
+                if (_viewModel.EinsatzData != null)
                 {
-                    // Opened as dialog, can set DialogResult
-                    DialogResult = true;
+                    // Einsatz started successfully
+                    EinsatzData = _viewModel.EinsatzData;
+                    FirstWarningMinutes = _viewModel.FirstWarningMinutes;
+                    SecondWarningMinutes = _viewModel.SecondWarningMinutes;
+                    
+                    // Check if this window was opened as dialog or as startup window
+                    if (Owner != null)
+                    {
+                        // Opened as dialog, can set DialogResult
+                        DialogResult = true;
+                    }
+                    else
+                    {
+                        // Opened as startup window - create MainWindow
+                        var mainWindow = new MainWindow(EinsatzData, FirstWarningMinutes, SecondWarningMinutes);
+                        
+                        // Set as Application.MainWindow BEFORE showing it
+                        Application.Current.MainWindow = mainWindow;
+                        
+                        // Change ShutdownMode (now safe)
+                        Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                        
+                        // Show MainWindow
+                        mainWindow.Show();
+                        
+                        // Close StartWindow (App won't exit because MainWindow is still open)
+                        this.Close();
+                        
+                        LoggingService.Instance?.LogInfo("✅ Transition from StartWindow to MainWindow completed with MVVM");
+                    }
                 }
                 else
                 {
-                    // Opened as startup window - create MainWindow
-                    var mainWindow = new MainWindow(EinsatzData, FirstWarningMinutes, SecondWarningMinutes);
-                    
-                    // Set as Application.MainWindow BEFORE showing it
-                    Application.Current.MainWindow = mainWindow;
-                    
-                    // Change ShutdownMode (now safe)
-                    Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                    
-                    // Show MainWindow
-                    mainWindow.Show();
-                    
-                    // Close StartWindow (App won't exit because MainWindow is still open)
-                    this.Close();
-                    
-                    LoggingService.Instance?.LogInfo("✅ Transition from StartWindow to MainWindow completed with MVVM");
+                    // Cancelled
+                    if (Owner != null)
+                    {
+                        // Opened as dialog, can set DialogResult
+                        DialogResult = false;
+                    }
+                    else
+                    {
+                        // Opened as startup window, close application
+                        Application.Current.Shutdown();
+                    }
                 }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance?.LogError("Error handling EinsatzStarted event", ex);
-                MessageBox.Show($"Fehler beim Starten des Einsatzes: {ex.Message}", 
+                LoggingService.Instance?.LogError("Error handling RequestClose event", ex);
+                MessageBox.Show($"Fehler beim Verarbeiten der Anfrage: {ex.Message}", 
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void OnCancelled(object? sender, EventArgs e)
+        private void OnShowMessage(object? sender, string message)
         {
-            // Check if this window was opened as dialog or as startup window
-            if (Owner != null)
+            try
             {
-                // Opened as dialog, can set DialogResult
-                DialogResult = false;
+                MessageBox.Show(message, "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            else
+            catch (Exception ex)
             {
-                // Opened as startup window, close application
-                Application.Current.Shutdown();
+                LoggingService.Instance?.LogError("Error showing message", ex);
             }
         }
 
@@ -124,8 +139,8 @@ namespace Einsatzueberwachung.Views
             // Unsubscribe from events
             if (_viewModel != null)
             {
-                _viewModel.EinsatzStarted -= OnEinsatzStarted;
-                _viewModel.Cancelled -= OnCancelled;
+                _viewModel.RequestClose -= OnRequestClose;
+                _viewModel.ShowMessage -= OnShowMessage;
             }
             
             ThemeService.Instance.ThemeChanged -= OnThemeChanged;

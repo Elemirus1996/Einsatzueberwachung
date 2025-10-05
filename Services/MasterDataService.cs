@@ -267,6 +267,14 @@ namespace Einsatzueberwachung.Services
             return PersonalList.Where(p => p.IsActive).ToList();
         }
 
+        /// <summary>
+        /// Gibt alle Personaldatensätze zurück (auch inaktive)
+        /// </summary>
+        public List<PersonalEntry> GetAllPersonal()
+        {
+            return PersonalList.ToList();
+        }
+
         public List<DogEntry> GetActiveDogs()
         {
             return DogList.Where(d => d.IsActive).ToList();

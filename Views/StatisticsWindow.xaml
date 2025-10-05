@@ -12,6 +12,9 @@
     <!-- DataContext wird über Code-Behind gesetzt -->
 
     <Window.Resources>
+        <!-- Standard Converter -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        
         <!-- Orange Statistics Styles -->
         
         <!-- Orange Statistics Card Style -->
@@ -25,7 +28,7 @@
             <Setter Property="MinHeight" Value="140"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
+                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                      ShadowDepth="0" BlurRadius="10" Opacity="0.12"/>
                 </Setter.Value>
             </Setter>
@@ -39,7 +42,7 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
+                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                      ShadowDepth="0" BlurRadius="4" Opacity="0.2"/>
                 </Setter.Value>
             </Setter>
@@ -60,20 +63,7 @@
             <Setter Property="Margin" Value="0,8,0,0"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
             <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ProgressBar">
-                        <Border Background="{TemplateBinding Background}" 
-                               CornerRadius="4">
-                            <Rectangle Name="PART_Track" 
-                                     Fill="{TemplateBinding Foreground}"
-                                     RadiusX="4" RadiusY="4"
-                                     Width="{TemplateBinding Value, 
-                                             Converter={StaticResource PercentageToWidthConverter}}"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
 
         <!-- Orange Action Button Style -->
@@ -98,10 +88,10 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryVariant}"/>
+                    <Setter Property="Background" Value="{DynamicResource Tertiary}"/>
                     <Setter Property="Effect">
                         <Setter.Value>
-                            <DropShadowEffect Color="{DynamicResource Primary}" 
+                            <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                              ShadowDepth="0" BlurRadius="8" Opacity="0.3"/>
                         </Setter.Value>
                     </Setter>
@@ -154,7 +144,7 @@
             <Setter Property="Margin" Value="0,0,0,16"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource OnSurface}" 
+                    <DropShadowEffect Color="Black" 
                                      ShadowDepth="0" BlurRadius="6" Opacity="0.08"/>
                 </Setter.Value>
             </Setter>
@@ -188,7 +178,7 @@
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="{DynamicResource PrimaryColor}" Offset="0"/>
-                    <GradientStop Color="{DynamicResource PrimaryVariantColor}" Offset="1"/>
+                    <GradientStop Color="#FFB74D" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
             <Grid>
@@ -202,7 +192,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Border Width="56" Height="56" CornerRadius="28" 
                            Background="White" Opacity="0.95" Margin="0,0,20,0"
-                           Effect="{DynamicResource OrangeGlow}">
+                           Effect="{StaticResource OrangeElevation2}">
                         <fa:ImageAwesome Icon="BarChart" Width="28" Height="28" 
                                        Foreground="{DynamicResource Primary}"/>
                     </Border>

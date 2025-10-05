@@ -9,6 +9,14 @@
     <SolidColorBrush x:Key="OnPrimary" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="OnPrimaryContainer" Color="#E65100"/>
     
+    <!-- Color-Definitionen für dynamische Referenzen -->
+    <Color x:Key="PrimaryColor">#F57C00</Color>
+    <Color x:Key="PrimaryContainerColor">#FFE0B2</Color>
+    <Color x:Key="SecondaryColor">#455A64</Color>
+    <Color x:Key="SecondaryContainerColor">#CFD8DC</Color>
+    <Color x:Key="TertiaryColor">#FF9800</Color>
+    <Color x:Key="TertiaryContainerColor">#FFF3E0</Color>
+    
     <!-- Secondary Colors - Komplementäre Blau-Grau Töne -->
     <SolidColorBrush x:Key="Secondary" Color="#455A64"/> <!-- Blue Grey -->
     <SolidColorBrush x:Key="SecondaryContainer" Color="#CFD8DC"/>

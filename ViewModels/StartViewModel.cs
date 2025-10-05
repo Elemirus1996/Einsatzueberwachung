@@ -18,16 +18,20 @@ namespace Einsatzueberwachung.ViewModels
         private DateTime _einsatzDatum = DateTime.Now;
 
         // Warning Settings
-        private int _firstWarningMinutes = 10;
-        private int _secondWarningMinutes = 20;
+        private int _warnung1 = 10;
+        private int _warnung2 = 20;
 
         // Validation and UI State
         private bool _isFormValid = false;
         private string _validationMessage = string.Empty;
 
         // Collections for ComboBoxes
-        private ObservableCollection<PersonalEntry> _einsatzleiterList = new();
+        private ObservableCollection<PersonalEntry> _einsatzleiterListe = new();
         private ObservableCollection<PersonalEntry> _fuehrungsassistentList = new();
+
+        // Selected items for binding
+        private PersonalEntry? _selectedEinsatzleiter;
+        private PersonalEntry? _selectedFuehrungsassistent;
 
         public string Einsatzleiter
         {
@@ -94,23 +98,23 @@ namespace Einsatzueberwachung.ViewModels
             }
         }
 
-        public int FirstWarningMinutes
+        public int Warnung1
         {
-            get => _firstWarningMinutes;
+            get => _warnung1;
             set
             {
-                _firstWarningMinutes = Math.Max(1, value);
+                _warnung1 = Math.Max(1, value);
                 OnPropertyChanged();
                 ValidateWarningSettings();
             }
         }
 
-        public int SecondWarningMinutes
+        public int Warnung2
         {
-            get => _secondWarningMinutes;
+            get => _warnung2;
             set
             {
-                _secondWarningMinutes = Math.Max(_firstWarningMinutes + 1, value);
+                _warnung2 = Math.Max(_warnung1 + 1, value);
                 OnPropertyChanged();
                 ValidateWarningSettings();
             }
@@ -137,12 +141,12 @@ namespace Einsatzueberwachung.ViewModels
             }
         }
 
-        public ObservableCollection<PersonalEntry> EinsatzleiterList
+        public ObservableCollection<PersonalEntry> EinsatzleiterListe
         {
-            get => _einsatzleiterList;
+            get => _einsatzleiterListe;
             set
             {
-                _einsatzleiterList = value;
+                _einsatzleiterListe = value;
                 OnPropertyChanged();
             }
         }
@@ -157,23 +161,60 @@ namespace Einsatzueberwachung.ViewModels
             }
         }
 
+        public PersonalEntry? SelectedEinsatzleiter
+        {
+            get => _selectedEinsatzleiter;
+            set
+            {
+                _selectedEinsatzleiter = value;
+                OnPropertyChanged();
+                if (value != null)
+                {
+                    Einsatzleiter = value.FullName;
+                    OnPropertyChanged(nameof(EinsatzleiterInfo));
+                }
+            }
+        }
+
+        public PersonalEntry? SelectedFuehrungsassistent
+        {
+            get => _selectedFuehrungsassistent;
+            set
+            {
+                _selectedFuehrungsassistent = value;
+                OnPropertyChanged();
+                if (value != null)
+                {
+                    Fuehrungsassistent = value.FullName;
+                }
+            }
+        }
+
+        public string EinsatzleiterInfo
+        {
+            get
+            {
+                if (SelectedEinsatzleiter?.Skills != null)
+                {
+                    return $"✓ {SelectedEinsatzleiter.Skills.GetHighestLeadershipLevel()}";
+                }
+                return string.Empty;
+            }
+        }
+
         // Result properties
         public EinsatzData? EinsatzData { get; private set; }
+        public int FirstWarningMinutes => Warnung1;
+        public int SecondWarningMinutes => Warnung2;
 
         // Enhanced commands with parameter support
         public ICommand StartCommand { get; private set; } = null!;
         public ICommand CancelCommand { get; private set; } = null!;
         public ICommand ResetFormCommand { get; private set; } = null!;
-        public ICommand LoadTemplateCommand { get; private set; } = null!;
-        public ICommand SaveTemplateCommand { get; private set; } = null!;
-        public ICommand SetCurrentTimeCommand { get; private set; } = null!;
-        public ICommand SelectPersonCommand { get; private set; } = null!;
 
         // Events
         public event EventHandler? RequestClose;
         public event EventHandler<string>? ShowMessage;
-        public event EventHandler<EinsatzData>? EinsatzStarted;
-        public event EventHandler? Cancelled;
 
         public StartViewModel()
         {
@@ -183,7 +224,7 @@ namespace Einsatzueberwachung.ViewModels
             LoadMasterDataAsync();
             ValidateForm();
             
-            LoggingService.Instance?.LogInfo("StartViewModel initialized with enhanced command support");
+            LoggingService.Instance?.LogInfo("StartViewModel initialized with Einsatzleiter support");
         }
 
         private void InitializeCommands()
@@ -191,39 +232,41 @@ namespace Einsatzueberwachung.ViewModels
             StartCommand = new RelayCommand(ExecuteStart, CanExecuteStart);
             CancelCommand = new RelayCommand(ExecuteCancel);
             ResetFormCommand = new RelayCommand(ExecuteResetForm, CanExecuteResetForm);
-            LoadTemplateCommand = new RelayCommand<EinsatzTemplate>(ExecuteLoadTemplate);
-            SaveTemplateCommand = new RelayCommand(ExecuteSaveTemplate, CanExecuteSaveTemplate);
-            SetCurrentTimeCommand = new RelayCommand(ExecuteSetCurrentTime);
-            SelectPersonCommand = new RelayCommand<string>(ExecuteSelectPerson);
         }
 
         private async void LoadMasterDataAsync()
         {
             try
             {
-                // Load personnel with leadership skills
-                var einsatzleiter = _masterDataService.GetPersonalBySkill(PersonalSkills.Fuehrungsassistent)
-                    .Concat(_masterDataService.GetPersonalBySkill(PersonalSkills.Hundefuehrer))
-                    .DistinctBy(p => p.Id)
-                    .OrderBy(p => p.FullName);
+                // Load personnel with leadership qualifications (GF, ZF, VF, EL)
+                var allPersonal = _masterDataService.GetAllPersonal();
+                var leadershipQualified = allPersonal
+                    .Where(p => p.Skills.IsLeadershipQualified())
+                    .OrderBy(p => p.FullName)
+                    .ToList();
 
-                EinsatzleiterList.Clear();
-                foreach (var person in einsatzleiter)
+                EinsatzleiterListe.Clear();
+                EinsatzleiterListe.Add(new PersonalEntry { Vorname = "(Manuell", Nachname = "eingeben)" });
+                
+                foreach (var person in leadershipQualified)
                 {
-                    EinsatzleiterList.Add(person);
+                    EinsatzleiterListe.Add(person);
                 }
 
-                // Load assistants
+                // Load assistants (Führungsassistenten)
                 var assistenten = _masterDataService.GetPersonalBySkill(PersonalSkills.Fuehrungsassistent)
-                    .OrderBy(p => p.FullName);
+                    .OrderBy(p => p.FullName)
+                    .ToList();
 
                 FuehrungsassistentList.Clear();
+                FuehrungsassistentList.Add(new PersonalEntry { Vorname = "(Leer", Nachname = "lassen)" });
+                
                 foreach (var person in assistenten)
                 {
                     FuehrungsassistentList.Add(person);
                 }
 
-                LoggingService.Instance?.LogInfo($"Loaded personnel: {EinsatzleiterList.Count} potential leaders, {FuehrungsassistentList.Count} assistants");
+                LoggingService.Instance?.LogInfo($"Loaded personnel: {leadershipQualified.Count} qualified leaders, {assistenten.Count} assistants");
             }
             catch (Exception ex)
             {
@@ -257,9 +300,9 @@ namespace Einsatzueberwachung.ViewModels
 
         private void ValidateWarningSettings()
         {
-            if (SecondWarningMinutes <= FirstWarningMinutes)
+            if (Warnung2 <= Warnung1)
             {
-                SecondWarningMinutes = FirstWarningMinutes + 5;
+                Warnung2 = Warnung1 + 5;
             }
         }
 
@@ -285,8 +328,6 @@ namespace Einsatzueberwachung.ViewModels
 
                 LoggingService.Instance?.LogInfo($"Starting {EinsatzTyp}: {Einsatzort} with leader {Einsatzleiter}");
                 
-                // Trigger events für UI-Handling
-                EinsatzStarted?.Invoke(this, EinsatzData);
                 RequestClose?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
@@ -302,9 +343,6 @@ namespace Einsatzueberwachung.ViewModels
             {
                 LoggingService.Instance?.LogInfo("Start dialog cancelled by user");
                 EinsatzData = null;
-                
-                // Trigger events für UI-Handling
-                Cancelled?.Invoke(this, EventArgs.Empty);
                 RequestClose?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
@@ -331,83 +369,16 @@ namespace Einsatzueberwachung.ViewModels
                 Einsatzort = string.Empty;
                 IstEinsatz = true;
                 EinsatzDatum = DateTime.Now;
-                FirstWarningMinutes = 10;
-                SecondWarningMinutes = 20;
+                Warnung1 = 10;
+                Warnung2 = 20;
+                SelectedEinsatzleiter = null;
+                SelectedFuehrungsassistent = null;
 
                 LoggingService.Instance?.LogInfo("Start form reset by user");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance?.LogError("Error resetting form", ex);
-            }
-        }
-
-        private void ExecuteLoadTemplate(EinsatzTemplate? template)
-        {
-            try
-            {
-                if (template == null) return;
-
-                // Apply template values (implementation would depend on EinsatzTemplate structure)
-                FirstWarningMinutes = template.FirstWarningMinutes;
-                SecondWarningMinutes = template.SecondWarningMinutes;
-
-                LoggingService.Instance?.LogInfo($"Template loaded: {template.Name}");
-                ShowMessage?.Invoke(this, $"Vorlage '{template.Name}' geladen");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance?.LogError($"Error loading template", ex);
-                ShowMessage?.Invoke(this, $"Fehler beim Laden der Vorlage: {ex.Message}");
-            }
-        }
-
-        private bool CanExecuteSaveTemplate()
-        {
-            return IsFormValid;
-        }
-
-        private void ExecuteSaveTemplate()
-        {
-            try
-            {
-                // Implementation would show a save template dialog
-                LoggingService.Instance?.LogInfo("Save template requested");
-                ShowMessage?.Invoke(this, "Vorlage-Speichern wird in einer zukünftigen Version implementiert");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance?.LogError("Error saving template", ex);
-            }
-        }
-
-        private void ExecuteSetCurrentTime()
-        {
-            try
-            {
-                EinsatzDatum = DateTime.Now;
-                LoggingService.Instance?.LogInfo("Mission time set to current time");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance?.LogError("Error setting current time", ex);
-            }
-        }
-
-        private void ExecuteSelectPerson(string? role)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(role)) return;
-
-                // This could trigger a person selection dialog or similar
-                LoggingService.Instance?.LogInfo($"Person selection requested for role: {role}");
-                
-                // For now, just log the request - full implementation would depend on UI requirements
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance?.LogError($"Error selecting person for role {role}", ex);
             }
         }
     }

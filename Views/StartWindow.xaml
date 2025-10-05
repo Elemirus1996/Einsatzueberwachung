@@ -116,10 +116,12 @@
                         </Grid.ColumnDefinitions>
                         
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <Label Content="Einsatzleiter (GF/ZF/VF)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <Label Content="Einsatzleiter (GF/ZF/VF/EL)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
                             <ComboBox ItemsSource="{Binding EinsatzleiterListe}"
                                      SelectedItem="{Binding SelectedEinsatzleiter}"
                                      Style="{StaticResource MasterDataComboBox}"
+                                     IsEditable="True"
+                                     Text="{Binding Einsatzleiter, UpdateSourceTrigger=PropertyChanged}"
                                      DisplayMemberPath="FullName"
                                      Margin="0,0,0,4"/>
                             
@@ -130,6 +132,15 @@
                                       Margin="4,0,0,12" 
                                       FontStyle="Italic"
                                       TextWrapping="Wrap"/>
+
+                            <Label Content="Führungsassistent (optional)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding FuehrungsassistentList}"
+                                     SelectedItem="{Binding SelectedFuehrungsassistent}"
+                                     Style="{StaticResource MasterDataComboBox}"
+                                     IsEditable="True"
+                                     Text="{Binding Fuehrungsassistent, UpdateSourceTrigger=PropertyChanged}"
+                                     DisplayMemberPath="FullName"
+                                     Margin="0,0,0,12"/>
                             
                             <Label Content="Einsatzort" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
                             <TextBox Text="{Binding Einsatzort, UpdateSourceTrigger=PropertyChanged}" 
@@ -200,6 +211,8 @@
                         <Run Text="📁 Optimierte Projektstruktur mit Views &amp; ViewModels"/>
                         <LineBreak/>
                         <Run Text="⚡ Erweiterte UI-Komponenten und Performance"/>
+                        <LineBreak/>
+                        <Run Text="👤 Einsatzleiter-Qualifikationen mit Stammdaten-Integration"/>
                     </TextBlock>
                 </StackPanel>
             </Border>

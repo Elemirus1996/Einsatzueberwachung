@@ -236,13 +236,15 @@
                         <!-- Hero Icon -->
                         <Viewbox Width="120" Height="120" Margin="0,0,0,24">
                             <Grid>
-                                <Ellipse Fill="{DynamicResource Primary}" Margin="0,0,57,36"/>
-                               <Image Source="/Resources/logo.jpeg" 
-                                            Stretch="UniformToFill" Width="48" Height="48" ClipToBounds="True" Margin="5,-10,4,10">
+                                <Ellipse Fill="{DynamicResource Primary}" Width="120" Height="120"/>
+                                <Image Source="/Resources/logo.jpeg" 
+                                       Stretch="UniformToFill" Width="80" Height="80" 
+                                       ClipToBounds="True" 
+                                       HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Image.Clip>
-                                        <EllipseGeometry RadiusX="28" RadiusY="28" Center="28,28"/>
+                                        <EllipseGeometry RadiusX="40" RadiusY="40" Center="40,40"/>
                                     </Image.Clip>
-                                    </Image>
+                                </Image>
                             </Grid>
                         </Viewbox>
                         
@@ -513,7 +515,7 @@
                                     </Setter>
                                     <Style.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource PrimaryDark}"/>
+                                            <Setter Property="Background" Value="{DynamicResource Tertiary}"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>

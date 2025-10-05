@@ -205,7 +205,7 @@
                
             <Button Command="{Binding CancelCommand}" 
                    Width="120" Height="40" Margin="12,0"
-                   Style="{StaticResource SecondaryButton}">
+                   Style="{StaticResource OutlinedButton}">
                 <StackPanel Orientation="Horizontal">
                     <fa:FontAwesome Icon="Ban" FontSize="14" Margin="0,0,6,0"/>
                     <TextBlock Text="Abbrechen"/>
@@ -215,7 +215,7 @@
             <Button Command="{Binding OkCommand}" 
                    IsEnabled="{Binding IsOkButtonEnabled}"
                    Width="140" Height="40" Margin="12,0,0,0"
-                   Style="{StaticResource PrimaryButton}">
+                   Style="{StaticResource FilledButton}">
                 <StackPanel Orientation="Horizontal">
                     <fa:FontAwesome Icon="Check" FontSize="14" Margin="0,0,6,0"/>
                     <TextBlock Text="Bestätigen"/>
