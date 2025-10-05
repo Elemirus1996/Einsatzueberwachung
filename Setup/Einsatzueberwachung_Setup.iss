@@ -22,10 +22,10 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}/releases
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=Setup\License.txt
-InfoBeforeFile=Setup\ReadMe.txt
-InfoAfterFile=Setup\Installation_Complete.txt
-OutputDir=Setup\Output
+LicenseFile=License.txt
+InfoBeforeFile=ReadMe.txt
+InfoAfterFile=Installation_Complete.txt
+OutputDir=Output
 OutputBaseFilename=Einsatzueberwachung_Professional_v{#MyAppVersion}_Setup
 Compression=lzma
 SolidCompression=yes
@@ -50,26 +50,17 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checked
-Name: "autostart"; Description: "Mobile Server automatisch konfigurieren (empfohlen)"; GroupDescription: "Mobile Server Konfiguration"; Flags: checked
 Name: "firewall"; Description: "Firewall-Regeln automatisch erstellen"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked
 Name: "urlreservation"; Description: "URL-Reservierungen für Mobile Server"; GroupDescription: "Netzwerk-Konfiguration"; Flags: checked
 Name: "autoupdates"; Description: "Automatische Update-Prüfung aktivieren (empfohlen)"; GroupDescription: "Update-Konfiguration"; Flags: checked
 
 [Files]
-; Hauptanwendung
-Source: "bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; PowerShell-Scripts (nur wenn vorhanden)
-Source: "Setup\Documentation\Fix-MobileServer.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "Setup\Documentation\Setup-MobileNetwork.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion skipifsourcedoesntexist
-; Dokumentation (nur wenn vorhanden)
-Source: "Setup\Documentation\*.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion skipifsourcedoesntexist
+; Hauptanwendung - Pfad relativ zum Setup-Verzeichnis (ein Verzeichnis höher)
+Source: "..\bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"; Flags: runasoriginaluser
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"; Flags: runasoriginaluser
-
-; Admin-Verknüpfung für Mobile Server
-Name: "{autoprograms}\{#MyAppName} (Administrator)"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription} - Als Administrator für Mobile Server"; Flags: runascurrentuser
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
 
 [Run]
 ; Mobile Server Konfiguration
@@ -77,10 +68,10 @@ Filename: "netsh"; Parameters: "http add urlacl url=http://+:8080/ user=Everyone
 Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""Einsatzueberwachung_Mobile"" dir=in action=allow protocol=TCP localport=8080"; StatusMsg: "Konfiguriere Firewall-Regel für Mobile Server..."; Flags: runhidden; Tasks: firewall
 
 ; PowerShell-Ausführungsrichtlinie setzen
-Filename: "powershell"; Parameters: "-Command ""Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force"""; StatusMsg: "Konfiguriere PowerShell für Troubleshooting-Scripts..."; Flags: runhidden
+Filename: "powershell"; Parameters: "-Command ""Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force"""; StatusMsg: "Konfiguriere PowerShell..."; Flags: runhidden
 
 ; Optional: Anwendung nach Installation starten
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 ; Cleanup bei Deinstallation
@@ -91,7 +82,6 @@ Filename: "netsh"; Parameters: "advfirewall firewall delete rule name=""Einsatzu
 ; Auto-Update Konfiguration
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "Version"; ValueData: "{#MyAppVersion}"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: dword; ValueName: "MobileServerConfigured"; ValueData: "1"; Tasks: autostart; Flags: uninsdeletekey
 
 ; GitHub Update-System Konfiguration
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "UpdateCheckURL"; ValueData: "https://api.github.com/repos/{#GitHubRepo}/releases/latest"; Tasks: autoupdates; Flags: uninsdeletekey
@@ -112,9 +102,7 @@ begin
     'Diese Installation konfiguriert automatisch:' + #13#10 + #13#10 +
     '• Mobile Server Netzwerk-Konfiguration' + #13#10 +
     '• Firewall-Regeln für iPhone-Zugriff' + #13#10 +
-    '• PowerShell-Scripts für Troubleshooting' + #13#10 +
-    '• Automatische GitHub Update-Prüfung' + #13#10 +
-    '• Automatische System-Diagnose' + #13#10 + #13#10 +
+    '• Automatische GitHub Update-Prüfung' + #13#10 + #13#10 +
     'Administrator-Rechte sind für die vollständige ' + #13#10 +
     'Mobile Server-Funktionalität erforderlich.';
 end;
