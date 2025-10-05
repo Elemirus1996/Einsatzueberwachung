@@ -26,7 +26,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Setup Inno Setup
-      uses: crazy-max/ghaction-inno-setup@v3.1.0
+      uses: crazy-max/ghaction-inno-setup@v3
       with:
         version: '6.2.2'
 
