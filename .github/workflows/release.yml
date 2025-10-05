@@ -6,6 +6,9 @@ on:
     tags:
       - 'v*' # Trigger on version tags like v1.0.0
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -69,26 +72,20 @@ jobs:
         echo "path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
         echo "name=$($installer.Name)" >> $env:GITHUB_OUTPUT
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
+    - name: Create Release and Upload Asset
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-          New release of Einsatzueberwachung.
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.get_installer_path.outputs.path }}
-        asset_name: ${{ steps.get_installer_path.outputs.name }}
-        asset_content_type: application/octet-stream
+      run: |
+        $tagName = if ($env:GITHUB_REF -match 'refs/tags/(.*)') { $matches[1] } else { "v1.7.0" }
+        $installerPath = "${{ steps.get_installer_path.outputs.path }}"
+        $installerName = "${{ steps.get_installer_path.outputs.name }}"
+        
+        Write-Host "Creating release for tag: $tagName"
+        Write-Host "Installer path: $installerPath"
+        
+        gh release create $tagName `
+          --title "Release $tagName" `
+          --notes "New release of Einsatzueberwachung Professional" `
+          $installerPath
+        
+        Write-Host "Release created successfully"
