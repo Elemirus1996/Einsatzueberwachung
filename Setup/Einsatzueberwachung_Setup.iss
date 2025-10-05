@@ -22,9 +22,9 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}/releases
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=License.txt
-InfoBeforeFile=ReadMe.txt
-InfoAfterFile=Installation_Complete.txt
+LicenseFile=Setup\License.txt
+InfoBeforeFile=Setup\ReadMe.txt
+InfoAfterFile=Setup\Installation_Complete.txt
 OutputDir=Setup\Output
 OutputBaseFilename=Einsatzueberwachung_Professional_v{#MyAppVersion}_Setup
 Compression=lzma
@@ -58,15 +58,11 @@ Name: "autoupdates"; Description: "Automatische Update-Prüfung aktivieren (empf
 [Files]
 ; Hauptanwendung
 Source: "bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; PowerShell-Scripts
-Source: "Fix-MobileServer.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
-Source: "Setup-MobileNetwork.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
-; Dokumentation
-Source: "SERVER_START_LOESUNGSANLEITUNG_FINAL.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "SETUP_INSTALLATION_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "HTTP_400_TROUBLESHOOTING.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "MOBILE_SETUP_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "GITHUB_UPDATE_SYSTEM.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
+; PowerShell-Scripts (nur wenn vorhanden)
+Source: "Setup\Documentation\Fix-MobileServer.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "Setup\Documentation\Setup-MobileNetwork.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion skipifsourcedoesntexist
+; Dokumentation (nur wenn vorhanden)
+Source: "Setup\Documentation\*.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"; Flags: runasoriginaluser
@@ -74,12 +70,6 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 ; Admin-Verknüpfung für Mobile Server
 Name: "{autoprograms}\{#MyAppName} (Administrator)"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription} - Als Administrator für Mobile Server"; Flags: runascurrentuser
-
-; Troubleshooting Tools
-Name: "{autoprograms}\{#MyAppName}\Mobile Server Reparatur"; Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Scripts\Fix-MobileServer.ps1"""; WorkingDir: "{app}\Scripts"; Comment: "Mobile Server Probleme automatisch reparieren"
-Name: "{autoprograms}\{#MyAppName}\System Diagnose"; Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Scripts\Fix-MobileServer.ps1"" -DiagnoseOnly"; WorkingDir: "{app}\Scripts"; Comment: "System-Diagnose für Mobile Server"
-Name: "{autoprograms}\{#MyAppName}\Nach Updates suchen"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--check-updates"; WorkingDir: "{app}"; Comment: "Manuell nach Updates suchen"
-Name: "{autoprograms}\{#MyAppName}\Dokumentation"; Filename: "{app}\Documentation"; Comment: "Hilfe und Troubleshooting Dokumentation"
 
 [Run]
 ; Mobile Server Konfiguration
