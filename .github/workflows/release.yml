@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Ermöglicht manuellen Start im "Actions"-Tab auf GitHub
   push:
     tags:
-      - 'v*' # Trigger on version tags like v1.7.1
+      - 'v*' # Trigger on version tags like v1.0.0
 
 permissions:
   contents: write
@@ -21,6 +21,27 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
+
+    - name: Validate version consistency
+      run: |
+        $tagVersion = "${{ github.ref_name }}".TrimStart('v')
+        Write-Host "Git Tag Version: $tagVersion"
+        
+        # Read version from .csproj
+        [xml]$csproj = Get-Content "Einsatzueberwachung.csproj"
+        $projectVersion = $csproj.Project.PropertyGroup.Version | Select-Object -First 1
+        Write-Host "Project Version: $projectVersion"
+        
+        if ($tagVersion -ne $projectVersion) {
+          Write-Host "❌ ERROR: Version mismatch!"
+          Write-Host "   Git Tag: v$tagVersion"
+          Write-Host "   Project: $projectVersion"
+          Write-Host ""
+          Write-Host "Please update the version in Einsatzueberwachung.csproj to match the Git tag."
+          exit 1
+        }
+        
+        Write-Host "✅ Version consistency check passed: $projectVersion"
 
     - name: Restore dependencies
       run: dotnet restore Einsatzueberwachung.csproj
@@ -93,6 +114,9 @@ jobs:
         $installer = Get-ChildItem -Path "Setup/Output" -Filter "*.exe" | Select-Object -First 1
         echo "path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
         echo "name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+        
+        Write-Host "✅ Setup created: $($installer.Name)"
+        Write-Host "   Size: $([math]::Round($installer.Length/1MB, 2)) MB"
 
     - name: Create update-info.json
       id: create_update_info
@@ -111,7 +135,7 @@ jobs:
             downloadUrl = "$repoUrl/releases/download/${{ github.ref_name }}/$installerName"
             releaseNotesUrl = "$repoUrl/releases/tag/${{ github.ref_name }}"
             mandatory = $false
-            minimumVersion = "1.6.0"
+            minimumVersion = "1.7.0"
             fileSize = $fileSize
             releaseNotes = @(
                 "🚀 Neue Version $version verfügbar",
@@ -123,6 +147,8 @@ jobs:
         $updateInfo | Out-File -FilePath "update-info.json" -Encoding UTF8
         echo "path=update-info.json" >> $env:GITHUB_OUTPUT
         Write-Host "update-info.json created successfully"
+        Write-Host "Version: $version"
+        Write-Host "Download URL: $repoUrl/releases/download/${{ github.ref_name }}/$installerName"
 
     - name: Create Release and Upload Assets
       env:

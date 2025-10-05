@@ -3,12 +3,14 @@
 ; Erstellt: 2024 - RescueDog_SW
 
 #define MyAppName "Einsatzüberwachung Professional"
-#define MyAppVersion "1.7.1"
+#define MyAppExeName "Einsatzueberwachung.exe"
 #define MyAppPublisher "RescueDog_SW"
 #define MyAppURL "https://github.com/Elemirus1996/Einsatzueberwachung"
-#define MyAppExeName "Einsatzueberwachung.exe"
 #define MyAppDescription "Professionelle Einsatzüberwachung für Rettungshunde-Teams"
 #define GitHubRepo "Elemirus1996/Einsatzueberwachung"
+
+; NEU: Version automatisch aus der kompilierten .exe auslesen
+#define MyAppVersion GetFileVersion("..\bin\Release\net8.0-windows\" + MyAppExeName)
 
 [Setup]
 ; Basis-Konfiguration
