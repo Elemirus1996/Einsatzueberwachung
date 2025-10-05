@@ -4,7 +4,10 @@ on:
   workflow_dispatch: # Ermöglicht manuellen Start im "Actions"-Tab auf GitHub
   push:
     tags:
-      - 'v*' # Trigger on version tags like v1.0.0
+      - 'v*' # Trigger on version tags like v1.7.1
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -20,34 +23,47 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore ./Einsatzueberwachung.csproj
-      shell: pwsh
+      run: dotnet restore Einsatzueberwachung.csproj
 
     - name: Build application
-      run: dotnet build ./Einsatzueberwachung.csproj --configuration Release --no-restore
-      shell: pwsh
+      run: dotnet build Einsatzueberwachung.csproj --configuration Release --no-restore
 
-    - name: Download and Install Inno Setup
+    - name: List directory structure (Debug)
       run: |
-        $innoSetupUrl = "https://jrsoftware.org/download.php/is.exe"
-        $installerPath = "$env:TEMP\innosetup-installer.exe"
-        Write-Host "Downloading Inno Setup..."
-        Invoke-WebRequest -Uri $innoSetupUrl -OutFile $installerPath
-        Write-Host "Installing Inno Setup..."
-        Start-Process -FilePath $installerPath -Args "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
-        Write-Host "Inno Setup installed successfully"
-      shell: powershell
-
-    - name: Compile Inno Setup script
-      run: |
-        $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-        if (Test-Path $isccPath) {
-          & $isccPath "Setup\Einsatzueberwachung_Setup.iss"
+        Write-Host "=== Root Directory ==="
+        Get-ChildItem -Path . -Recurse -Depth 2 | Select-Object FullName
+        Write-Host "`n=== Checking bin/Release folder ==="
+        if (Test-Path "bin\Release\net8.0-windows") {
+          Write-Host "✓ bin\Release\net8.0-windows exists"
+          Get-ChildItem "bin\Release\net8.0-windows" | Select-Object Name
         } else {
-          Write-Error "ISCC.exe not found at $isccPath"
+          Write-Host "✗ bin\Release\net8.0-windows NOT FOUND"
+        }
+
+    - name: Download and Install Inno Setup 6.2.2
+      run: |
+        $InnoSetupUrl = "https://files.jrsoftware.org/is/6/innosetup-6.2.2.exe"
+        $InstallerPath = "$env:TEMP\innosetup-6.2.2.exe"
+        Write-Host "Downloading Inno Setup 6.2.2..."
+        Invoke-WebRequest -Uri $InnoSetupUrl -OutFile $InstallerPath
+        Write-Host "Installing Inno Setup..."
+        Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-" -Wait
+        Write-Host "Inno Setup installed successfully"
+
+    - name: Compile Inno Setup Script
+      run: |
+        $IsccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+        if (-not (Test-Path $IsccPath)) {
+          Write-Host "Error: ISCC.exe not found at $IsccPath"
           exit 1
         }
-      shell: powershell
+        Write-Host "Compiling Inno Setup script..."
+        & $IsccPath "Setup\Einsatzueberwachung_Setup.iss"
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Error: Inno Setup compilation failed with exit code $LASTEXITCODE"
+          exit 1
+        }
+        Write-Host "Compilation successful"
 
     - name: Get installer path
       id: get_installer_path
@@ -58,21 +74,22 @@ jobs:
 
     - name: Create update-info.json
       id: create_update_info
-      shell: powershell
       run: |
         $version = "${{ github.ref_name }}".TrimStart('v')
-        $setupFile = Get-Item "${{ steps.get_installer_path.outputs.path }}"
+        $installerPath = "${{ steps.get_installer_path.outputs.path }}"
+        $setupFile = Get-Item $installerPath
         $fileSize = $setupFile.Length
         $releaseDate = Get-Date -Format "yyyy-MM-dd"
         $repoUrl = "https://github.com/${{ github.repository }}"
+        $installerName = "${{ steps.get_installer_path.outputs.name }}"
 
         $updateInfo = @{
             version = $version
             releaseDate = $releaseDate
-            downloadUrl = "$repoUrl/releases/download/${{ github.ref_name }}/${{ steps.get_installer_path.outputs.name }}"
+            downloadUrl = "$repoUrl/releases/download/${{ github.ref_name }}/$installerName"
             releaseNotesUrl = "$repoUrl/releases/tag/${{ github.ref_name }}"
             mandatory = $false
-            minimumVersion = "1.7.0"
+            minimumVersion = "1.6.0"
             fileSize = $fileSize
             releaseNotes = @(
                 "🚀 Neue Version $version verfügbar",
@@ -83,37 +100,23 @@ jobs:
 
         $updateInfo | Out-File -FilePath "update-info.json" -Encoding UTF8
         echo "path=update-info.json" >> $env:GITHUB_OUTPUT
+        Write-Host "update-info.json created successfully"
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
+    - name: Create Release and Upload Assets
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-          New release of Einsatzueberwachung.
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.get_installer_path.outputs.path }}
-        asset_name: ${{ steps.get_installer_path.outputs.name }}
-        asset_content_type: application/octet-stream
-
-    - name: Upload update-info.json to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.create_update_info.outputs.path }}
-        asset_name: update-info.json
-        asset_content_type: application/json
+      run: |
+        $tagName = if ($env:GITHUB_REF -match 'refs/tags/(.*)') { $matches[1] } else { "v1.7.1" }
+        $installerPath = "${{ steps.get_installer_path.outputs.path }}"
+        $installerName = "${{ steps.get_installer_path.outputs.name }}"
+        
+        Write-Host "Creating release for tag: $tagName"
+        Write-Host "Installer path: $installerPath"
+        
+        gh release create $tagName `
+          --title "Release $tagName" `
+          --notes "New release of Einsatzueberwachung Professional v$tagName" `
+          $installerPath `
+          "update-info.json"
+        
+        Write-Host "Release created successfully with installer and update-info.json"
