@@ -53,15 +53,24 @@ jobs:
     - name: Patch Inno Setup Script
       run: |
         $scriptPath = "Setup\Einsatzueberwachung_Setup.iss"
-        Write-Host "Patching Inno Setup script to remove problematic file references..."
+        Write-Host "Patching Inno Setup script to remove problematic references..."
         $content = Get-Content $scriptPath
+        
+        # Entferne problematische Datei-Referenzen
         $content = $content | Where-Object { 
           $_ -notmatch "^LicenseFile=" -and 
           $_ -notmatch "^InfoBeforeFile=" -and 
           $_ -notmatch "^InfoAfterFile=" 
         }
+        
+        # Entferne ungültige Flags aus Tasks
+        $content = $content -replace '; Flags: checked', ''
+        $content = $content -replace 'Flags: checked', ''
+        
         $content | Set-Content $scriptPath -Encoding UTF8
         Write-Host "Script patched successfully"
+        Write-Host "`nPatched content preview:"
+        Get-Content $scriptPath | Select-Object -First 60
 
     - name: Compile Inno Setup Script
       run: |
