@@ -37,10 +37,30 @@ jobs:
           Write-Host "✗ bin\Release\net8.0-windows NOT FOUND"
         }
 
-    - name: Setup Inno Setup
-      uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
-      with:
-        path: Setup/Einsatzueberwachung_Setup.iss
+    - name: Download and Install Inno Setup 6.2.2
+      run: |
+        $InnoSetupUrl = "https://files.jrsoftware.org/is/6/innosetup-6.2.2.exe"
+        $InstallerPath = "$env:TEMP\innosetup-6.2.2.exe"
+        Write-Host "Downloading Inno Setup 6.2.2..."
+        Invoke-WebRequest -Uri $InnoSetupUrl -OutFile $InstallerPath
+        Write-Host "Installing Inno Setup..."
+        Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-" -Wait
+        Write-Host "Inno Setup installed successfully"
+
+    - name: Compile Inno Setup Script
+      run: |
+        $IsccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+        if (-not (Test-Path $IsccPath)) {
+          Write-Host "Error: ISCC.exe not found at $IsccPath"
+          exit 1
+        }
+        Write-Host "Compiling Inno Setup script..."
+        & $IsccPath "Setup\Einsatzueberwachung_Setup.iss"
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Error: Inno Setup compilation failed with exit code $LASTEXITCODE"
+          exit 1
+        }
+        Write-Host "Compilation successful"
 
     - name: Get installer path
       id: get_installer_path
