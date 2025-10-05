@@ -50,6 +50,19 @@ jobs:
         Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-" -Wait
         Write-Host "Inno Setup installed successfully"
 
+    - name: Patch Inno Setup Script
+      run: |
+        $scriptPath = "Setup\Einsatzueberwachung_Setup.iss"
+        Write-Host "Patching Inno Setup script to remove problematic file references..."
+        $content = Get-Content $scriptPath
+        $content = $content | Where-Object { 
+          $_ -notmatch "^LicenseFile=" -and 
+          $_ -notmatch "^InfoBeforeFile=" -and 
+          $_ -notmatch "^InfoAfterFile=" 
+        }
+        $content | Set-Content $scriptPath -Encoding UTF8
+        Write-Host "Script patched successfully"
+
     - name: Compile Inno Setup Script
       run: |
         $IsccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
