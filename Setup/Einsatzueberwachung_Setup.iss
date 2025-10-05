@@ -1,6 +1,7 @@
 ; Einsatzüberwachung Professional v1.7 - Inno Setup Script mit GitHub Updates
 ; Professionelle Installation mit automatischer Mobile Server Konfiguration und Update-Support
 ; Erstellt: 2024 - RescueDog_SW
+; Kompatibel mit Inno Setup 6.2.2
 
 #define MyAppName "Einsatzüberwachung Professional"
 #define MyAppVersion "1.7.0"
@@ -22,20 +23,16 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}/releases
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=License.txt
-InfoBeforeFile=ReadMe.txt
-InfoAfterFile=Installation_Complete.txt
-OutputDir=Setup\Output
+LicenseFile=..\License.txt
+InfoBeforeFile=..\ReadMe.txt
+InfoAfterFile=..\Installation_Complete.txt
+OutputDir=Output
 OutputBaseFilename=Einsatzueberwachung_Professional_v{#MyAppVersion}_Setup
 Compression=lzma
 SolidCompression=yes
 MinVersion=0,6.1sp1
-
-; Wichtig: Admin-Rechte für Mobile Server Konfiguration
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
-
-; Update-spezifische Konfiguration
 AppMutex=EinsatzueberwachungProfessional_UpdateMutex
 CloseApplications=yes
 RestartApplications=yes
@@ -66,13 +63,9 @@ Source: "..\MOBILE_SETUP_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignor
 Source: "..\GITHUB_UPDATE_SYSTEM.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
-
-; Admin-Verknüpfung für Mobile Server
-Name: "{autoprograms}\{#MyAppName} (Administrator)"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription} - Als Administrator für Mobile Server"
-
-; Troubleshooting Tools
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
+Name: "{autoprograms}\{#MyAppName} (Administrator)"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription} - Als Administrator für Mobile Server"
 Name: "{autoprograms}\{#MyAppName}\Mobile Server Reparatur"; Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Scripts\Fix-MobileServer.ps1"""; WorkingDir: "{app}\Scripts"; Comment: "Mobile Server Probleme automatisch reparieren"
 Name: "{autoprograms}\{#MyAppName}\System Diagnose"; Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Scripts\Fix-MobileServer.ps1"" -DiagnoseOnly"; WorkingDir: "{app}\Scripts"; Comment: "System-Diagnose für Mobile Server"
 Name: "{autoprograms}\{#MyAppName}\Nach Updates suchen"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--check-updates"; WorkingDir: "{app}"; Comment: "Manuell nach Updates suchen"
@@ -82,11 +75,7 @@ Name: "{autoprograms}\{#MyAppName}\Dokumentation"; Filename: "{app}\Documentatio
 ; Mobile Server Konfiguration
 Filename: "netsh"; Parameters: "http add urlacl url=http://+:8080/ user=Everyone"; StatusMsg: "Konfiguriere Mobile Server URL-Reservierung..."; Flags: runhidden; Tasks: urlreservation
 Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""Einsatzueberwachung_Mobile"" dir=in action=allow protocol=TCP localport=8080"; StatusMsg: "Konfiguriere Firewall-Regel für Mobile Server..."; Flags: runhidden; Tasks: firewall
-
-; PowerShell-Ausführungsrichtlinie setzen
 Filename: "powershell"; Parameters: "-Command ""Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force"""; StatusMsg: "Konfiguriere PowerShell für Troubleshooting-Scripts..."; Flags: runhidden
-
-; Optional: Anwendung nach Installation starten
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
@@ -99,8 +88,6 @@ Filename: "netsh"; Parameters: "advfirewall firewall delete rule name=""Einsatzu
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "Version"; ValueData: "{#MyAppVersion}"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: dword; ValueName: "MobileServerConfigured"; ValueData: "1"; Tasks: autostart; Flags: uninsdeletekey
-
-; GitHub Update-System Konfiguration
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "UpdateCheckURL"; ValueData: "https://api.github.com/repos/{#GitHubRepo}/releases/latest"; Tasks: autoupdates; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "GitHubRepo"; ValueData: "{#GitHubRepo}"; Tasks: autoupdates; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: dword; ValueName: "AutoUpdateEnabled"; ValueData: "1"; Tasks: autoupdates; Flags: uninsdeletekey
