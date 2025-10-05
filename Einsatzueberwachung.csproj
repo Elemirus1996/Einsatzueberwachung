@@ -61,17 +61,14 @@
 
   <!-- Clean up problematic files -->
   <ItemGroup>
-    <None Remove="HelpWindowSimple.xaml" />
     <None Remove="app.manifest" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="HelpWindowSimple.xaml.cs" />
     <Compile Remove="MainWindowComplete.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Page Remove="HelpWindowSimple.xaml" />
     <Page Remove="Resources\DesignSystem.xaml" />
   </ItemGroup>
 

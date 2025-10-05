@@ -40,6 +40,34 @@ jobs:
         echo "path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
         echo "name=$($installer.Name)" >> $env:GITHUB_OUTPUT
 
+    - name: Create update-info.json
+      id: create_update_info
+      shell: powershell
+      run: |
+        $version = "${{ github.ref_name }}".TrimStart('v')
+        $setupFile = Get-Item "${{ steps.get_installer_path.outputs.path }}"
+        $fileSize = $setupFile.Length
+        $releaseDate = Get-Date -Format "yyyy-MM-dd"
+        $repoUrl = "https://github.com/${{ github.repository }}"
+
+        $updateInfo = @{
+            version = $version
+            releaseDate = $releaseDate
+            downloadUrl = "$repoUrl/releases/download/${{ github.ref_name }}/${{ steps.get_installer_path.outputs.name }}"
+            releaseNotesUrl = "$repoUrl/releases/tag/${{ github.ref_name }}"
+            mandatory = $false
+            minimumVersion = "1.7.0"
+            fileSize = $fileSize
+            releaseNotes = @(
+                "🚀 Neue Version $version verfügbar",
+                "🔧 Diverse Bugfixes und Performance-Optimierungen",
+                "🛡️ Sicherheits-Updates"
+            )
+        } | ConvertTo-Json -Depth 5
+
+        $updateInfo | Out-File -FilePath "update-info.json" -Encoding UTF8
+        echo "path=update-info.json" >> $env:GITHUB_OUTPUT
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -63,3 +91,13 @@ jobs:
         asset_path: ${{ steps.get_installer_path.outputs.path }}
         asset_name: ${{ steps.get_installer_path.outputs.name }}
         asset_content_type: application/octet-stream
+
+    - name: Upload update-info.json to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.create_update_info.outputs.path }}
+        asset_name: update-info.json
+        asset_content_type: application/json
