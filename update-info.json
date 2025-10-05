@@ -1,8 +1,8 @@
 {
-  "version": "1.7.0",
-  "releaseDate": "2025-01-04",
-  "downloadUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/download/v1.7.0/Einsatzueberwachung_Professional_v1.7.0_Setup.exe",
-  "releaseNotesUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v1.7.0",
+  "version": "1.7.1",
+  "releaseDate": "2025-01-10",
+  "downloadUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/download/v1.7.1/Einsatzueberwachung_Professional_v1.7.1_Setup.exe",
+  "releaseNotesUrl": "https://github.com/Elemirus1996/Einsatzueberwachung/releases/tag/v1.7.1",
   "mandatory": false,
   "minimumVersion": "1.6.0",
   "fileSize": 25000000,
@@ -15,6 +15,7 @@
     "📊 NEW: Stammdatenverwaltung für Personal und Hunde",
     "🎨 IMPROVED: Responsive Layout für alle Bildschirmgrößen",
     "⚡ OPTIMIZED: Performance-Verbesserungen bei großen Team-Listen",
-    "🐛 FIXED: Memory-Management und Threading-Issues behoben"
+    "🐛 FIXED: Memory-Management und Threading-Issues behoben",
+    "🔧 FIXED: Version-Update-Probleme von 1.6.0 zu 1.7.1 behoben"
   ]
 }

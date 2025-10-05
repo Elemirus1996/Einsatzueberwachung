@@ -21,14 +21,14 @@ namespace Einsatzueberwachung
                 var assembly = Assembly.GetExecutingAssembly();
                 var version = assembly.GetName().Version;
                 
-                // Update version display for v1.7.0
-                TxtVersion.Text = $"Version {version?.ToString(3) ?? "1.7.0"}";
+                // Update version display for v1.7.1
+                TxtVersion.Text = $"Version {version?.ToString(3) ?? "1.7.1"}";
                 
                 LoggingService.Instance?.LogInfo($"AboutWindow loaded - Version: {TxtVersion.Text}");
             }
             catch (Exception ex)
             {
-                TxtVersion.Text = "Version 1.7.0";
+                TxtVersion.Text = "Version 1.7.1";
                 // Log error if logging service is available
                 LoggingService.Instance?.LogError("Error loading version info in AboutWindow", ex);
             }

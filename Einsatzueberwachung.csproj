@@ -13,14 +13,14 @@
     <AssemblyName>Einsatzueberwachung</AssemblyName>
     
     <!-- Application Metadata -->
-    <AssemblyTitle>Einsatzüberwachung Professional v1.7</AssemblyTitle>
-    <AssemblyDescription>Professionelle Einsatzüberwachung für Rettungshunde-Teams mit automatischer Mobile-Konfiguration und GitHub Auto-Updates</AssemblyDescription>
+    <AssemblyTitle>Einsatzüberwachung Professional v1.7.1</AssemblyTitle>
+    <AssemblyDescription>Professionelle Einsatzüberwachung für Rettungshunde-Teams mit Dashboard-Übersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
-    <AssemblyProduct>Einsatzüberwachung Professional v1.7</AssemblyProduct>
+    <AssemblyProduct>Einsatzüberwachung Professional v1.7.1</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2024 RescueDog_SW</AssemblyCopyright>
-    <AssemblyVersion>1.7.0.0</AssemblyVersion>
-    <FileVersion>1.7.0.0</FileVersion>
-    <Version>1.7.0</Version>
+    <AssemblyVersion>1.7.1.0</AssemblyVersion>
+    <FileVersion>1.7.1.0</FileVersion>
+    <Version>1.7.1</Version>
     
     <!-- Release Configuration -->
     <PublishSingleFile>true</PublishSingleFile>
