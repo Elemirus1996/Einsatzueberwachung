@@ -54,16 +54,16 @@ Name: "autoupdates"; Description: "Automatische Update-Prüfung aktivieren (empf
 
 [Files]
 ; Hauptanwendung
-Source: "bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "..\bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 ; PowerShell-Scripts
-Source: "Fix-MobileServer.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
-Source: "Setup-MobileNetwork.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
+Source: "..\Fix-MobileServer.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
+Source: "..\Setup-MobileNetwork.ps1"; DestDir: "{app}\Scripts"; Flags: ignoreversion
 ; Dokumentation
-Source: "SERVER_START_LOESUNGSANLEITUNG_FINAL.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "SETUP_INSTALLATION_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "HTTP_400_TROUBLESHOOTING.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "MOBILE_SETUP_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
-Source: "GITHUB_UPDATE_SYSTEM.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
+Source: "..\SERVER_START_LOESUNGSANLEITUNG_FINAL.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
+Source: "..\SETUP_INSTALLATION_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
+Source: "..\HTTP_400_TROUBLESHOOTING.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
+Source: "..\MOBILE_SETUP_GUIDE.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
+Source: "..\GITHUB_UPDATE_SYSTEM.md"; DestDir: "{app}\Documentation"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; IconFilename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppDescription}"
