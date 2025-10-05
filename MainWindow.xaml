@@ -2,16 +2,41 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
-        xmlns:local="clr-namespace:Einsatzueberwachung"
-        Title="🐕‍🦺 Einsatzüberwachung Professional v1.7" 
+        xmlns:vm="clr-namespace:Einsatzueberwachung.ViewModels"
+        Title="{Binding WindowTitle}" 
         Height="900" Width="1600"
         MinHeight="600" MinWidth="1200"
         Icon="pack://application:,,,/Resources/app.ico"
         WindowStyle="SingleBorderWindow"
         ResizeMode="CanResize"
         WindowState="Normal"
-        Background="{DynamicResource Surface}"
-        KeyDown="Window_KeyDown">
+        Background="{DynamicResource Surface}">
+
+    <!-- DataContext wird über Code-Behind gesetzt -->
+    <!-- <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext> -->
+
+    <Window.InputBindings>
+        <!-- Keyboard Shortcuts -->
+        <KeyBinding Key="F11" Command="{Binding FullscreenToggleCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="N" Command="{Binding AddTeamCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="E" Command="{Binding ExportCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="T" Command="{Binding ThemeToggleCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="H" Command="{Binding HelpCommand}"/>
+        
+        <!-- F1-F10 Team Timer Shortcuts -->
+        <KeyBinding Key="F1" Command="{Binding TeamTimerCommand}" CommandParameter="0"/>
+        <KeyBinding Key="F2" Command="{Binding TeamTimerCommand}" CommandParameter="1"/>
+        <KeyBinding Key="F3" Command="{Binding TeamTimerCommand}" CommandParameter="2"/>
+        <KeyBinding Key="F4" Command="{Binding TeamTimerCommand}" CommandParameter="3"/>
+        <KeyBinding Key="F5" Command="{Binding TeamTimerCommand}" CommandParameter="4"/>
+        <KeyBinding Key="F6" Command="{Binding TeamTimerCommand}" CommandParameter="5"/>
+        <KeyBinding Key="F7" Command="{Binding TeamTimerCommand}" CommandParameter="6"/>
+        <KeyBinding Key="F8" Command="{Binding TeamTimerCommand}" CommandParameter="7"/>
+        <KeyBinding Key="F9" Command="{Binding TeamTimerCommand}" CommandParameter="8"/>
+        <KeyBinding Key="F10" Command="{Binding TeamTimerCommand}" CommandParameter="9"/>
+    </Window.InputBindings>
 
     <Window.Resources>
         <!-- Custom Styles for MainWindow using global design system -->
@@ -62,7 +87,7 @@
             <ColumnDefinition Width="400"/> <!-- Rechte Spalte für Notizen & Funksprüche -->
         </Grid.ColumnDefinitions>
 
-        <!-- Linke Hauptseite mit Teams (existing content) -->
+        <!-- Linke Hauptseite mit Teams -->
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -89,8 +114,6 @@
                                 <DropShadowEffect Color="Black" Direction="270" ShadowDepth="2" 
                                                   Opacity="0.2" BlurRadius="6"/>
                             </Border.Effect>
-                            
-
                             <Image Source="/Resources/logo.jpeg" 
                                   Stretch="UniformToFill" Width="48" Height="48" ClipToBounds="True">
                                 <Image.Clip>
@@ -101,18 +124,18 @@
                         
                         <!-- Mission Details -->
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock x:Name="TxtEinsatzInfo" Style="{StaticResource TitleLarge}"
+                            <TextBlock Text="{Binding EinsatzInfo}" Style="{StaticResource TitleLarge}"
                                       Foreground="White"/>
-                            <TextBlock x:Name="TxtEinsatzort" Style="{StaticResource BodyMedium}"
+                            <TextBlock Text="{Binding Einsatzort}" Style="{StaticResource BodyMedium}"
                                       Foreground="White" Opacity="0.9"/>
-                            <TextBlock x:Name="TxtEinsatzleiter" Style="{StaticResource BodyMedium}"
+                            <TextBlock Text="{Binding Einsatzleiter}" Style="{StaticResource BodyMedium}"
                                       Foreground="White" Opacity="0.9"/>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Central Clock & Status -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock x:Name="TxtCurrentTime" 
+                        <TextBlock Text="{Binding CurrentTime}" 
                                   Style="{StaticResource DisplayMedium}"
                                   Foreground="White"
                                   FontFamily="Consolas"
@@ -137,14 +160,14 @@
                             <StackPanel Orientation="Horizontal">
                                 <fa:ImageAwesome Icon="Users" Width="14" Height="14" 
                                                Foreground="{DynamicResource OnPrimaryContainer}" Margin="0,0,6,0"/>
-                                <TextBlock x:Name="TxtTeamCount" Text="0/10" 
+                                <TextBlock Text="{Binding TeamCount}" 
                                           Style="{StaticResource LabelMedium}"
                                           Foreground="{DynamicResource OnPrimaryContainer}"/>
                             </StackPanel>
                         </Border>
                         
                         <!-- Primary Actions -->
-                        <Button x:Name="BtnAddTeam" Click="BtnAddTeam_Click" 
+                        <Button Command="{Binding AddTeamCommand}" 
                                Style="{StaticResource ActionButton}"
                                Background="{DynamicResource Primary}"
                                ToolTip="Hundeteam hinzufügen (Strg+N)">
@@ -156,20 +179,21 @@
                         </Button>
                         
                         <!-- Secondary Actions -->
-                        <Button x:Name="BtnHelp" Click="BtnHelp_Click" 
+                        <Button Command="{Binding HelpCommand}" 
                                Style="{StaticResource IconButton}"
                                Background="{DynamicResource Secondary}"
                                ToolTip="Hilfe und Tastenkürzel">
                             <fa:ImageAwesome Icon="QuestionCircle" Width="20" Height="20" Foreground="White"/>
                         </Button>
                         
-                        <Button x:Name="BtnThemeToggle" Click="BtnThemeToggle_Click" 
+                        <Button Command="{Binding ThemeToggleCommand}" 
                                Style="{StaticResource IconButton}"
-                               Background="{DynamicResource Secondary}">
-                            <fa:ImageAwesome x:Name="ThemeIcon" Icon="SunOutline" Width="20" Height="20" Foreground="White"/>
+                               Background="{DynamicResource Secondary}"
+                               ToolTip="{Binding ThemeTooltip}">
+                            <fa:ImageAwesome Icon="{Binding ThemeIcon}" Width="20" Height="20" Foreground="White"/>
                         </Button>
                         
-                        <Button x:Name="BtnExport" Click="BtnExport_Click" 
+                        <Button Command="{Binding ExportCommand}" 
                                Style="{StaticResource ActionButton}"
                                Background="{DynamicResource Success}">
                             <StackPanel Orientation="Horizontal">
@@ -179,7 +203,7 @@
                             </StackPanel>
                         </Button>
                         
-                        <Button x:Name="BtnMenu" Click="BtnMenu_Click" 
+                        <Button Command="{Binding MenuCommand}" 
                                Style="{StaticResource IconButton}"
                                Background="{DynamicResource Outline}"
                                ToolTip="Menü">
@@ -203,9 +227,10 @@
                 </ScrollViewer>
                 
                 <!-- Enhanced Welcome Message -->
-                <Border x:Name="WelcomeMessage" Style="{StaticResource WelcomeHero}"
+                <Border Visibility="{Binding WelcomeMessageVisibility}" 
+                        Style="{StaticResource WelcomeHero}"
                         VerticalAlignment="Center" HorizontalAlignment="Center"
-                        MaxWidth="800" Visibility="Visible">
+                        MaxWidth="800">
                     
                     <StackPanel TextBlock.TextAlignment="Center">
                         <!-- Hero Icon -->
@@ -222,7 +247,7 @@
                         </Viewbox>
                         
                         <!-- Welcome Content -->
-                        <TextBlock Text="Willkommen bei Professional v1.7!" 
+                        <TextBlock Text="Willkommen bei Professional v1.9.0!" 
                                   Style="{StaticResource HeadlineSmall}"
                                   Foreground="{DynamicResource Primary}" 
                                   Margin="0,0,0,16"/>
@@ -238,7 +263,7 @@
                         </TextBlock>
                         
                         <!-- CTA Button -->
-                        <Button Click="BtnAddTeam_Click" Style="{StaticResource FilledButton}" 
+                        <Button Command="{Binding AddTeamCommand}" Style="{StaticResource FilledButton}" 
                                Background="{DynamicResource Success}"
                                Padding="32,16" FontSize="16">
                             <StackPanel Orientation="Horizontal">
@@ -278,14 +303,14 @@
                             </StackPanel>
                         </Border>
 
-                        <TextBlock x:Name="TxtStatus" 
+                        <TextBlock Text="{Binding StatusText}" 
                                   Style="{StaticResource BodyMedium}"
                                   Foreground="{DynamicResource OnSurface}" 
-                                  VerticalAlignment="Center"><Run Text="Einsatzüberwachung v1."/><Run Language="de-de" Text="7"/><Run Text=" bereit"/></TextBlock>
+                                  VerticalAlignment="Center"/>
                     </StackPanel>
                     
                     <!-- System Log -->
-                    <TextBlock x:Name="TxtLastLog" Grid.Column="1" 
+                    <TextBlock Text="{Binding LastLogText}" Grid.Column="1" 
                               Style="{StaticResource BodySmall}"
                               FontFamily="Consolas" 
                               Foreground="{DynamicResource OnSurfaceVariant}"
@@ -335,7 +360,7 @@
                     
                     <!-- Export Log Button -->
                     <Button Grid.Column="1" 
-                            Click="BtnExportLog_Click"
+                            Command="{Binding ExportLogCommand}"
                             Background="{DynamicResource Success}"
                             Foreground="White"
                             BorderThickness="0"
@@ -380,8 +405,7 @@
                               VerticalScrollBarVisibility="Auto" 
                               HorizontalScrollBarVisibility="Disabled"
                               Padding="10">
-                    <ItemsControl x:Name="GlobalNotesItemsControl" 
-                                  ItemsSource="{Binding FilteredNotesCollection}">
+                    <ItemsControl ItemsSource="{Binding FilteredNotesCollection}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="{DynamicResource SurfaceVariant}" 
@@ -452,17 +476,18 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBox x:Name="QuickNoteInput" 
-                                 Grid.Column="0"
+                        <TextBox Grid.Column="0"
                                  Padding="10" 
                                  FontSize="13"
                                  Style="{StaticResource TextField}"
                                  VerticalAlignment="Stretch"
-                                 Text="{Binding QuickNoteText, UpdateSourceTrigger=PropertyChanged}"
-                                 KeyDown="QuickNoteInput_KeyDown"/>
+                                 Text="{Binding QuickNoteText, UpdateSourceTrigger=PropertyChanged}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding AddQuickNoteCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <Button Grid.Column="1" 
-                                x:Name="AddQuickNoteButton"
                                 Content="➕ Hinzufügen" 
                                 Padding="15,10"
                                 Margin="5,0,0,0"
@@ -470,7 +495,7 @@
                                 Foreground="{DynamicResource OnPrimary}"
                                 BorderThickness="0"
                                 FontWeight="SemiBold"
-                                Click="AddQuickNoteButton_Click"
+                                Command="{Binding AddQuickNoteCommand}"
                                 Cursor="Hand">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -497,11 +522,11 @@
                     </Grid>
 
                     <!-- Team-Auswahl für Notiz -->
-                    <ComboBox x:Name="TeamSelectionComboBox" 
-                              Grid.Row="1"
+                    <ComboBox Grid.Row="1"
                               Margin="0,5,0,0"
                               Padding="10,8"
                               SelectedIndex="0"
+                              ItemsSource="{Binding NoteTargets}"
                               Style="{StaticResource ComboBoxStyle}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>

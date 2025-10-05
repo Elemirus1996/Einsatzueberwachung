@@ -1,0 +1,276 @@
+<Window x:Class="Einsatzueberwachung.Views.TeamWarningSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:vm="clr-namespace:Einsatzueberwachung.ViewModels"
+        Title="{Binding WindowTitle}" Height="600" Width="500"
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Resources/app.ico"
+        ResizeMode="NoResize"
+        Background="{DynamicResource SurfaceContainer}">
+
+    <Window.DataContext>
+        <vm:TeamWarningSettingsViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <!-- Enhanced Slider Style -->
+        <Style x:Key="WarningSlider" TargetType="Slider">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="0,8,0,16"/>
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
+        </Style>
+
+        <!-- Numeric TextBox Style -->
+        <Style x:Key="TimeInput" TargetType="TextBox" BasedOn="{StaticResource TextField}">
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <!-- Team Card Style -->
+        <Style x:Key="TeamWarningCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <!-- Team Warning Item Template -->
+        <DataTemplate x:Key="TeamWarningItemTemplate" DataType="{x:Type vm:TeamWarningItemViewModel}">
+            <Border Style="{StaticResource TeamWarningCard}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Team Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <!-- Team Type Badge -->
+                        <Border Background="{Binding TeamTypeColorHex, Converter={StaticResource ColorBrushConverter}}"
+                               CornerRadius="12" Padding="8,4,8,4" Margin="0,0,12,0">
+                            <TextBlock Text="{Binding TeamTypeShortName}" 
+                                      Foreground="White" FontSize="10" FontWeight="Bold"/>
+                        </Border>
+
+                        <!-- Team Info -->
+                        <StackPanel>
+                            <TextBlock Text="{Binding TeamName}" 
+                                      Style="{StaticResource TitleMedium}"
+                                      Foreground="{DynamicResource OnSurface}"/>
+                            <TextBlock Foreground="{DynamicResource OnSurfaceVariant}"
+                                      Style="{StaticResource BodySmall}" Margin="0,2,0,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} • {1}">
+                                        <Binding Path="HundName"/>
+                                        <Binding Path="TeamTypeDisplayName"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Warning Settings -->
+                    <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                        <!-- First Warning -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="⚠️ Erste Warnung" 
+                                      Style="{StaticResource LabelMedium}"
+                                      Foreground="{DynamicResource OnSurface}" 
+                                      Margin="0,0,0,8"/>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="60"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Numeric Input -->
+                                <TextBox Grid.Column="0" Style="{StaticResource TimeInput}"
+                                        Text="{Binding FirstWarningMinutes, UpdateSourceTrigger=PropertyChanged}"/>
+                                
+                                <!-- Slider -->
+                                <Slider Grid.Column="1" Style="{StaticResource WarningSlider}"
+                                       Minimum="1" Maximum="59" TickFrequency="5" IsSnapToTickEnabled="True"
+                                       Value="{Binding FirstWarningMinutes}" Margin="16,0,16,0"/>
+                                
+                                <!-- Unit Label -->
+                                <TextBlock Grid.Column="2" Text="Min" 
+                                          Style="{StaticResource LabelMedium}"
+                                          Foreground="{DynamicResource OnSurfaceVariant}"
+                                          VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Second Warning -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="🚨 Kritische Warnung" 
+                                      Style="{StaticResource LabelMedium}"
+                                      Foreground="{DynamicResource OnSurface}" 
+                                      Margin="0,0,0,8"/>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="60"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Numeric Input -->
+                                <TextBox Grid.Column="0" Style="{StaticResource TimeInput}"
+                                        Text="{Binding SecondWarningMinutes, UpdateSourceTrigger=PropertyChanged}"/>
+                                
+                                <!-- Slider -->
+                                <Slider Grid.Column="1" Style="{StaticResource WarningSlider}"
+                                       Minimum="2" Maximum="120" TickFrequency="5" IsSnapToTickEnabled="True"
+                                       Value="{Binding SecondWarningMinutes}" Margin="16,0,16,0"/>
+                                
+                                <!-- Unit Label -->
+                                <TextBlock Grid.Column="2" Text="Min" 
+                                          Style="{StaticResource LabelMedium}"
+                                          Foreground="{DynamicResource OnSurfaceVariant}"
+                                          VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Quick Presets -->
+                    <StackPanel Grid.Row="2">
+                        <TextBlock Text="🎯 Schnellauswahl" 
+                                  Style="{StaticResource LabelSmall}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}" 
+                                  Margin="0,0,0,8"/>
+                        
+                        <ItemsControl ItemsSource="{Binding AvailablePresets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1" Columns="4"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding DisplayText}" 
+                                           Style="{StaticResource TextButton}"
+                                           Margin="2,2,2,2" Padding="8,4,8,4" FontSize="10"
+                                           Command="{Binding ApplyPresetCommand}"
+                                           CommandParameter="{Binding}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <Border Grid.Row="0" Style="{StaticResource Card}" 
+               Background="{DynamicResource PrimaryContainer}" 
+               Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <!-- Icon -->
+                <Border Width="56" Height="56" CornerRadius="28" 
+                       Background="{DynamicResource Primary}" Margin="0,0,16,0">
+                    <fa:ImageAwesome Icon="ClockOutline" Width="28" Height="28" 
+                                   Foreground="White"/>
+                </Border>
+                
+                <!-- Title -->
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Team-Warnschwellen" Style="{StaticResource HeadlineSmall}"
+                              Foreground="{DynamicResource OnPrimaryContainer}"/>
+                    <TextBlock Text="{Binding SubtitleText}" 
+                              Style="{StaticResource BodyMedium}"
+                              Foreground="{DynamicResource OnPrimaryContainer}" Opacity="0.8"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Global Settings -->
+        <Border Grid.Row="1" Style="{StaticResource Card}" 
+               Background="{DynamicResource SuccessContainer}"
+               BorderBrush="{DynamicResource Success}" BorderThickness="1"
+               Margin="0,0,0,20">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <fa:ImageAwesome Icon="Globe" Width="16" Height="16" 
+                                   Foreground="{DynamicResource Success}" Margin="0,0,8,0"/>
+                    <TextBlock Text="Globale Einstellungen" Style="{StaticResource TitleSmall}"
+                              Foreground="{DynamicResource OnSuccessContainer}"/>
+                </StackPanel>
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Diese Werte werden als Standard für neue Teams verwendet:" 
+                                  Style="{StaticResource BodySmall}"
+                                  Foreground="{DynamicResource OnSuccessContainer}" 
+                                  TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="1. Warnung:" Style="{StaticResource LabelMedium}"
+                                      Foreground="{DynamicResource OnSuccessContainer}"
+                                      VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding GlobalWarning1Text}" 
+                                      Style="{StaticResource LabelMedium}" FontWeight="Bold"
+                                      Foreground="{DynamicResource OnSuccessContainer}"
+                                      VerticalAlignment="Center" Margin="0,0,16,0"/>
+                            
+                            <TextBlock Text="2. Warnung:" Style="{StaticResource LabelMedium}"
+                                      Foreground="{DynamicResource OnSuccessContainer}"
+                                      VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding GlobalWarning2Text}" 
+                                      Style="{StaticResource LabelMedium}" FontWeight="Bold"
+                                      Foreground="{DynamicResource OnSuccessContainer}"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <Button Grid.Column="1" Content="Auf alle anwenden" 
+                           Style="{StaticResource TextButton}"
+                           Command="{Binding ApplyGlobalCommand}"
+                           ToolTip="Globale Werte auf alle Teams anwenden"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Team Settings List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding TeamWarningItems}"
+                         ItemTemplate="{StaticResource TeamWarningItemTemplate}"/>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" 
+                   Margin="0,20,0,0">
+            <Button Content="Abbrechen" Command="{Binding CancelCommand}" 
+                   Style="{StaticResource OutlinedButton}" Margin="0,0,12,0"/>
+               
+            <Button Command="{Binding SaveCommand}" 
+                   Style="{StaticResource FilledButton}" 
+                   Background="{DynamicResource Primary}" Margin="12,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <fa:ImageAwesome Icon="Save" Width="14" Height="14" 
+                                   Foreground="White" Margin="0,0,8,0"/>
+                    <TextBlock Text="Speichern" Foreground="White"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

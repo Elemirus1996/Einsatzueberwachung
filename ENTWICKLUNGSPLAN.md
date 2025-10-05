@@ -38,6 +38,19 @@ Dieses Dokument beschreibt die geplanten Verbesserungen und neuen Features für 
     - Property-Change-Notifications für UI-Updates
     - Dynamic Color-Brushes per Team-Type
     - Minimales Code-Behind (nur Window-Management)
+  - **`TeamWarningSettingsWindow`: Vollständig auf MVVM umgestellt mit `TeamWarningSettingsViewModel`** 🆕
+    - ObservableCollection für TeamWarningItems
+    - Command-Pattern für alle Button-Actions (ApplyGlobal, Save, Cancel)
+    - Komplexe Slider/Input-Logic via Two-Way-Binding
+    - Preset-Buttons via Commands mit Parameter-Handling
+    - Team-Settings-Management über ViewModel
+    - Real-time Validation mit CanExecute-Logic
+    - Exception-Handling in allen Commands
+    - Orange-Design-Integration mit Enhanced Cards
+    - Minimales Code-Behind (nur Window-Management)
+    - ColorBrushConverter für Team-Type-Badge-Colors
+    - Namespace-Migration in Views-Ordner
+    - Korrekte Referenz-Updates in MainWindow und TeamControlViewModel
   - Die Logik aus dem Code-Behind (`.xaml.cs`) wurde in die ViewModels verschoben.
   - Die Interaktion zwischen View und ViewModel erfolgt über DataBinding und Commands.
 
@@ -165,50 +178,124 @@ Dieses Dokument beschreibt die geplanten Verbesserungen und neuen Features für 
 - ✅ Dynamic Color-Brushes per Team-Type
 - ✅ Minimales Code-Behind (nur Window-Management)
 
-**🧡 Orange-Design-System vollständig integriert:**
-- Primary-Farbe: Orange (`#F57C00`)
-- 30+ Orange-spezifische UI-Komponenten
-- Automatisches Dark/Light-Mode-Switching
-- Theme-Service mit Orange-Harmonien
+**🆕 `DogEditWindow` → `DogEditViewModel` (VOLLSTÄNDIG UMGESTELLT):**
+- ✅ Vollständig auf MVVM-Pattern umgestellt
+- ✅ Alle UI-Interaktionen über Data-Binding
+- ✅ Command-Pattern für Speichern-/Abbrechen-Aktionen
+- ✅ Glow-Effekte für das Orange-Design
+- ✅ Validierungs-Logik im ViewModel
+- ✅ Minimales Code-Behind (nur Window-Management)
 
-**🏗️ MVVM-Architektur vollständig implementiert:**
-- Command-Pattern in allen ViewModels
-- Two-Way-Data-Binding überall
-- Minimales Code-Behind (nur Window-Management)
-- Clean Separation of Concerns
-- Exception-Handling in allen ViewModels
+**🆕 `TeamTypeSelectionWindow` → `TeamTypeSelectionViewModel` (VOLLSTÄNDIG UMGESTELLT):**
+- ✅ Vollständig auf MVVM-Pattern umgestellt
+- ✅ ObservableCollection für Team-Type-Items
+- ✅ Command-Pattern für Clear/OK/Cancel-Actions
+- ✅ Orange-Design-Integration mit Enhanced Cards
+- ✅ Two-Way-Binding für Multi-Select-Checkboxes
+- ✅ Real-time Selection-Summary Updates
+- ✅ Keyboard-Shortcuts (Enter, Escape, Ctrl+A)
+- ✅ Property-Change-Notifications für UI-Updates
+- ✅ Dynamic Color-Brushes per Team-Type
+- ✅ Minimales Code-Behind (nur Window-Management)
+
+**🆕 `TeamWarningSettingsWindow` → `TeamWarningSettingsViewModel` (VOLLSTÄNDIG UMGESTELLT):** 🆕
+- ✅ Vollständig auf MVVM-Pattern umgestellt
+- ✅ ObservableCollection für TeamWarningItems mit Real-time Updates
+- ✅ Command-Pattern für alle Button-Actions (ApplyGlobal/Save/Cancel)
+- ✅ Komplexe Slider/Input-Logic via Two-Way-Binding
+- ✅ Preset-Buttons via Commands mit Parameter-Handling  
+- ✅ Team-Settings-Management über ViewModel-Hierarchie
+- ✅ Real-time Validation mit CanExecute-Logic
+- ✅ Exception-Handling in allen Command-Implementations
+- ✅ Orange-Design-Integration mit Enhanced Team-Cards
+- ✅ ColorBrushConverter für Team-Type-Badge-Colors
+- ✅ Property-Change-Notifications für UI-Updates
+- ✅ Namespace-Migration in Views-Ordner
+- ✅ Minimales Code-Behind (nur Window-Management)
+
+**🆕 `UpdateNotificationWindow` → `UpdateNotificationViewModel` (BEREITS VOLLSTÄNDIG UMGESTELLT):** ✅
+- ✅ Vollständig auf MVVM-Pattern umgestellt (war bereits vorhanden)
+- ✅ Progress-Binding für Downloads mit Real-time Updates  
+- ✅ Command-Pattern für alle Update-Actions (Download/Skip/Remind/ReleaseNotes)
+- ✅ Async Command-Support für GitHub-Download-Integration
+- ✅ Error-Handling für GitHub-API und Download-Fehler
+- ✅ Orange-Design-Integration mit Enhanced Progress-UI
+- ✅ Registry-Integration für Update-Reminders und Skip-Funktionalität
+- ✅ Keyboard-Shortcuts und Accessibility-Features
+- ✅ Mandatory-Update-Support mit UI-Anpassungen
+- ✅ Exception-Handling in allen Command-Implementations
+- ✅ IDisposable-Implementation für Resource-Cleanup
+- ✅ Minimales Code-Behind (nur Window-Management)
+
+**🆕 `MainWindow` → `MainViewModel` (VOLLSTÄNDIG UMGESTELLT):** 🆕 **FINAL BOSS DEFEATED!**
+- ✅ Vollständig auf MVVM-Pattern umgestellt mit `MainViewModel`
+- ✅ Command-Pattern für alle Header-Actions (AddTeam/Help/Export/Menu/ThemeToggle)
+- ✅ Keyboard-Shortcuts über InputBindings (F1-F10, Strg+N, F11, Escape, Enter)
+- ✅ Global-State-Management für Teams, Notes, Theme und Mission-Data
+- ✅ Event-Based Communication zwischen ViewModel und View
+- ✅ ObservableCollections für Teams, FilteredNotes und NoteTargets
+- ✅ Real-time Clock-Updates via DispatcherTimer in ViewModel
+- ✅ Theme-Management mit automatischen UI-Updates und Team-Propagation
+- ✅ Team-Dashboard-Management über ViewModel-Events und CollectionChanged
+- ✅ Dialog-Management (StartWindow/Export/Menu) über ViewModel-Events
+- ✅ Quick-Notes-System mit Command-Pattern und Two-Way-Binding
+- ✅ Recovery-System-Integration über ViewModel
+- ✅ Window-Lifecycle-Management (Fullscreen/Closing/Recovery)
+- ✅ Exception-Handling in allen ViewModel-Operations
+- ✅ IDisposable-Implementation für Resource-Cleanup
+- ✅ Minimales Code-Behind (nur UI-spezifische Operations wie Dialogs)
 
 ---
 
-## 🚀 **PHASE 2: VERBLEIBENDE WINDOWS AUF MVVM UMSTELLEN**
+## 🏆 **MEILENSTEIN v1.9.0 - VOLLSTÄNDIGE MVVM-ARCHITEKTUR ERREICHT!** 🏆
 
-### **NÄCHSTE SCHRITTE - WINDOWS UMSTELLUNG:**
+### ✅ **VOLLSTÄNDIG ABGESCHLOSSEN - MVVM-TRANSFORMATION ALLER 16 UI-KOMPONENTEN:**
 
-#### **✅ ABGESCHLOSSEN:**
-1. ✅ **`DogEditWindow` → `DogEditViewModel`**
-2. ✅ **`TeamTypeSelectionWindow` → `TeamTypeSelectionViewModel`**
+**📁 Alle UI-Komponenten auf MVVM umgestellt:**
+- ✅ `Views\AboutWindow` ↔ `AboutViewModel`
+- ✅ `Views\StartWindow` ↔ `StartViewModel`
+- ✅ `Views\TeamInputWindow` ↔ `TeamInputViewModel`
+- ✅ `Views\HelpWindow` ↔ `HelpViewModel`
+- ✅ `Views\MasterDataWindow` ↔ `MasterDataViewModel`
+- ✅ `Views\TeamDetailWindow` ↔ `TeamDetailViewModel`
+- ✅ `Views\PersonalEditWindow` ↔ `PersonalEditViewModel`
+- ✅ `Views\TeamControl` ↔ `TeamControlViewModel`
+- ✅ `Views\MobileConnectionWindow` ↔ `MobileConnectionViewModel` 
+- ✅ `Views\PdfExportWindow` ↔ `PdfExportViewModel`
+- ✅ `Views\StatisticsWindow` ↔ `StatisticsViewModel`
+- ✅ `Views\TeamCompactCard` ↔ `TeamCompactCardViewModel`
+- ✅ `Views\DogEditWindow` ↔ `DogEditViewModel` 🆕
+- ✅ `Views\TeamTypeSelectionWindow` ↔ `TeamTypeSelectionViewModel` 🆕
+- ✅ `Views\TeamWarningSettingsWindow` ↔ `TeamWarningSettingsViewModel` 🆕
+- ✅ `Views\UpdateNotificationWindow` ↔ `UpdateNotificationViewModel` ✅
+- ✅ **`MainWindow` ↔ `MainViewModel`** 🆕 **FINAL BOSS!**
 
-#### **📋 VERBLEIBENDE WINDOWS (3):**
-3. ❌ **`TeamWarningSettingsWindow` → `TeamWarningSettingsViewModel`**
-   - Komplexe Slider/Input-Logic
-   - Preset-Buttons via Commands
-   - Team-Settings-Management
-   
-4. ❌ **`UpdateNotificationWindow` → `UpdateNotificationViewModel`**
-   - Progress-Binding für Downloads
-   - Command-Pattern für Update-Actions
-   - Error-Handling für GitHub-Integration
-   
-5. ❌ **`MainWindow` Code-Behind-Reduzierung**
-   - `MainViewModel` für Global-State-Management
-   - Command-Pattern für Menu-Actions
-   - Weitere Business-Logic-Auslagerung
+### 🧡 **Orange-Design-System vollständig integriert:**
+- Primary-Farbe: Orange (`#F57C00`) in allen Komponenten
+- 50+ Orange-spezifische UI-Komponenten und Styles
+- Automatisches Dark/Light-Mode-Switching
+- Theme-Service mit Orange-Harmonien und Auto-Mode
 
-### **PHASE 2 PROGRESS: 2/5 WINDOWS ABGESCHLOSSEN** 🎯
-- ✅ DogEditWindow → MVVM
-- ✅ TeamTypeSelectionWindow → MVVM
-- ❌ TeamWarningSettingsWindow
-- ❌ UpdateNotificationWindow  
-- ❌ MainWindow Code-Behind-Reduction
+### 🏗️ **MVVM-Architektur vollständig implementiert:**
+- Command-Pattern in allen 17 ViewModels
+- Two-Way-Data-Binding überall implementiert
+- Minimales Code-Behind (nur Window-Management)
+- Clean Separation of Concerns
+- Exception-Handling in allen ViewModels
+- IDisposable-Pattern für Resource-Management
+- Event-Based Communication
+- ObservableCollections für alle dynamischen Daten
 
-**Soll ich mit der nächsten Window-Umstellung fortfahren?** 🚀
+### 🚀 **Erweiterte MVVM-Features:**
+- **RelayCommand mit Generic-Support** für strongly-typed Commands
+- **BaseViewModel** mit INotifyPropertyChanged und SetProperty-Helper
+- **Async Command-Support** für GitHub-Integration und Downloads
+- **Parameter-Commands** für Team-Timer-Shortcuts (F1-F10)
+- **Keyboard-Shortcuts** über InputBindings statt Code-Behind
+- **Theme-Service-Integration** in allen ViewModels
+- **Validation-Logic** mit CanExecute für Save/Action-Commands
+- **Progress-Binding** für Downloads und Long-Running-Operations
+
+---
+
+## 🎯 **ENTWICKLUNGSPLAN v1.9.0 - 100% ABGESCHLOSSEN!**

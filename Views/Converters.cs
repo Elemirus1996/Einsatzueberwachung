@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Einsatzueberwachung.Views
 {
@@ -85,6 +86,47 @@ namespace Einsatzueberwachung.Views
         {
             // Not needed for one-way binding
             throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Konvertiert Hex-Color-String zu SolidColorBrush
+    /// </summary>
+    public class ColorBrushConverter : IValueConverter
+    {
+        public static readonly ColorBrushConverter Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string hexColor && !string.IsNullOrWhiteSpace(hexColor))
+            {
+                try
+                {
+                    // Ensure hex color starts with #
+                    if (!hexColor.StartsWith("#"))
+                        hexColor = "#" + hexColor;
+
+                    var color = (Color)ColorConverter.ConvertFromString(hexColor);
+                    return new SolidColorBrush(color);
+                }
+                catch
+                {
+                    // Fallback to orange if conversion fails
+                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F57C00"));
+                }
+            }
+
+            // Default orange brush
+            return new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F57C00"));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is SolidColorBrush brush)
+            {
+                return brush.Color.ToString();
+            }
+            return "#F57C00";
         }
     }
 }

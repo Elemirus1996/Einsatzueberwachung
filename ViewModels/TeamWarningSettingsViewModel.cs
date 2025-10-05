@@ -26,6 +26,7 @@ namespace Einsatzueberwachung.ViewModels
         private string _globalWarning2Text = "20 Min";
         private string _subtitleText = "Individuelle Zeiten für Teams festlegen";
         private bool _settingsChanged = false;
+        private bool? _dialogResult;
 
         // Collections
         public ObservableCollection<TeamWarningItemViewModel> TeamWarningItems { get; } = new ObservableCollection<TeamWarningItemViewModel>();
@@ -67,7 +68,11 @@ namespace Einsatzueberwachung.ViewModels
         }
 
         // Dialog Result
-        public bool? DialogResult { get; private set; }
+        public bool? DialogResult
+        {
+            get => _dialogResult;
+            private set => SetProperty(ref _dialogResult, value);
+        }
 
         public TeamWarningSettingsViewModel(List<Team> teams, int globalFirstWarning, int globalSecondWarning)
         {
@@ -139,8 +144,8 @@ namespace Einsatzueberwachung.ViewModels
                 // Subscribe to property changes
                 teamItem.PropertyChanged += TeamItem_PropertyChanged;
 
-                // Subscribe to preset commands
-                teamItem.ApplyPresetCommand = new RelayCommand<PresetInfo>(preset => ExecuteApplyPreset(teamItem, preset));
+                // Set up preset command with this ViewModel as parent
+                teamItem.ParentViewModel = this;
 
                 TeamWarningItems.Add(teamItem);
             }
@@ -265,11 +270,11 @@ namespace Einsatzueberwachung.ViewModels
             }
         }
 
-        private void ExecuteApplyPreset(TeamWarningItemViewModel item, PresetInfo preset)
+        public void ExecuteApplyPreset(TeamWarningItemViewModel item, PresetInfo preset)
         {
             try
             {
-                if (preset != null)
+                if (preset != null && item != null)
                 {
                     item.FirstWarningMinutes = preset.Warning1;
                     item.SecondWarningMinutes = preset.Warning2;
@@ -343,6 +348,9 @@ namespace Einsatzueberwachung.ViewModels
         public string TeamTypeShortName { get; set; } = string.Empty;
         public string TeamTypeColorHex { get; set; } = "#F57C00";
 
+        // Reference to parent ViewModel for preset commands
+        public TeamWarningSettingsViewModel? ParentViewModel { get; set; }
+
         public int FirstWarningMinutes
         {
             get => _firstWarningMinutes;
@@ -355,8 +363,11 @@ namespace Einsatzueberwachung.ViewModels
             set => SetProperty(ref _secondWarningMinutes, value);
         }
 
-        // Preset Command (will be set by parent ViewModel)
-        public ICommand? ApplyPresetCommand { get; set; }
+        // Preset Command (executed through parent ViewModel)
+        public ICommand ApplyPresetCommand => new RelayCommand<PresetInfo>(preset => 
+        {
+            ParentViewModel?.ExecuteApplyPreset(this, preset);
+        });
 
         // Available presets
         public List<PresetInfo> AvailablePresets { get; } = new List<PresetInfo>

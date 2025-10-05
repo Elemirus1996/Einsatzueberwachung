@@ -411,18 +411,19 @@ namespace Einsatzueberwachung.ViewModels
                 {
                     var teams = new List<Team> { _team };
                     
-                    // Get global warning settings from MainWindow
+                    // Get global warning settings from MainViewModel via MainWindow
                     int globalFirst = 10;
                     int globalSecond = 20;
                     
-                    // Try to get global settings from current application
-                    if (Application.Current.MainWindow is MainWindow mainWindow)
+                    // Try to get global settings from current application's MainWindow ViewModel
+                    if (Application.Current.MainWindow is MainWindow mainWindow && 
+                        mainWindow.DataContext is MainViewModel mainViewModel)
                     {
-                        globalFirst = mainWindow.GlobalFirstWarningMinutes;
-                        globalSecond = mainWindow.GlobalSecondWarningMinutes;
+                        globalFirst = mainViewModel.GlobalFirstWarningMinutes;
+                        globalSecond = mainViewModel.GlobalSecondWarningMinutes;
                     }
                     
-                    var warningSettingsWindow = new TeamWarningSettingsWindow(teams, globalFirst, globalSecond)
+                    var warningSettingsWindow = new Views.TeamWarningSettingsWindow(teams, globalFirst, globalSecond)
                     {
                         Owner = Application.Current.MainWindow,
                         Title = $"Warnschwellen - {_team.TeamName}"
