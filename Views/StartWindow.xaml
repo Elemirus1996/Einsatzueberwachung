@@ -1,0 +1,225 @@
+<Window x:Class="Einsatzueberwachung.Views.StartWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:local="clr-namespace:Einsatzueberwachung.Views"
+        Title="Einsatzüberwachung Professional v1.9.0" 
+        Height="925" Width="580"
+        WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/Resources/app.ico"
+        ResizeMode="CanResize"
+        MinHeight="660" MinWidth="580"
+        Background="{DynamicResource SurfaceContainer}">
+
+    <Window.Resources>
+        <!-- Converter -->
+        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        
+        <!-- Label Style using global colors -->
+        <Style x:Key="FormLabel" TargetType="Label">
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+        
+        <!-- RadioButton Style -->
+        <Style x:Key="FormRadioButton" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <!-- ComboBox Style für Stammdaten -->
+        <Style x:Key="MasterDataComboBox" TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}">
+            <Setter Property="Height" Value="40"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header Section mit Orange-Design -->
+        <Border Grid.Row="0" Margin="0,0,0,24">
+            <Border.Background>
+                <DynamicResource ResourceKey="Primary"/> <!-- Orange! -->
+            </Border.Background>
+            <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                    <Setter Property="Effect" Value="{StaticResource OrangeElevation3}"/>
+                </Style>
+            </Border.Style>
+            
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Professional Logo mit Orange Glow -->
+                <Border Grid.Column="0" Width="80" Height="80" CornerRadius="40" 
+                       Background="White" Margin="0,0,20,0" VerticalAlignment="Center"
+                       Effect="{StaticResource OrangeElevation2}">
+                    
+                    <Grid>
+                        <Image x:Name="LogoImage" Source="/Resources/logo.jpeg" 
+                              Stretch="UniformToFill" Width="70" Height="70" ClipToBounds="True">
+                            <Image.Clip>
+                                <EllipseGeometry RadiusX="35" RadiusY="35" Center="35,35"/>
+                            </Image.Clip>
+                        </Image>
+                        
+                        <!-- Orange Fallback Logo -->
+                        <Border Background="{DynamicResource Primary}" CornerRadius="35" Width="70" Height="70"
+                               Visibility="Collapsed" x:Name="LogoFallback">
+                            <fa:ImageAwesome Icon="Paw" Width="35" Height="35" Foreground="White"/>
+                        </Border>
+                    </Grid>
+                </Border>
+                
+                <!-- App Branding -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Einsatzüberwachung" 
+                              Style="{StaticResource HeadlineMedium}"
+                              Foreground="White" Margin="0,0,0,4"/>
+                    <TextBlock Text="Professional v1.9.0" 
+                              Style="{StaticResource TitleLarge}"
+                              Foreground="White" Opacity="0.9" Margin="0,0,0,8"/>
+                    <TextBlock Text="🧡 Orange Design &amp; MVVM Edition" 
+                              Style="{StaticResource BodyMedium}"
+                              Foreground="White" Opacity="0.8"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Content Section -->
+        <StackPanel Grid.Row="1">
+            <!-- Mission Configuration -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <!-- Orange Icon -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <fa:ImageAwesome Icon="List" Width="20" Height="20" 
+                                       Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Einsatz Konfiguration" Style="{StaticResource TitleMedium}"
+                                  Foreground="{DynamicResource Primary}"/>
+                    </StackPanel>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <Label Content="Einsatzleiter (GF/ZF/VF)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding EinsatzleiterListe}"
+                                     SelectedItem="{Binding SelectedEinsatzleiter}"
+                                     Style="{StaticResource MasterDataComboBox}"
+                                     DisplayMemberPath="FullName"
+                                     Margin="0,0,0,4"/>
+                            
+                            <!-- MVVM Binding für Qualifikations-Anzeige -->
+                            <TextBlock Text="{Binding EinsatzleiterInfo}"
+                                      Style="{StaticResource BodySmall}"
+                                      Foreground="{DynamicResource Success}"
+                                      Margin="4,0,0,12" 
+                                      FontStyle="Italic"
+                                      TextWrapping="Wrap"/>
+                            
+                            <Label Content="Einsatzort" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Einsatzort, UpdateSourceTrigger=PropertyChanged}" 
+                                    Style="{StaticResource TextField}" Margin="0,0,0,12"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <Label Content="Typ" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <RadioButton Content="🚨 Einsatz" IsChecked="{Binding IstEinsatz}" 
+                                           Margin="0,0,16,0" Style="{StaticResource FormRadioButton}"/>
+                                <RadioButton Content="🎯 Übung" IsChecked="{Binding IstEinsatz, Converter={StaticResource InverseBooleanConverter}}" 
+                                           Style="{StaticResource FormRadioButton}"/>
+                            </StackPanel>
+                            
+                            <Label Content="Alarmiert durch" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Alarmiert}" Style="{StaticResource TextField}" Margin="0,0,0,12"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Timer Configuration mit Warning (Orange) -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <fa:ImageAwesome Icon="ClockOutline" Width="20" Height="20" 
+                                       Foreground="{DynamicResource Warning}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Timer Einstellungen" Style="{StaticResource TitleMedium}"
+                                  Foreground="{DynamicResource Warning}"/>
+                    </StackPanel>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <Label Content="1. Warnung (Minuten)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Warnung1, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextField}"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <Label Content="2. Warnung (Minuten)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Warnung2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextField}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Feature Highlight für v1.9 -->
+            <Border Style="{StaticResource OrangeCard}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:ImageAwesome Icon="Star" Width="18" Height="18" 
+                                       Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Neu in Version 1.9.0" Style="{StaticResource TitleSmall}"
+                                  Foreground="{DynamicResource OnTertiaryContainer}"/>
+                    </StackPanel>
+                    
+                    <TextBlock TextWrapping="Wrap" Style="{StaticResource BodySmall}"
+                              Foreground="{DynamicResource OnTertiaryContainer}" LineHeight="18">
+                        <Run Text="🧡 Modernes Orange-Design-System mit konsistenten Farben"/>
+                        <LineBreak/>
+                        <Run Text="🏗️ MVVM-Architektur für bessere Code-Struktur"/>
+                        <LineBreak/>
+                        <Run Text="📁 Optimierte Projektstruktur mit Views &amp; ViewModels"/>
+                        <LineBreak/>
+                        <Run Text="⚡ Erweiterte UI-Komponenten und Performance"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Action Section -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" 
+                   Margin="0,24,0,0">
+            <Button Content="Abbrechen" Command="{Binding CancelCommand}"
+                   Style="{StaticResource OutlinedButton}" Margin="0,0,16,0"/>
+            
+            <Button Command="{Binding StartCommand}"
+                   Style="{StaticResource OrangeAccentButton}" 
+                   Padding="32,12">
+                <StackPanel Orientation="Horizontal">
+                    <fa:ImageAwesome Icon="Play" Width="16" Height="16" 
+                                   Foreground="White" Margin="0,0,8,0"/>
+                    <TextBlock Text="Einsatz starten" Foreground="White" FontWeight="Medium"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

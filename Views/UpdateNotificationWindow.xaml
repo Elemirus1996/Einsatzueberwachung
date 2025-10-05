@@ -1,0 +1,256 @@
+<Window x:Class="Einsatzueberwachung.Views.UpdateNotificationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        Title="{Binding WindowTitle}"
+        Width="650" Height="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource Surface}"
+        WindowStyle="SingleBorderWindow">
+
+    <Window.Resources>
+        <!-- Orange-Enhanced Update Notification Styles -->
+        <Style x:Key="UpdateCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceContainer}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Outline}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
+                                    BlurRadius="8" ShadowDepth="0" Opacity="0.1"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UpdateHeaderText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+        </Style>
+        
+        <Style x:Key="UpdateInfoText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <Style x:Key="UpdateLabelText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <Style x:Key="UpdateValueText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Orange Header Section -->
+        <Border Grid.Row="0" Style="{StaticResource UpdateCard}" Margin="0,0,0,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="{DynamicResource PrimaryColor}" Offset="0"/>
+                    <GradientStop Color="{DynamicResource PrimaryContainerColor}" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Orientation="Horizontal">
+                <!-- Icon with Orange Background -->
+                <Border Width="64" Height="64" CornerRadius="32" 
+                       Background="{DynamicResource OnPrimary}" Margin="0,0,20,0">
+                    <fa:FontAwesome Icon="Download" FontSize="32" 
+                                   Foreground="{DynamicResource Primary}"/>
+                </Border>
+                
+                <!-- Title and Description -->
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Update verfügbar!" 
+                              Style="{StaticResource UpdateHeaderText}"/>
+                    <TextBlock Text="Eine neue Version der Einsatzüberwachung Professional ist verfügbar." 
+                              FontSize="14" Foreground="{DynamicResource OnPrimary}" 
+                              Opacity="0.9" Margin="0,4,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Version Information Card -->
+        <Border Grid.Row="1" Style="{StaticResource UpdateCard}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,16">
+                    <fa:FontAwesome Icon="InfoCircle" FontSize="18" 
+                                   Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                    <TextBlock Text="Versions-Information" FontSize="18" FontWeight="SemiBold"
+                              Foreground="{DynamicResource OnSurface}"/>
+                </StackPanel>
+
+                <!-- Aktuelle Version -->
+                <TextBlock Grid.Row="1" Grid.Column="0" 
+                          Text="Aktuelle Version:" 
+                          Style="{StaticResource UpdateLabelText}"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" 
+                          Text="{Binding CurrentVersion}"
+                          Style="{StaticResource UpdateInfoText}"/>
+
+                <!-- Neue Version -->
+                <TextBlock Grid.Row="2" Grid.Column="0" 
+                          Text="Neue Version:" 
+                          Style="{StaticResource UpdateLabelText}"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" 
+                          Text="{Binding NewVersion}"
+                          Style="{StaticResource UpdateValueText}"/>
+
+                <!-- Release-Datum -->
+                <TextBlock Grid.Row="3" Grid.Column="0" 
+                          Text="Veröffentlicht:" 
+                          Style="{StaticResource UpdateLabelText}"/>
+                <TextBlock Grid.Row="3" Grid.Column="1" 
+                          Text="{Binding ReleaseDate}"
+                          Style="{StaticResource UpdateInfoText}"/>
+
+                <!-- Download-Größe -->
+                <TextBlock Grid.Row="4" Grid.Column="0" 
+                          Text="Download-Größe:" 
+                          Style="{StaticResource UpdateLabelText}"/>
+                <TextBlock Grid.Row="4" Grid.Column="1" 
+                          Text="{Binding FileSize}"
+                          Style="{StaticResource UpdateInfoText}"/>
+            </Grid>
+        </Border>
+
+        <!-- Release Notes Card -->
+        <Border Grid.Row="2" Style="{StaticResource UpdateCard}">
+            <StackPanel>
+                <!-- Header -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <fa:FontAwesome Icon="List" FontSize="18" 
+                                   Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                    <TextBlock Text="Was ist neu?" FontSize="18" FontWeight="SemiBold"
+                              Foreground="{DynamicResource OnSurface}"/>
+                </StackPanel>
+
+                <!-- Release Notes Content -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="200">
+                    <TextBlock Text="{Binding ReleaseNotes}" 
+                              TextWrapping="Wrap" 
+                              LineHeight="22"
+                              Style="{StaticResource UpdateInfoText}"/>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
+
+        <!-- Progress Section -->
+        <Border Grid.Row="3" Style="{StaticResource UpdateCard}" 
+               Visibility="{Binding ProgressVisibility}">
+            <StackPanel>
+                <!-- Progress Header -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <fa:FontAwesome Icon="CloudDownload" FontSize="16" 
+                                   Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding ProgressText}" 
+                              FontSize="14" FontWeight="Medium"
+                              Foreground="{DynamicResource OnSurface}"/>
+                </StackPanel>
+                
+                <!-- Progress Bar with Orange Theme -->
+                <ProgressBar Value="{Binding ProgressValue}" 
+                            Height="8" 
+                            Background="{DynamicResource SurfaceVariant}" 
+                            Foreground="{DynamicResource Primary}" 
+                            BorderThickness="0"
+                            Style="{DynamicResource {x:Type ProgressBar}}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Action Buttons with Orange Styling -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            
+            <!-- Release Notes Button -->
+            <Button Command="{Binding ShowReleaseNotesCommand}" 
+                   IsEnabled="{Binding IsReleaseNotesEnabled}"
+                   Width="180" Height="44" Margin="0,0,12,0"
+                   Style="{StaticResource OutlinedButton}">
+                <StackPanel Orientation="Horizontal">
+                    <fa:FontAwesome Icon="ExternalLink" FontSize="14" Margin="0,0,6,0"/>
+                    <TextBlock Text="Release Notes"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Remind Later Button (only if not mandatory) -->
+            <Button Command="{Binding RemindLaterCommand}" 
+                   IsEnabled="{Binding IsRemindEnabled}"
+                   Width="140" Height="44" Margin="12,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMandatoryUpdate}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <StackPanel Orientation="Horizontal">
+                    <fa:FontAwesome Icon="Clock" FontSize="14" Margin="0,0,6,0"/>
+                    <TextBlock Text="Später"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Skip Update Button (only if not mandatory) -->
+            <Button Command="{Binding SkipUpdateCommand}" 
+                   IsEnabled="{Binding IsSkipEnabled}"
+                   Width="140" Height="44" Margin="12,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource OutlinedButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMandatoryUpdate}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <StackPanel Orientation="Horizontal">
+                    <fa:FontAwesome Icon="Times" FontSize="14" Margin="0,0,6,0"/>
+                    <TextBlock Text="Überspringen"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Download Update Button -->
+            <Button Command="{Binding DownloadUpdateCommand}" 
+                   IsEnabled="{Binding IsDownloadEnabled}"
+                   Width="180" Height="44" Margin="12,0,0,0"
+                   Style="{StaticResource PrimaryButton}">
+                <StackPanel Orientation="Horizontal">
+                    <fa:FontAwesome Icon="Download" FontSize="14" Margin="0,0,8,0"/>
+                    <TextBlock Text="Update laden"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

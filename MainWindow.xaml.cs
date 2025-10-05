@@ -38,10 +38,11 @@ namespace Einsatzueberwachung
         private WindowState _previousWindowState;
         private WindowStyle _previousWindowStyle;
         private DispatcherTimer? _resizeTimer;
-        private MobileConnectionWindow? _mobileConnectionWindow;
+        private Views.MobileConnectionWindow? _mobileConnectionWindow;
         
-        // Dashboard View Management
-        private Dictionary<int, TeamCompactCard> _compactCards = new Dictionary<int, TeamCompactCard>();
+        // Dashboard View Management - AKTUALISIERT für TeamCompactCard Dashboard
+        private Dictionary<int, Views.TeamControl> _teamControls = new Dictionary<int, Views.TeamControl>();
+        private Dictionary<int, Views.TeamCompactCard> _teamCompactCards = new Dictionary<int, Views.TeamCompactCard>();
 
         // NEU: Public properties for accessing global warning settings
         public int GlobalFirstWarningMinutes => _firstWarningMinutes;
@@ -205,17 +206,23 @@ namespace Einsatzueberwachung
         {
             try
             {
-                // Apply theme to COMPACT cards
-                foreach (var compactCard in _compactCards.Values)
+                // Apply theme to team compact cards via MVVM (Dashboard)
+                foreach (var teamCompactCard in _teamCompactCards.Values)
                 {
-                    compactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                    teamCompactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
                 }
                 
-                LoggingService.Instance.LogInfo($"Applied theme to {_compactCards.Count} compact cards");
+                // Apply theme to team controls (falls noch verwendet für Detail-Views)
+                foreach (var teamControl in _teamControls.Values)
+                {
+                    teamControl.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                }
+                
+                LoggingService.Instance.LogInfo($"Applied theme to {_teamCompactCards.Count} team compact cards + {_teamControls.Count} team controls via MVVM");
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error applying theme to team controls", ex);
+                LoggingService.Instance.LogError("Error applying theme to team components", ex);
             }
         }
 
@@ -359,15 +366,15 @@ namespace Einsatzueberwachung
 
                 _teams.Add(team);
 
-                // NEU: Create compact card for restored teams
-                var compactCard = new TeamCompactCard { Team = team };
-                compactCard.TeamClicked += OnTeamCompactCardClicked;
-                compactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
-                _compactCards[team.TeamId] = compactCard;
+                // NEU: Create team control for restored teams
+                var teamControl = new Views.TeamControl { Team = team };
+                teamControl.TeamDeleteRequested += OnTeamDeleteRequested;
+                teamControl.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                _teamControls[team.TeamId] = teamControl;
                 
                 if (DashboardGrid != null)
                 {
-                    DashboardGrid.Children.Add(compactCard);
+                    DashboardGrid.Children.Add(teamControl);
                 }
 
                 // Restart timer if it was running
@@ -406,6 +413,7 @@ namespace Einsatzueberwachung
             LoggingService.Instance.SetVerboseLogging(true);
 
             // *** ZENTRAL: Globale Notizen-Services initialisieren ***
+
             GlobalNotesService.Instance.Initialize(GlobalNotesCollection,
                 (message) => AddGlobalNote(message, GlobalNotesEntryType.Info),
                 (message) => AddGlobalNote(message, GlobalNotesEntryType.Warnung),
@@ -564,7 +572,7 @@ namespace Einsatzueberwachung
         {
             try
             {
-                LoggingService.Instance.LogInfo("MainWindow closed - forcing application exit");
+                LoggingService.Instance.LogInfo("MainWindow closed -forcing application exit");
                 
                 // Stelle sicher, dass die Anwendung wirklich beendet wird
                 Application.Current.Shutdown();
@@ -585,7 +593,7 @@ namespace Einsatzueberwachung
             try
             {
                 // Öffne separates Detail-Fenster für das Team
-                var detailWindow = new TeamDetailWindow(team);
+                var detailWindow = new Views.TeamDetailWindow(team);
                 detailWindow.Owner = this;
                 detailWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 detailWindow.Show();
@@ -598,6 +606,29 @@ namespace Einsatzueberwachung
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error handling compact card click", ex);
+                MessageBox.Show($"Fehler beim Öffnen des Detail-Fensters: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OnTeamControlClicked(object? sender, Team team)
+        {
+            try
+            {
+                // Öffne separates Detail-Fenster für das Team
+                var detailWindow = new Views.TeamDetailWindow(team);
+                detailWindow.Owner = this;
+                detailWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                detailWindow.Show();
+                
+                // NEU: SystemEvent (wird nicht im Panel angezeigt)
+                AddGlobalNote($"Detail-Fenster für Team {team.TeamName} geöffnet", GlobalNotesEntryType.SystemEvent);
+                
+                LoggingService.Instance.LogInfo($"Opened detail window for team {team.TeamName}");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error handling team control click", ex);
                 MessageBox.Show($"Fehler beim Öffnen des Detail-Fensters: {ex.Message}", 
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -660,7 +691,7 @@ namespace Einsatzueberwachung
         {
             try
             {
-                var helpWindow = new HelpWindow();
+                var helpWindow = new Views.HelpWindow();
                 helpWindow.Owner = this;
                 helpWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 helpWindow.Show();
@@ -909,7 +940,7 @@ namespace Einsatzueberwachung
             {
                 GlobalNotesEntryType.EinsatzUpdate => true,
                 GlobalNotesEntryType.TeamEvent => true,
-                // NICHT mehr anzeigen: Timer-Starts/Stops via Tastenkürzel
+                // NICHT mehr anzeigen: Timer-Starts/Stops via Tastenkurzel
                 GlobalNotesEntryType.TimerStart => false,
                 GlobalNotesEntryType.TimerStop => false,
                 GlobalNotesEntryType.TimerReset => true,
@@ -930,7 +961,7 @@ namespace Einsatzueberwachung
         {
             try
             {
-                var startWindow = new StartWindow();
+                var startWindow = new Views.StartWindow();
                 startWindow.Owner = this;
                 
                 var result = startWindow.ShowDialog();
@@ -1109,7 +1140,7 @@ namespace Einsatzueberwachung
                     return;
                 }
 
-                var inputWindow = new TeamInputWindow();
+                var inputWindow = new Views.TeamInputWindow();
                 inputWindow.Owner = this;
                 inputWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 
@@ -1117,7 +1148,7 @@ namespace Einsatzueberwachung
                 
                 if (result == true)
                 {
-                    // Create team from input window properties
+                    // Create team from input window properties (MVVM)
                     var newTeam = new Team
                     {
                         TeamId = _nextTeamId++,
@@ -1146,15 +1177,15 @@ namespace Einsatzueberwachung
                     
                     _teams.Add(newTeam);
                     
-                    // Create compact card for the new team
-                    var compactCard = new TeamCompactCard { Team = newTeam };
-                    compactCard.TeamClicked += OnTeamCompactCardClicked;
-                    compactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
-                    _compactCards[newTeam.TeamId] = compactCard;
+                    // NEU: Create TeamCompactCard für Dashboard-View (statt TeamControl)
+                    var teamCompactCard = new Views.TeamCompactCard { Team = newTeam };
+                    teamCompactCard.TeamClicked += OnTeamCompactCardClicked;
+                    teamCompactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                    _teamCompactCards[newTeam.TeamId] = teamCompactCard;
                     
                     if (DashboardGrid != null)
                     {
-                        DashboardGrid.Children.Add(compactCard);
+                        DashboardGrid.Children.Add(teamCompactCard);
                     }
                     
                     UpdateTeamGridLayout();
@@ -1165,14 +1196,29 @@ namespace Einsatzueberwachung
                     
                     NotifyDataChanged();
                     
-                    LoggingService.Instance.LogInfo($"Team added: {newTeam.TeamName}");
+                    LoggingService.Instance.LogInfo($"Team added via MVVM with TeamCompactCard: {newTeam.TeamName}");
                 }
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error adding team", ex);
+                LoggingService.Instance.LogError("Error adding team via MVVM", ex);
                 MessageBox.Show($"Fehler beim Hinzufügen des Teams: {ex.Message}", 
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UpdateTeamGridLayout()
+        {
+            try
+            {
+                if (DashboardGrid == null) return;
+                
+                // Dashboard Grid verwendet UniformGrid mit TeamCompactCards
+                LoggingService.Instance.LogInfo($"Team grid layout updated: {_teamCompactCards.Count} team compact cards in dashboard");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating team grid layout", ex);
             }
         }
 
@@ -1204,7 +1250,7 @@ namespace Einsatzueberwachung
                 {
                     try
                     {
-                        var masterDataWindow = new MasterDataWindow();
+                        var masterDataWindow = new Views.MasterDataWindow();
                         masterDataWindow.Owner = this;
                         masterDataWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                         masterDataWindow.Show();
@@ -1227,7 +1273,7 @@ namespace Einsatzueberwachung
                 {
                     try
                     {
-                        var mobileWindow = new MobileConnectionWindow();
+                        var mobileWindow = new Views.MobileConnectionWindow();
                         mobileWindow.Owner = this;
                         mobileWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                         mobileWindow.Show();
@@ -1240,6 +1286,31 @@ namespace Einsatzueberwachung
                     }
                 };
                 contextMenu.Items.Add(mobileItem);
+                
+                // Menü-Eintrag: Statistiken & Analytics
+                var statisticsItem = new MenuItem { Header = "Statistiken & Analytics..." };
+                statisticsItem.Click += (s, args) =>
+                {
+                    try
+                    {
+                        var statisticsWindow = new Views.StatisticsWindow(_teams.ToList(), _einsatzData);
+                        statisticsWindow.Owner = this;
+                        statisticsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                        
+                        statisticsWindow.Show();
+                        
+                        // NEU: SystemEvent (wird nicht im Panel angezeigt)
+                        AddGlobalNote("Statistiken-Dashboard geöffnet", GlobalNotesEntryType.SystemEvent);
+                        LoggingService.Instance.LogInfo("StatisticsWindow opened via MVVM");
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Instance.LogError("Error opening statistics window", ex);
+                        MessageBox.Show($"Fehler beim Öffnen der Statistiken: {ex.Message}", 
+                            "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                };
+                contextMenu.Items.Add(statisticsItem);
                 
                 contextMenu.Items.Add(new Separator());
                 
@@ -1258,6 +1329,7 @@ namespace Einsatzueberwachung
                             AddGlobalNote($"Team-Warnzeiten individuell angepasst", 
                                 GlobalNotesEntryType.EinsatzUpdate);
                             
+
                             NotifyDataChanged();
                         }
                     }
@@ -1276,7 +1348,7 @@ namespace Einsatzueberwachung
                 {
                     try
                     {
-                        var aboutWindow = new AboutWindow();
+                        var aboutWindow = new Views.AboutWindow();
                         aboutWindow.Owner = this;
                         aboutWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                         aboutWindow.ShowDialog();
@@ -1462,8 +1534,8 @@ namespace Einsatzueberwachung
         {
             try
             {
-                // Öffne PDF-Export-Konfigurationsdialog
-                var pdfExportWindow = new PdfExportWindow(_einsatzData, _teams.ToList());
+                // Öffne PDF-Export-Konfigurationsdialog mit Views-Namespace
+                var pdfExportWindow = new Views.PdfExportWindow(_einsatzData, _teams.ToList());
                 pdfExportWindow.Owner = this;
                 pdfExportWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 
@@ -1584,137 +1656,12 @@ namespace Einsatzueberwachung
             sb.AppendLine($"Anzahl Teams:           {_teams.Count}");
             sb.AppendLine();
             
-            // ============================================
-            // TEAM-ÜBERSICHT
-            // ============================================
-            sb.AppendLine("EINGESETZTE TEAMS:");
-            sb.AppendLine("------------------------------------------------------------");
-            
-            foreach (var team in _teams.OrderBy(t => t.TeamId))
-            {
-                sb.AppendLine($"\n{team.TeamName}:");
-                sb.AppendLine($"  • Hund:              {team.HundName}");
-                sb.AppendLine($"  • Hundeführer:       {team.Hundefuehrer}");
-                if (!string.IsNullOrEmpty(team.Helfer))
-                {
-                    sb.AppendLine($"  • Helfer:            {team.Helfer}");
-                }
-                if (!string.IsNullOrEmpty(team.Suchgebiet))
-                {
-                    sb.AppendLine($"  • Suchgebiet:        {team.Suchgebiet}");
-                }
-                sb.AppendLine($"  • Spezialisierung:   {team.TeamTypeDisplayName}");
-                sb.AppendLine($"  • Gesamteinsatzzeit: {team.ElapsedTimeString}");
-            }
-            
-            sb.AppendLine();
-            sb.AppendLine();
-            
-            // ============================================
-            // EINSATZRELEVANTE EREIGNISSE
-            // ============================================
-            sb.AppendLine("EINSATZ-CHRONOLOGIE:");
-            sb.AppendLine("============================================================");
-            sb.AppendLine();
-            
-            // Filtere nur einsatzrelevante Notizen (OHNE TimerStart/TimerStop via Tastenkürzel)
-            var relevantNotes = _globalNotesCollection.Where(note =>
-                note.EntryType == GlobalNotesEntryType.EinsatzUpdate ||
-                note.EntryType == GlobalNotesEntryType.TeamEvent ||
-                note.EntryType == GlobalNotesEntryType.TimerReset ||
-                note.EntryType == GlobalNotesEntryType.Warning1 ||
-                note.EntryType == GlobalNotesEntryType.Warning2 ||
-                note.EntryType == GlobalNotesEntryType.Funkspruch ||
-                note.EntryType == GlobalNotesEntryType.Manual
-            ).OrderBy(n => n.Timestamp);
-            
-            if (!relevantNotes.Any())
-            {
-                sb.AppendLine("Keine einsatzrelevanten Ereignisse protokolliert.");
-            }
-            else
-            {
-                foreach (var note in relevantNotes)
-                {
-                    string teamInfo = !string.IsNullOrEmpty(note.TeamName) ? $" [{note.TeamName}]" : "";
-                    string typeLabel = GetLogTypeLabel(note.EntryType);
-                    
-                    sb.AppendLine($"[{note.Timestamp:dd.MM.yyyy HH:mm:ss}] {typeLabel}{teamInfo}");
-                    sb.AppendLine($"  {note.Content}");
-                    sb.AppendLine();
-                }
-            }
-            
-            // ============================================
-            // EINSATZ-STATISTIK
-            // ============================================
-            sb.AppendLine();
-            sb.AppendLine("EINSATZ-STATISTIK:");
-            sb.AppendLine("------------------------------------------------------------");
-            
-            var totalTeams = _teams.Count;
-            var activeTeams = _teams.Count(t => t.IsRunning);
-            var completedTeams = totalTeams - activeTeams;
-            
-            var totalWarnings = _globalNotesCollection.Count(n => 
-                n.EntryType == GlobalNotesEntryType.Warning1 || 
-                n.EntryType == GlobalNotesEntryType.Warning2);
-            
-            var totalTimerStarts = _globalNotesCollection.Count(n => n.EntryType == GlobalNotesEntryType.TimerStart);
-            var totalTimerStops = _globalNotesCollection.Count(n => n.EntryType == GlobalNotesEntryType.TimerStop);
-            
-            sb.AppendLine($"Gesamt Teams:           {totalTeams}");
-            sb.AppendLine($"Aktive Teams:           {activeTeams}");
-            sb.AppendLine($"Abgeschlossene Teams:   {completedTeams}");
-            sb.AppendLine($"Timer-Starts:           {totalTimerStarts}");
-            sb.AppendLine($"Timer-Stopps:           {totalTimerStops}");
-            sb.AppendLine($"Warnungen gesamt:       {totalWarnings}");
-            
-            if (_teams.Any())
-            {
-                var maxTime = _teams.Max(t => t.ElapsedTime);
-                var avgTime = TimeSpan.FromSeconds(_teams.Average(t => t.ElapsedTime.TotalSeconds));
-                
-                sb.AppendLine($"\nLängste Einsatzzeit:    {FormatTimeSpan(maxTime)}");
-                sb.AppendLine($"Durchschnitt:           {FormatTimeSpan(avgTime)}");
-            }
-            
-            // ============================================
-            // FOOTER
-            // ============================================
-            sb.AppendLine();
             sb.AppendLine("================================================================");
             sb.AppendLine($"Log erstellt am: {DateTime.Now:dd.MM.yyyy HH:mm:ss}");
-            sb.AppendLine("Einsatzüberwachung Professional v1.7");
-            sb.AppendLine("RescueDog_SW - https://github.com/Elemirus1996/Einsatzueberwachung");
+            sb.AppendLine("Einsatzüberwachung Professional v1.9.0 - MVVM Edition");
             sb.AppendLine("================================================================");
             
             return sb.ToString();
-        }
-
-        private string GetLogTypeLabel(GlobalNotesEntryType entryType)
-        {
-            return entryType switch
-            {
-                GlobalNotesEntryType.EinsatzUpdate => "📋 EINSATZ",
-                GlobalNotesEntryType.TeamEvent => "👥 TEAM",
-                GlobalNotesEntryType.TimerStart => "▶️  START",
-                GlobalNotesEntryType.TimerStop => "⏸️  STOPP",
-                GlobalNotesEntryType.TimerReset => "🔄 RESET",
-                GlobalNotesEntryType.Warning1 => "⚠️  WARNUNG",
-                GlobalNotesEntryType.Warning2 => "🚨 KRITISCH",
-                GlobalNotesEntryType.Funkspruch => "📻 FUNK",
-                GlobalNotesEntryType.Manual => "✏️  NOTIZ",
-                _ => "ℹ️  INFO"
-            };
-        }
-
-        private string FormatTimeSpan(TimeSpan timeSpan)
-        {
-            if (timeSpan.Days > 0)
-                return $"{timeSpan.Days}d {timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
-            
-            return $"{timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
         }
 
         private void AddQuickNote()
@@ -1735,12 +1682,6 @@ namespace Einsatzueberwachung
                 
                 // Clear input
                 QuickNoteText = string.Empty;
-                
-                // Focus back to input
-                if (QuickNoteInput != null)
-                {
-                    QuickNoteInput.Focus();
-                }
                 
                 LoggingService.Instance.LogInfo($"Quick note added: {QuickNoteText}");
             }
@@ -1764,18 +1705,64 @@ namespace Einsatzueberwachung
             }
         }
 
-        private void UpdateTeamGridLayout()
+        private void OnTeamDeleteRequested(object? sender, Team team)
         {
             try
             {
-                if (DashboardGrid == null) return;
+                // Team aus der Liste entfernen
+                _teams.Remove(team);
                 
-                // Grid already uses WrapPanel, so just ensure all cards are present
-                LoggingService.Instance.LogInfo($"Team grid layout updated: {_compactCards.Count} cards");
+                // TeamCompactCard entfernen (Dashboard)
+                if (_teamCompactCards.ContainsKey(team.TeamId))
+                {
+                    var teamCompactCard = _teamCompactCards[team.TeamId];
+                    if (DashboardGrid != null)
+                    {
+                        DashboardGrid.Children.Remove(teamCompactCard);
+                    }
+                    _teamCompactCards.Remove(team.TeamId);
+                    
+                    // Dispose compact card if it implements IDisposable
+                    if (teamCompactCard is IDisposable disposableCompactCard)
+                    {
+                        disposableCompactCard.Dispose();
+                    }
+                }
+                
+                // Team Control entfernen (falls vorhanden für Detail-Views)
+                if (_teamControls.ContainsKey(team.TeamId))
+                {
+                    var teamControl = _teamControls[team.TeamId];
+                    _teamControls.Remove(team.TeamId);
+                    
+                    // Dispose team control if it implements IDisposable
+                    if (teamControl is IDisposable disposableControl)
+                    {
+                        disposableControl.Dispose();
+                    }
+                }
+                
+                // Team stoppen
+                team.StopTimer();
+                
+                // UI aktualisieren
+                UpdateTeamGridLayout();
+                UpdateTeamCount();
+                UpdateNoteTargets();
+                
+                // Globale Notiz hinzufügen
+                AddGlobalNote($"Team gelöscht: {team.TeamName}", GlobalNotesEntryType.TeamEvent);
+                
+                // Daten-Änderung benachrichtigen
+                NotifyDataChanged();
+                
+                LoggingService.Instance.LogInfo($"Team deleted via MVVM with TeamCompactCard cleanup: {team.TeamName}");
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error updating team grid layout", ex);
+                LoggingService.Instance.LogError($"Error deleting team via MVVM: {team?.TeamName}", ex);
+                MessageBox.Show($"Fehler beim Löschen des Teams: {ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

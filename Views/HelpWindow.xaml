@@ -1,0 +1,211 @@
+<Window x:Class="Einsatzueberwachung.Views.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:local="clr-namespace:Einsatzueberwachung.Views"
+        Title="Hilfe - Einsatzüberwachung Professional v1.9.0 Orange Edition" 
+        Height="800" Width="1100"
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Resources/app.ico"
+        Background="{DynamicResource SurfaceContainer}">
+
+    <Window.Resources>
+        <!-- Orange Help Navigation Button -->
+        <Style x:Key="OrangeHelpNavButton" TargetType="Button" BasedOn="{StaticResource TextButton}">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource TertiaryContainer}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Orange Feature Button Style -->
+        <Style x:Key="OrangeNewFeatureButton" TargetType="Button" BasedOn="{StaticResource OrangeHelpNavButton}">
+            <Setter Property="Background" Value="{DynamicResource TertiaryContainer}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnTertiaryContainer}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Effect" Value="{StaticResource OrangeElevation1}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Effect" Value="{StaticResource OrangeElevation2}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Content Style for Help Text -->
+        <Style x:Key="HelpContentStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Orange Navigation Sidebar -->
+        <Border Grid.Column="0" Style="{StaticResource Card}" 
+               Margin="0,0,16,0" Padding="16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Orange Header -->
+                    <Border Style="{StaticResource OrangeCard}" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <!-- Orange Icon with Glow -->
+                            <Border Width="48" Height="48" CornerRadius="24" 
+                                   Background="{DynamicResource Primary}" Margin="0,0,12,0"
+                                   Effect="{StaticResource OrangeElevation2}">
+                                <fa:ImageAwesome Icon="QuestionCircle" Width="24" Height="24" 
+                                               Foreground="White"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Hilfe-Center" Style="{StaticResource TitleLarge}"
+                                          Foreground="{DynamicResource OnTertiaryContainer}"/>
+                                <TextBlock Text="v1.9.0 Orange Edition" Style="{StaticResource BodySmall}"
+                                          Foreground="{DynamicResource OnTertiaryContainer}" FontWeight="Medium"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Quick Start -->
+                    <Button Command="{Binding SelectSectionCommand}" 
+                           CommandParameter="QuickStart"
+                           Style="{StaticResource OrangeAccentButton}" Margin="0,0,0,16">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Rocket" Width="16" Height="16" 
+                                           Foreground="White" Margin="0,0,8,0"/>
+                            <TextBlock Text="Schnellstart v1.9.0" Foreground="White" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Neue Features v1.9.0 -->
+                    <TextBlock Text="Neue Features v1.9.0" Style="{StaticResource BodySmall}" 
+                              Foreground="{DynamicResource Primary}" FontWeight="Bold" 
+                              Margin="8,0,8,8"/>
+
+                    <!-- MVVM Team Input -->
+                    <Button Command="{Binding SelectSectionCommand}" 
+                           CommandParameter="TeamInputMVVM"
+                           Style="{StaticResource OrangeNewFeatureButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="UserPlus" Width="16" Height="16" 
+                                           Foreground="{DynamicResource OnTertiaryContainer}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Team-Input MVVM (NEU)" 
+                                      Foreground="{DynamicResource OnTertiaryContainer}" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Orange Design System -->
+                    <Button Command="{Binding SelectSectionCommand}" 
+                           CommandParameter="OrangeDesign"
+                           Style="{StaticResource OrangeNewFeatureButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Palette" Width="16" Height="16" 
+                                           Foreground="{DynamicResource OnTertiaryContainer}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Orange-Design-System (NEU)" 
+                                      Foreground="{DynamicResource OnTertiaryContainer}" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Standard Features -->
+                    <Separator Margin="0,16" Background="{DynamicResource OutlineVariant}"/>
+                    <TextBlock Text="Standard-Features" Style="{StaticResource BodySmall}" 
+                              Foreground="{DynamicResource OnSurfaceVariant}" FontWeight="Medium" 
+                              Margin="8,0,8,8"/>
+
+                    <!-- Tastenkürzel -->
+                    <Button Command="{Binding SelectSectionCommand}" 
+                           CommandParameter="Shortcuts"
+                           Style="{StaticResource OrangeHelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="KeyboardOutline" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Tastenkürzel" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Team-Verwaltung -->
+                    <Button Command="{Binding SelectSectionCommand}" 
+                           CommandParameter="TeamManagement"
+                           Style="{StaticResource OrangeHelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Users" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Team-Verwaltung" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Setup und Installation -->
+                    <Button Command="{Binding SelectSectionCommand}" 
+                           CommandParameter="SetupGuide"
+                           Style="{StaticResource OrangeHelpNavButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Cog" Width="16" Height="16" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Setup und Installation" Foreground="{DynamicResource OnSurface}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Content Area with Orange Design -->
+        <Border Grid.Column="1" Style="{StaticResource Card}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Orange Search Bar -->
+                <Border Grid.Row="0" Style="{StaticResource OrangeCard}" Margin="24,24,24,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextField}" 
+                                FontSize="16" Height="40"
+                                Background="{DynamicResource Surface}"
+                                BorderBrush="{DynamicResource Primary}"/>
+
+                        <Button Grid.Column="1" Command="{Binding SearchCommand}"
+                               Style="{StaticResource OrangeAccentButton}" 
+                               Width="40" Height="40" Margin="8,0,0,0">
+                            <fa:ImageAwesome Icon="Search" Width="16" Height="16" Foreground="White"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Content Display -->
+                <ScrollViewer Grid.Row="1" Padding="24,0,24,24" VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{Binding CurrentContent}" 
+                              Style="{StaticResource HelpContentStyle}"
+                              FontFamily="Segoe UI, Consolas, monospace"/>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

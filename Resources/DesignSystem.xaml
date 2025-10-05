@@ -1,32 +1,32 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- 🎨 PROFESSIONAL COLOR PALETTE - Material Design 3 Inspired -->
+    <!-- 🎨 PROFESSIONAL COLOR PALETTE - Orange-Focused Design System v1.9 -->
     
-    <!-- Primary Colors -->
-    <SolidColorBrush x:Key="Primary" Color="#1565C0"/> <!-- Deep Blue -->
-    <SolidColorBrush x:Key="PrimaryContainer" Color="#D6E8F8"/> <!-- Etwas grauer als vorher -->
+    <!-- 🧡 PRIMARY COLORS - NOW ORANGE-BASED! -->
+    <SolidColorBrush x:Key="Primary" Color="#F57C00"/> <!-- Orange als Hauptfarbe -->
+    <SolidColorBrush x:Key="PrimaryContainer" Color="#FFE0B2"/> <!-- Helles Orange Container -->
     <SolidColorBrush x:Key="OnPrimary" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="OnPrimaryContainer" Color="#0D47A1"/>
+    <SolidColorBrush x:Key="OnPrimaryContainer" Color="#E65100"/>
     
-    <!-- Secondary Colors -->
+    <!-- Secondary Colors - Komplementäre Blau-Grau Töne -->
     <SolidColorBrush x:Key="Secondary" Color="#455A64"/> <!-- Blue Grey -->
     <SolidColorBrush x:Key="SecondaryContainer" Color="#CFD8DC"/>
     <SolidColorBrush x:Key="OnSecondary" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="OnSecondaryContainer" Color="#263238"/>
     
-    <!-- Tertiary Colors (Light Mode) - ORANGE statt Lila -->
-    <SolidColorBrush x:Key="Tertiary" Color="#F57C00"/> <!-- Orange statt Purple -->
-    <SolidColorBrush x:Key="TertiaryContainer" Color="#FFE0B2"/> <!-- Helles Orange statt Lila -->
+    <!-- Tertiary Colors - Verstärkte Orange-Variationen -->
+    <SolidColorBrush x:Key="Tertiary" Color="#FF9800"/> <!-- Helleres Orange für Akzente -->
+    <SolidColorBrush x:Key="TertiaryContainer" Color="#FFF3E0"/> <!-- Sehr helles Orange -->
     <SolidColorBrush x:Key="OnTertiary" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="OnTertiaryContainer" Color="#E65100"/> <!-- Dunkles Orange -->
+    <SolidColorBrush x:Key="OnTertiaryContainer" Color="#F57C00"/>
     
     <!-- Surface Colors -->
-    <SolidColorBrush x:Key="Surface" Color="#F5F5F5"/> <!-- Hellgrau statt weiß -->
-    <SolidColorBrush x:Key="SurfaceVariant" Color="#EEEEEE"/> <!-- Etwas dunkler grau -->
-    <SolidColorBrush x:Key="SurfaceContainer" Color="#E8E8E8"/> <!-- Noch etwas dunkler -->
-    <SolidColorBrush x:Key="SurfaceContainerHigh" Color="#E1E1E1"/> <!-- Konsistent grauer -->
-    <SolidColorBrush x:Key="SurfaceContainerHighest" Color="#DADADA"/> <!-- Dunkelster Grauton -->
+    <SolidColorBrush x:Key="Surface" Color="#FEFEFE"/> <!-- Fast weiß für besseren Kontrast -->
+    <SolidColorBrush x:Key="SurfaceVariant" Color="#F5F5F5"/> <!-- Hellgrau -->
+    <SolidColorBrush x:Key="SurfaceContainer" Color="#F0F0F0"/> <!-- Etwas dunkler grau -->
+    <SolidColorBrush x:Key="SurfaceContainerHigh" Color="#EBEBEB"/> <!-- Mittlerer Grauton -->
+    <SolidColorBrush x:Key="SurfaceContainerHighest" Color="#E5E5E5"/> <!-- Dunkler Grauton -->
     <SolidColorBrush x:Key="OnSurface" Color="#1A1C1E"/>
     <SolidColorBrush x:Key="OnSurfaceVariant" Color="#44474A"/>
     
@@ -34,37 +34,49 @@
     <SolidColorBrush x:Key="Outline" Color="#74777A"/>
     <SolidColorBrush x:Key="OutlineVariant" Color="#C4C7CA"/>
     
-    <!-- Semantic Colors -->
-    <SolidColorBrush x:Key="Success" Color="#2E7D32"/>
+    <!-- Semantic Colors mit Orange-Harmonien -->
+    <SolidColorBrush x:Key="Success" Color="#4CAF50"/> <!-- Grün bleibt für Erfolg -->
     <SolidColorBrush x:Key="SuccessContainer" Color="#E8F5E8"/>
     <SolidColorBrush x:Key="OnSuccess" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="OnSuccessContainer" Color="#1B5E20"/>
+    <SolidColorBrush x:Key="OnSuccessContainer" Color="#2E7D32"/>
     
-    <SolidColorBrush x:Key="Warning" Color="#F57C00"/>
+    <SolidColorBrush x:Key="Warning" Color="#FF9800"/> <!-- Orange für Warnungen -->
     <SolidColorBrush x:Key="WarningContainer" Color="#FFF3E0"/>
     <SolidColorBrush x:Key="OnWarning" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="OnWarningContainer" Color="#E65100"/>
     
-    <SolidColorBrush x:Key="Error" Color="#D32F2F"/>
+    <SolidColorBrush x:Key="Error" Color="#F44336"/> <!-- Rot bleibt für Fehler -->
     <SolidColorBrush x:Key="ErrorContainer" Color="#FFEBEE"/>
     <SolidColorBrush x:Key="OnError" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="OnErrorContainer" Color="#B71C1C"/>
+    <SolidColorBrush x:Key="OnErrorContainer" Color="#C62828"/>
     
-    <!-- Emergency Team Type Colors -->
-    <SolidColorBrush x:Key="FlächeColor" Color="#1976D2"/> <!-- Blue -->
+    <!-- 🚨 Emergency Team Type Colors mit Orange-Harmonie -->
+    <SolidColorBrush x:Key="FlächeColor" Color="#2196F3"/> <!-- Blau bleibt -->
     <SolidColorBrush x:Key="TrümmerColor" Color="#F57C00"/> <!-- Orange -->
-    <SolidColorBrush x:Key="MantrailerColor" Color="#388E3C"/> <!-- Green -->
-    <SolidColorBrush x:Key="WasserColor" Color="#0097A7"/> <!-- Cyan -->
-    <SolidColorBrush x:Key="LawineColor" Color="#7B1FA2"/> <!-- Purple - BLEIBT für Lawinen-Teams -->
-    <SolidColorBrush x:Key="AllgemeinColor" Color="#616161"/> <!-- Grey -->
+    <SolidColorBrush x:Key="MantrailerColor" Color="#4CAF50"/> <!-- Grün -->
+    <SolidColorBrush x:Key="WasserColor" Color="#00BCD4"/> <!-- Cyan -->
+    <SolidColorBrush x:Key="LawineColor" Color="#9C27B0"/> <!-- Lila bleibt für Kontrast -->
+    <SolidColorBrush x:Key="GeländeColor" Color="#795548"/> <!-- Braun für Gelände -->
+    <SolidColorBrush x:Key="LeichenColor" Color="#607D8B"/> <!-- Blau-Grau -->
+    <SolidColorBrush x:Key="AllgemeinColor" Color="#FF9800"/> <!-- Orange für Allgemein -->
     
-    <!-- 🌓 DARK THEME COLORS -->
+    <!-- 💤 NEUTRAL COLORS - Für verbesserten Kontrast -->
+    <SolidColorBrush x:Key="Neutral0" Color="#FFFFFF"/> <!-- Neutral Weiß -->
+    <SolidColorBrush x:Key="Neutral1" Color="#F5F5F5"/> <!-- Sehr helles Grau -->
+    <SolidColorBrush x:Key="Neutral2" Color="#EEEEEE"/> <!-- Helles Grau -->
+    <SolidColorBrush x:Key="Neutral3" Color="#E0E0E0"/> <!-- Mittelgrau -->
+    <SolidColorBrush x:Key="Neutral4" Color="#BDBDBD"/> <!-- Dunkelgrau -->
+    <SolidColorBrush x:Key="Neutral5" Color="#9E9E9E"/> <!-- Sehr dunkles Grau -->
+    <SolidColorBrush x:Key="Neutral6" Color="#757575"/> <!-- Grauton für Texte -->
+    <SolidColorBrush x:Key="Neutral7" Color="#616161"/> <!-- Dunkles Grau für Texte -->
     
-    <!-- Dark Primary Colors -->
-    <SolidColorBrush x:Key="DarkPrimary" Color="#90CAF9"/>
-    <SolidColorBrush x:Key="DarkPrimaryContainer" Color="#0D47A1"/>
-    <SolidColorBrush x:Key="DarkOnPrimary" Color="#0A2C5A"/>
-    <SolidColorBrush x:Key="DarkOnPrimaryContainer" Color="#C5E1FF"/>
+    <!-- 🌓 DARK THEME COLORS - Orange-optimiert -->
+    
+    <!-- Dark Primary Colors - Orange-basiert -->
+    <SolidColorBrush x:Key="DarkPrimary" Color="#FFB74D"/> <!-- Helles Orange für Dark Mode -->
+    <SolidColorBrush x:Key="DarkPrimaryContainer" Color="#E65100"/> <!-- Dunkles Orange Container -->
+    <SolidColorBrush x:Key="DarkOnPrimary" Color="#1A0F00"/> <!-- Sehr dunkles Braun -->
+    <SolidColorBrush x:Key="DarkOnPrimaryContainer" Color="#FFE0B2"/> <!-- Helles Orange-Beige -->
     
     <!-- Dark Secondary Colors -->
     <SolidColorBrush x:Key="DarkSecondary" Color="#B0BEC5"/>
@@ -72,26 +84,40 @@
     <SolidColorBrush x:Key="DarkOnSecondary" Color="#1C313A"/>
     <SolidColorBrush x:Key="DarkOnSecondaryContainer" Color="#CFD8DC"/>
     
-    <!-- Dark Tertiary Colors - ORANGE -->
-    <SolidColorBrush x:Key="DarkTertiary" Color="#FFB74D"/> <!-- Helles Orange für Akzente -->
-    <SolidColorBrush x:Key="DarkTertiaryContainer" Color="#E65100"/> <!-- Dunkles Orange für Container -->
-    <SolidColorBrush x:Key="DarkOnTertiary" Color="#1A0F00"/> <!-- Sehr dunkles Braun für Text auf Orange -->
-    <SolidColorBrush x:Key="DarkOnTertiaryContainer" Color="#FFE0B2"/> <!-- Helles Orange-Beige für Text auf Container -->
+    <!-- Dark Tertiary Colors - Verstärktes Orange -->
+    <SolidColorBrush x:Key="DarkTertiary" Color="#FFCC80"/> <!-- Noch helleres Orange für Akzente -->
+    <SolidColorBrush x:Key="DarkTertiaryContainer" Color="#F57C00"/> <!-- Orange Container -->
+    <SolidColorBrush x:Key="DarkOnTertiary" Color="#2E1600"/> <!-- Dunkles Braun -->
+    <SolidColorBrush x:Key="DarkOnTertiaryContainer" Color="#FFE0B2"/> <!-- Helles Orange-Beige -->
     
-    <!-- Dark Surface Colors - NEUTRALES DUNKELGRAU statt Orange-Braun -->
-    <SolidColorBrush x:Key="DarkSurface" Color="#1C1C1E"/> <!-- Neutrales dunkles Grau -->
-    <SolidColorBrush x:Key="DarkSurfaceVariant" Color="#2C2C2E"/> <!-- Etwas heller grau für Kontrast -->
-    <SolidColorBrush x:Key="DarkSurfaceContainer" Color="#1E1E20"/> <!-- Grau für Container -->
-    <SolidColorBrush x:Key="DarkSurfaceContainerHigh" Color="#2A2A2C"/> <!-- Heller Grau für erhöhte Bereiche -->
-    <SolidColorBrush x:Key="DarkSurfaceContainerHighest" Color="#36363A"/> <!-- Hellster Grau für höchste Ebenen -->
-    <SolidColorBrush x:Key="DarkOnSurface" Color="#E5E5E7"/> <!-- Helles Grau für Haupttext -->
-    <SolidColorBrush x:Key="DarkOnSurfaceVariant" Color="#AEAEB2"/> <!-- Mittelgrau für sekundären Text -->
+    <!-- Dark Surface Colors - Neutrales dunkles Design -->
+    <SolidColorBrush x:Key="DarkSurface" Color="#121212"/> <!-- Echter Dark Mode Hintergrund -->
+    <SolidColorBrush x:Key="DarkSurfaceVariant" Color="#1E1E1E"/> <!-- Etwas heller -->
+    <SolidColorBrush x:Key="DarkSurfaceContainer" Color="#1A1A1A"/> <!-- Container -->
+    <SolidColorBrush x:Key="DarkSurfaceContainerHigh" Color="#242424"/> <!-- Erhöhte Bereiche -->
+    <SolidColorBrush x:Key="DarkSurfaceContainerHighest" Color="#2C2C2C"/> <!-- Höchste Ebenen -->
+    <SolidColorBrush x:Key="DarkOnSurface" Color="#E3E3E3"/> <!-- Haupttext -->
+    <SolidColorBrush x:Key="DarkOnSurfaceVariant" Color="#B3B3B3"/> <!-- Sekundärtext -->
     
     <!-- Dark Outline Colors -->
-    <SolidColorBrush x:Key="DarkOutline" Color="#48484A"/>
-    <SolidColorBrush x:Key="DarkOutlineVariant" Color="#3A3A3C"/>
+    <SolidColorBrush x:Key="DarkOutline" Color="#404040"/>
+    <SolidColorBrush x:Key="DarkOutlineVariant" Color="#2E2E2E"/>
     
-    <!-- 📝 TYPOGRAPHY SYSTEM -->
+    <!-- 🎨 ORANGE ACCENT COLORS - Zusätzliche Orange-Variationen -->
+    <SolidColorBrush x:Key="OrangeAccent1" Color="#FF6F00"/> <!-- Sehr dunkles Orange -->
+    <SolidColorBrush x:Key="OrangeAccent2" Color="#FF8F00"/> <!-- Dunkles Orange -->
+    <SolidColorBrush x:Key="OrangeAccent3" Color="#FFA000"/> <!-- Mittleres Orange -->
+    <SolidColorBrush x:Key="OrangeAccent4" Color="#FFB300"/> <!-- Helles Orange -->
+    <SolidColorBrush x:Key="OrangeAccent5" Color="#FFC107"/> <!-- Sehr helles Orange -->
+    
+    <!-- Dark Mode Orange-Variationen -->
+    <SolidColorBrush x:Key="DarkOrangeAccent1" Color="#FFCC80"/> <!-- Für Dark Mode Akzente -->
+    <SolidColorBrush x:Key="DarkOrangeAccent2" Color="#FFB74D"/>
+    <SolidColorBrush x:Key="DarkOrangeAccent3" Color="#FFA726"/>
+    <SolidColorBrush x:Key="DarkOrangeAccent4" Color="#FF9800"/>
+    <SolidColorBrush x:Key="DarkOrangeAccent5" Color="#FB8C00"/>
+    
+    <!-- 📝 TYPOGRAPHY SYSTEM - Unverändert, da bereits optimal -->
     
     <!-- Display Typography -->
     <Style x:Key="DisplayLarge" TargetType="TextBlock">
@@ -211,14 +237,19 @@
     <DropShadowEffect x:Key="Elevation4" Color="Black" BlurRadius="14" ShadowDepth="4" Opacity="0.25"/>
     <DropShadowEffect x:Key="Elevation5" Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.30"/>
     
-    <!-- 🎯 COMPONENT STYLES -->
+    <!-- 🧡 ORANGE ELEVATION für spezielle Elemente -->
+    <DropShadowEffect x:Key="OrangeElevation1" Color="#F57C00" BlurRadius="4" ShadowDepth="1" Opacity="0.15"/>
+    <DropShadowEffect x:Key="OrangeElevation2" Color="#FF9800" BlurRadius="8" ShadowDepth="2" Opacity="0.20"/>
+    <DropShadowEffect x:Key="OrangeElevation3" Color="#FFA726" BlurRadius="12" ShadowDepth="3" Opacity="0.25"/>
+    
+    <!-- 🎯 COMPONENT STYLES - Mit Orange-Fokus -->
     
     <!-- Help Window Specific Styles -->
     <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontSize" Value="24"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Primary}"/> <!-- Jetzt Orange! -->
         <Setter Property="Margin" Value="0,20,0,16"/>
         <Setter Property="LineHeight" Value="32"/>
     </Style>
@@ -255,14 +286,64 @@
         <Setter Property="FontFamily" Value="Consolas, monospace"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
-        <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Primary}"/> <!-- Orange Text! -->
+        <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/> <!-- Orange Hintergrund! -->
         <Setter Property="Padding" Value="6,3"/>
         <Setter Property="TextAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
     
-    <!-- Card Style -->
+    <!-- 🧡 ORANGE-FOCUSED COMPONENT STYLES -->
+    
+    <!-- Orange Card Style -->
+    <Style x:Key="OrangeCard" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource TertiaryContainer}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Effect" Value="{StaticResource OrangeElevation2}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Tertiary}"/>
+    </Style>
+    
+    <!-- Orange Accent Button -->
+    <Style x:Key="OrangeAccentButton" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/> <!-- Jetzt Orange -->
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="20"
+                            Effect="{StaticResource OrangeElevation1}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                        Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource OrangeElevation2}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Tertiary}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation1}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource OrangeAccent2}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.38"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Standard Card Style -->
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource Surface}"/>
         <Setter Property="CornerRadius" Value="12"/>
@@ -275,9 +356,9 @@
         <Setter Property="Effect" Value="{StaticResource Elevation4}"/>
     </Style>
     
-    <!-- Filled Button -->
+    <!-- Filled Button - JETZT ORANGE -->
     <Style x:Key="FilledButton" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Background" Value="{DynamicResource Primary}"/> <!-- Orange! -->
         <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="24,10"/>
@@ -316,7 +397,7 @@
     <!-- Outlined Button -->
     <Style x:Key="OutlinedButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Primary}"/> <!-- Orange Text -->
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Outline}"/>
         <Setter Property="Padding" Value="24,10"/>
@@ -338,11 +419,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
-                            <Setter Property="Opacity" Value="0.08"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
-                            <Setter Property="Opacity" Value="0.12"/>
+                            <Setter Property="Opacity" Value="0.85"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.38"/>
@@ -356,7 +437,7 @@
     <!-- Text Button -->
     <Style x:Key="TextButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Primary}"/> <!-- Orange Text -->
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="12,10"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -375,11 +456,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
-                            <Setter Property="Opacity" Value="0.08"/>
+                            <Setter Property="Opacity" Value="0.1"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
-                            <Setter Property="Opacity" Value="0.12"/>
+                            <Setter Property="Opacity" Value="0.15"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.38"/>
@@ -390,9 +471,9 @@
         </Setter>
     </Style>
     
-    <!-- Floating Action Button -->
+    <!-- Floating Action Button - ORANGE -->
     <Style x:Key="FAB" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        <Setter Property="Background" Value="{DynamicResource Primary}"/> <!-- Orange! -->
         <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Width" Value="56"/>
@@ -404,12 +485,13 @@
                     <Border x:Name="border" 
                             Background="{TemplateBinding Background}" 
                             CornerRadius="16"
-                            Effect="{StaticResource Elevation3}">
+                            Effect="{StaticResource OrangeElevation3}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation4}"/>
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation5}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Tertiary}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation2}"/>
@@ -420,7 +502,7 @@
         </Setter>
     </Style>
     
-    <!-- Text Field -->
+    <!-- Text Field - Enhanced -->
     <Style x:Key="TextField" TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
@@ -445,7 +527,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/> <!-- Orange Focus! -->
                             <Setter TargetName="border" Property="BorderThickness" Value="2"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -485,7 +567,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/> <!-- Orange Focus! -->
                             <Setter TargetName="border" Property="BorderThickness" Value="2"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -500,7 +582,7 @@
         </Setter>
     </Style>
     
-    <!-- ComboBox Style für Dark/Light Mode -->
+    <!-- ComboBox Style für Dark/Light Mode - ORANGE FOKUS -->
     <Style x:Key="ComboBoxStyle" TargetType="ComboBox">
         <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
@@ -538,7 +620,7 @@
                                     </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/> <!-- Orange Hover! -->
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -572,8 +654,8 @@
                              PopupAnimation="Slide">
                             <Grid MinWidth="{TemplateBinding ActualWidth}" MaxHeight="200">
                                 <Border Background="{DynamicResource Surface}"
-                                      BorderBrush="{DynamicResource Outline}"
-                                      BorderThickness="1"
+                                      BorderBrush="{DynamicResource Primary}" 
+                                      BorderThickness="2"
                                       CornerRadius="4">
                                     <ScrollViewer>
                                         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
@@ -603,121 +685,35 @@
     </Style>
     
     <!-- Standard ComboBox Style für automatische Anwendung -->
-    <Style TargetType="ComboBox">
-        <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Outline}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="12,8"/>
-        <Setter Property="FontFamily" Value="Segoe UI"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Height" Value="40"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ComboBox">
-                    <Grid>
-                        <ToggleButton x:Name="ToggleButton" 
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Focusable="False"
-                                    IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                    ClickMode="Press">
-                            <ToggleButton.Template>
-                                <ControlTemplate TargetType="ToggleButton">
-                                    <Border x:Name="border" 
-                                            Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                            CornerRadius="4">
-                                        <Grid HorizontalAlignment="Right" Width="20">
-                                            <Path x:Name="Arrow" 
-                                                Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
-                                                HorizontalAlignment="Center" 
-                                                VerticalAlignment="Center"
-                                                Fill="{DynamicResource OnSurface}"/>
-                                        </Grid>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </ToggleButton.Template>
-                        </ToggleButton>
-                        <ContentPresenter x:Name="ContentSite"
-                                        IsHitTestVisible="False"
-                                        Content="{TemplateBinding SelectionBoxItem}"
-                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                        ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                        Margin="{TemplateBinding Padding}"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Left"
-                                        TextElement.Foreground="{DynamicResource OnSurface}"/>
-                        <TextBox x:Name="PART_EditableTextBox"
-                               Style="{x:Null}"
-                               Background="Transparent"
-                               Foreground="{DynamicResource OnSurface}"
-                               CaretBrush="{DynamicResource OnSurface}"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               Margin="{TemplateBinding Padding}"
-                               Focusable="True"
-                               Visibility="Hidden"
-                               IsReadOnly="{TemplateBinding IsReadOnly}"/>
-                        <Popup x:Name="PART_Popup" 
-                             Placement="Bottom"
-                             IsOpen="{TemplateBinding IsDropDownOpen}"
-                             AllowsTransparency="True" 
-                             Focusable="False"
-                             PopupAnimation="Slide">
-                            <Grid MinWidth="{TemplateBinding ActualWidth}" MaxHeight="200">
-                                <Border Background="{DynamicResource Surface}"
-                                      BorderBrush="{DynamicResource Outline}"
-                                      BorderThickness="1"
-                                      CornerRadius="4">
-                                    <ScrollViewer>
-                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
-                        </Popup>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="HasItems" Value="False">
-                            <Setter TargetName="PART_Popup" Property="MinHeight" Value="95"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.6"/>
-                        </Trigger>
-                        <Trigger Property="IsGrouping" Value="True">
-                            <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
-                        </Trigger>
-                        <Trigger Property="IsEditable" Value="True">
-                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+    <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}"/>
     
-    <!-- ✨ ANIMATIONS -->
+    <!-- ✨ ANIMATIONS - Bleibt unverändert -->
     
-    <!-- 🌈 DYNAMIC GRADIENTS für Dark/Light Mode -->
+    <!-- 🌈 DYNAMIC GRADIENTS für Dark/Light Mode - ORANGE FOKUS -->
     
-    <!-- Primary Gradient für Light Mode -->
+    <!-- Primary Gradient für Light Mode - ORANGE -->
     <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#D6E8F8" Offset="0"/> <!-- Konsistent mit PrimaryContainer -->
-        <GradientStop Color="#B3D4F1" Offset="1"/> <!-- Etwas dunkler -->
+        <GradientStop Color="#FFE0B2" Offset="0"/> <!-- Helles Orange -->
+        <GradientStop Color="#FFCC80" Offset="1"/> <!-- Mittleres Orange -->
     </LinearGradientBrush>
     
-    <!-- Primary Gradient für Dark Mode -->
+    <!-- Primary Gradient für Dark Mode - ORANGE -->
     <LinearGradientBrush x:Key="DarkPrimaryGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#0D47A1" Offset="0"/> <!-- Dunkles Blau für Dark Mode -->
-        <GradientStop Color="#90CAF9" Offset="1"/> <!-- Helles Blau für Dark Mode -->
+        <GradientStop Color="#E65100" Offset="0"/> <!-- Dunkles Orange für Dark Mode -->
+        <GradientStop Color="#FFB74D" Offset="1"/> <!-- Helles Orange für Dark Mode -->
+    </LinearGradientBrush>
+    
+    <!-- 🧡 NEUE ORANGE GRADIENT VARIATIONEN -->
+    <LinearGradientBrush x:Key="OrangeSunsetGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FF8A65" Offset="0"/>
+        <GradientStop Color="#FF7043" Offset="0.5"/>
+        <GradientStop Color="#FF5722" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <LinearGradientBrush x:Key="OrangeSunriseGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FFE0B2" Offset="0"/>
+        <GradientStop Color="#FFCC80" Offset="0.5"/>
+        <GradientStop Color="#FFB74D" Offset="1"/>
     </LinearGradientBrush>
 
 </ResourceDictionary>

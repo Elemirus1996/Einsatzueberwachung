@@ -81,7 +81,7 @@ namespace Einsatzueberwachung
                     {
                         try
                         {
-                            var updateWindow = new UpdateNotificationWindow(updateInfo);
+                            var updateWindow = new Views.UpdateNotificationWindow(updateInfo);
                             
                             // Find MainWindow to set as owner
                             var mainWindow = Current.MainWindow;
