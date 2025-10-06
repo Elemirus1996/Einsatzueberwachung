@@ -541,8 +541,9 @@ namespace Einsatzueberwachung.Services
                         await ServeHTML(response, GenerateDebugHTML());
                         break;
                     
-                    // NEU: Endpoint für globale Notizen
+                    // Endpoint für globale Notizen - unterstützt beide URLs
                     case "/api/globalnotes":
+                    case "/api/notes":
                         await ServeJSON(response, GetGlobalNotesData());
                         break;
                     
@@ -705,65 +706,289 @@ namespace Einsatzueberwachung.Services
     <title>🐕 Einsatzüberwachung Mobile</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #FF8A65 0%, #FF5722 100%);
+            background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
             min-height: 100vh;
-            color: white;
+            color: #2c3e50;
+            padding: 20px;
         }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .team-card {
-            background: rgba(255,255,255,0.15);
+        
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+        }
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        .status-card {
+            background: rgba(255,255,255,0.95);
             border-radius: 15px;
             padding: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
-        .team-time { font-size: 2.5rem; font-weight: bold; text-align: center; margin: 15px 0; }
-        .status { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
         
-        /* NEU: Notizen-Styling */
-        .notes-section { 
-            background: rgba(255,255,255,0.1); 
-            border-radius: 15px; 
-            padding: 20px; 
-            margin-top: 20px;
+        .status-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-content {
+            font-size: 16px;
+            color: #34495e;
+            line-height: 1.6;
+        }
+        
+        .section-title {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 30px 0 15px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .team-card {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-left: 5px solid #FF9800;
+        }
+        
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .team-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .team-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-active {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .status-ready {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .team-time {
+            font-size: 42px;
+            font-weight: bold;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+        
+        .team-time.warning {
+            color: #f39c12;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .team-time.critical {
+            color: #e74c3c;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .team-info {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 3px solid #FF9800;
+        }
+        
+        .info-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            min-width: 80px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #2c3e50;
+            flex: 1;
+        }
+        
+        .notes-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
             max-height: 400px;
             overflow-y: auto;
         }
+        
         .notes-header {
-            font-size: 1.2rem;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255,255,255,0.3);
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 15px;
         }
+        
         .note-entry {
-            background: rgba(255,255,255,0.1);
-            border-left: 3px solid rgba(255,255,255,0.5);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
         }
+        
         .note-timestamp {
             font-weight: bold;
-            opacity: 0.8;
-            font-size: 0.9rem;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
         }
+        
         .note-content {
-            margin-top: 5px;
-            line-height: 1.4;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
         }
+        
         .note-team {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            margin-top: 3px;
-        }
-        .no-notes {
-            text-align: center;
-            opacity: 0.7;
+            font-size: 12px;
+            color: #95a5a6;
+            margin-top: 8px;
             font-style: italic;
+        }
+        
+        .loading, .no-teams, .no-notes {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .error {
+            background: #e74c3c;
+            color: white;
             padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .refresh-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 18px;
+            border-radius: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            font-size: 13px;
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+        
+        .refresh-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ecf0f1;
+            border-top-color: #FF9800;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 480px) {
+            body { padding: 15px; }
+            .header h1 { font-size: 24px; }
+            .team-time { font-size: 36px; }
+            .team-card { padding: 20px; }
         }
     </style>
 </head>
@@ -771,81 +996,200 @@ namespace Einsatzueberwachung.Services
     <div class='container'>
         <div class='header'>
             <h1>🐕‍🦺 Einsatzüberwachung</h1>
-            <p>Mobile Übersicht v1.7</p>
+            <p>Mobile Übersicht v1.9 - Professional Edition</p>
         </div>
-        <div class='status'>
-            <h3>📊 Status</h3>
-            <p id='status'>Lade...</p>
-        </div>
-        <div id='teamGrid'></div>
         
-        <!-- NEU: Notizen-Bereich -->
+        <div class='status-card'>
+            <div class='status-title'>📊 Status</div>
+            <div class='status-content' id='status'>Lade...</div>
+        </div>
+        
+        <div class='section-title'>🎯 Teams</div>
+        <div id='teamsContainer'>
+            <div class='loading'>Lade Team-Daten...</div>
+        </div>
+        
+        <div class='section-title'>📝 Notizen & Ereignisse</div>
         <div class='notes-section'>
-            <div class='notes-header'>📝 Notizen & Ereignisse</div>
-            <div id='notesContainer'></div>
+            <div class='notes-header'>Ereignis-Timeline</div>
+            <div id='notesContainer'>
+                <div class='loading'>Lade Notizen...</div>
+            </div>
         </div>
     </div>
+
+    <div class='refresh-indicator' id='refreshIndicator'>
+        <div class='refresh-spinner'></div>
+        <span>Aktualisiere...</span>
+    </div>
+
     <script>
-        function loadData() {
-            // Teams laden
-            fetch('/api/teams')
-                .then(r => r.json())
-                .then(teams => {
-                    const grid = document.getElementById('teamGrid');
-                    if (teams.length === 0) {
-                        grid.innerHTML = '<p style=""text-align:center"">Keine Teams vorhanden</p>';
-                        return;
-                    }
-                    grid.innerHTML = teams.map(t => `
-                        <div class='team-card'>
-                            <h3>${t.name}</h3>
-                            <div class='team-time'>${t.time}</div>
-                            <p>🐕 ${t.dogName || '-'}</p>
-                            <p>👤 ${t.handler || '-'}</p>
-                            ${t.suchgebiet ? `<p>🗺️ ${t.suchgebiet}</p>` : ''}
-                        </div>
-                    `).join('');
-                });
-            
-            // Status laden
-            fetch('/api/status')
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('status').innerHTML = 
-                        `Aktive Teams: ${data.teams.active} / ${data.teams.total}`;
-                });
-            
-            // NEU: Notizen laden
-            fetch('/api/globalnotes')
-                .then(r => r.json())
-                .then(notes => {
-                    const container = document.getElementById('notesContainer');
-                    if (notes.length === 0) {
-                        container.innerHTML = '<div class=""no-notes"">Noch keine Notizen vorhanden</div>';
-                        return;
-                    }
-                    // Zeige die letzten 20 Notizen (neueste zuerst)
-                    const recentNotes = notes.slice(-20).reverse();
-                    container.innerHTML = recentNotes.map(note => `
-                        <div class='note-entry'>
-                            <div class='note-timestamp'>${note.icon} ${note.timestamp}</div>
-                            <div class='note-content'>${note.content}</div>
-                            ${note.teamName ? `<div class='note-team'>Team: ${note.teamName}</div>` : ''}
-                        </div>
-                    `).join('');
-                })
-                .catch(err => {
-                    console.error('Fehler beim Laden der Notizen:', err);
-                    document.getElementById('notesContainer').innerHTML = 
-                        '<div class=""no-notes"">Fehler beim Laden der Notizen</div>';
-                });
+        let updateInterval;
+        let isUpdating = false;
+
+        async function loadData() {
+            if (isUpdating) return;
+            isUpdating = true;
+            showRefreshIndicator();
+
+            try {
+                // Status laden
+                const statusResponse = await fetch('/api/status');
+                const status = await statusResponse.json();
+                updateStats(status);
+
+                // Teams laden
+                const teamsResponse = await fetch('/api/teams');
+                const teams = await teamsResponse.json();
+                displayTeams(teams);
+
+                // Notizen laden
+                const notesResponse = await fetch('/api/notes');
+                const notes = await notesResponse.json();
+                displayNotes(notes);
+
+                hideRefreshIndicator();
+            } catch (error) {
+                console.error('Fehler beim Laden der Daten:', error);
+                showError('Verbindungsfehler. Überprüfe die Netzwerkverbindung.');
+                hideRefreshIndicator();
+            }
+
+            isUpdating = false;
         }
-        
-        // Initial laden
+
+        function updateStats(status) {
+            const statusElement = document.getElementById('status');
+            statusElement.innerHTML = `
+                <strong>Aktive Teams:</strong> ${status.teams?.active || 0} von ${status.teams?.total || 0}<br>
+                <strong>Einsatzdauer:</strong> ${status.mission?.duration || '00:00:00'}<br>
+                <strong>Einsatzort:</strong> ${status.mission?.location || 'Unbekannt'}
+            `;
+        }
+
+        function displayTeams(teams) {
+            const container = document.getElementById('teamsContainer');
+            
+            if (!teams || teams.length === 0) {
+                container.innerHTML = `
+                    <div class='no-teams'>
+                        <strong>Keine Teams verfügbar</strong><br>
+                        Erstelle Teams in der Desktop-Anwendung
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = teams.map(team => {
+                const statusClass = team.status === 'active' ? 'status-active' : 'status-ready';
+                const statusText = team.status === 'active' ? 'Aktiv' : 'Bereit';
+                
+                let timeClass = '';
+                if (team.isSecondWarning) {
+                    timeClass = 'critical';
+                } else if (team.isFirstWarning) {
+                    timeClass = 'warning';
+                }
+
+                return `
+                    <div class='team-card'>
+                        <div class='team-header'>
+                            <div class='team-name'>${escapeHtml(team.name || 'Unbenannt')}</div>
+                            <div class='team-status ${statusClass}'>${statusText}</div>
+                        </div>
+
+                        <div class='team-time ${timeClass}'>${escapeHtml(team.time || '00:00:00')}</div>
+
+                        <div class='team-info'>
+                            <div class='info-row'>
+                                <div class='info-icon'>🐕</div>
+                                <div class='info-label'>Hund</div>
+                                <div class='info-value'>${escapeHtml(team.dogName || '-')}</div>
+                            </div>
+
+                            <div class='info-row'>
+                                <div class='info-icon'>👤</div>
+                                <div class='info-label'>Hundeführer</div>
+                                <div class='info-value'>${escapeHtml(team.handler || '-')}</div>
+                            </div>
+
+                            ${team.helper ? `
+                            <div class='info-row'>
+                                <div class='info-icon'>👥</div>
+                                <div class='info-label'>Helfer</div>
+                                <div class='info-value'>${escapeHtml(team.helper)}</div>
+                            </div>
+                            ` : ''}
+
+                            ${team.suchgebiet ? `
+                            <div class='info-row'>
+                                <div class='info-icon'>📍</div>
+                                <div class='info-label'>Suchgebiet</div>
+                                <div class='info-value'>${escapeHtml(team.suchgebiet)}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayNotes(notes) {
+            const container = document.getElementById('notesContainer');
+            
+            if (!notes || !Array.isArray(notes) || notes.length === 0) {
+                container.innerHTML = `
+                    <div class='no-notes'>
+                        Noch keine Notizen vorhanden
+                    </div>`;
+                return;
+            }
+
+            // Zeige die letzten 20 Notizen (neueste zuerst)
+            const recentNotes = notes.slice(-20).reverse();
+            container.innerHTML = recentNotes.map(note => `
+                <div class='note-entry'>
+                    <div class='note-timestamp'>${note.icon || '📝'} ${note.timestamp || note.formattedTimestamp || 'N/A'}</div>
+                    <div class='note-content'>${escapeHtml(note.content || 'Kein Inhalt')}</div>
+                    ${note.teamName ? `<div class='note-team'>Team: ${escapeHtml(note.teamName)}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function showError(message) {
+            const container = document.getElementById('teamsContainer');
+            container.innerHTML = `<div class='error'>${escapeHtml(message)}</div>`;
+        }
+
+        function showRefreshIndicator() {
+            document.getElementById('refreshIndicator').style.display = 'flex';
+        }
+
+        function hideRefreshIndicator() {
+            setTimeout(() => {
+                document.getElementById('refreshIndicator').style.display = 'none';
+            }, 500);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial load
         loadData();
-        
-        // Alle 5 Sekunden aktualisieren
-        setInterval(loadData, 10000);
+
+        // Auto-refresh every 10 seconds
+        updateInterval = setInterval(loadData, 10000);
+
+        // Reload when coming back to the page
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadData();
+            }
+        });
+
+        console.log('Einsatzüberwachung Mobile v1.9 loaded - Professional Edition');
     </script>
 </body>
 </html>";

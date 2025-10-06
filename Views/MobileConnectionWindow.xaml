@@ -2,13 +2,17 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
-        Title="📱 Mobile Verbindung - Einsatzüberwachung v1.9.0 MVVM Edition" 
+        xmlns:local="clr-namespace:Einsatzueberwachung.Views"
+        Title="{Binding WindowTitle}" 
         Height="680" Width="820"
         WindowStartupLocation="CenterOwner"
         Icon="pack://application:,,,/Resources/app.ico"
         Background="{DynamicResource SurfaceContainer}">
 
     <Window.Resources>
+        <!-- Converter für QR-Code-Anzeige -->
+        <local:ByteArrayToBitmapImageConverter x:Key="ByteArrayToBitmapConverter"/>
+        
         <!-- Mobile Connection Styles - Orange Design System -->
         <Style x:Key="OrangeMobileCard" TargetType="Border" BasedOn="{StaticResource Card}">
             <Setter Property="Background" Value="{DynamicResource Surface}"/>
@@ -53,7 +57,7 @@
             <Setter Property="Margin" Value="0,0,8,0"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" Direction="270" 
+                    <DropShadowEffect Color="#F57C00" Direction="270" 
                                       ShadowDepth="1" Opacity="0.3" BlurRadius="3"/>
                 </Setter.Value>
             </Setter>
@@ -92,7 +96,7 @@
                                       Foreground="White" FontWeight="Bold"/>
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                 <Border Style="{StaticResource OrangeStatusIndicator}"
-                                       Background="{Binding StatusColor}"/>
+                                       Background="{Binding StatusIndicatorBackground}"/>
                                 <TextBlock Text="{Binding StatusText}" 
                                           Style="{StaticResource BodyMedium}"
                                           Foreground="White" FontWeight="Medium"/>
@@ -105,17 +109,17 @@
                 <StackPanel Margin="0,0,0,20">
                     <Button Command="{Binding StartServerCommand}" 
                            Style="{StaticResource OrangeMobileActionButton}"
-                           IsEnabled="{Binding CanStart}">
+                           IsEnabled="{Binding IsStartButtonEnabled}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Play" Width="16" Height="16" 
                                            Foreground="White" Margin="0,0,8,0"/>
-                            <TextBlock Text="{Binding StartButtonText}" Foreground="White" FontWeight="Medium"/>
+                            <TextBlock Text="Server starten" Foreground="White" FontWeight="Medium"/>
                         </StackPanel>
                     </Button>
                     
                     <Button Command="{Binding StopServerCommand}" 
                            Style="{StaticResource OrangeMobileSecondaryButton}"
-                           IsEnabled="{Binding CanStop}">
+                           IsEnabled="{Binding IsStopButtonEnabled}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Stop" Width="16" Height="16" 
                                            Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
@@ -132,18 +136,19 @@
                                   Foreground="{DynamicResource OnSurface}" HorizontalAlignment="Center" 
                                   Margin="0,0,0,16" FontWeight="Bold"/>
                         
-                        <!-- QR Code Display with Orange Border -->
+                        <!-- QR Code Display with Orange Border - Fixed Binding -->
                         <Border Width="220" Height="220" 
                                 BorderBrush="{DynamicResource Primary}" BorderThickness="3" 
                                 CornerRadius="12" Background="White">
                             <Border.Effect>
-                                <DropShadowEffect Color="{DynamicResource Primary}" Direction="270" 
+                                <DropShadowEffect Color="#F57C00" Direction="270" 
                                                   ShadowDepth="3" Opacity="0.2" BlurRadius="8"/>
                             </Border.Effect>
-                            <Image Source="{Binding QRCodeImage}" Stretch="Uniform" Margin="15"/>
+                            <Image Source="{Binding QRCodeImageBytes, Converter={StaticResource ByteArrayToBitmapConverter}}" 
+                                   Stretch="Uniform" Margin="15"/>
                         </Border>
 
-                        <TextBlock Text="{Binding ServerUrl}" 
+                        <TextBlock Text="{Binding QRCodeUrl}" 
                                   Style="{StaticResource BodySmall}"
                                   Foreground="{DynamicResource OnSurface}" HorizontalAlignment="Center" 
                                   Margin="0,16,0,0" TextAlignment="Center" TextWrapping="Wrap"
@@ -159,7 +164,7 @@
                                 </StackPanel>
                             </Button>
                             
-                            <Button Command="{Binding OpenBrowserCommand}" Style="{StaticResource OrangeMobileQuickActionButton}"
+                            <Button Command="{Binding OpenInBrowserCommand}" Style="{StaticResource OrangeMobileQuickActionButton}"
                                     Margin="8,0,0,0">
                                 <StackPanel Orientation="Horizontal">
                                     <fa:ImageAwesome Icon="ExternalLink" Width="14" Height="14" 
@@ -208,47 +213,21 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Server Status Messages (MVVM) -->
-                <TextBlock Text="📋 Server-Nachrichten" Style="{StaticResource TitleSmall}"
+                <!-- Server Status Messages (Simplified for now) -->
+                <TextBlock Text="📋 Server-Status" Style="{StaticResource TitleSmall}"
                           Foreground="{DynamicResource OnSurface}" Margin="0,0,0,8" FontWeight="Bold"/>
                 
-                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding StatusMessages}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{DynamicResource SurfaceVariant}" 
-                                       CornerRadius="8" Margin="0,0,0,4" Padding="12">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <fa:ImageAwesome Grid.Column="0" Icon="{Binding Icon}" 
-                                                       Width="16" Height="16" 
-                                                       Foreground="{DynamicResource Primary}" 
-                                                       Margin="0,0,10,0" VerticalAlignment="Top"/>
-                                        
-                                        <TextBlock Grid.Column="1" Text="{Binding Message}" 
-                                                  Style="{StaticResource BodySmall}"
-                                                  Foreground="{DynamicResource OnSurface}"
-                                                  TextWrapping="Wrap"/>
-                                        
-                                        <TextBlock Grid.Column="2" Text="{Binding Time}" 
-                                                  Style="{StaticResource BodySmall}"
-                                                  Foreground="{DynamicResource OnSurfaceVariant}"
-                                                  VerticalAlignment="Top" Margin="8,0,0,0"/>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                <Border Style="{StaticResource Card}" Background="{DynamicResource SurfaceVariant}" 
+                       Margin="0,0,0,16" Padding="12">
+                    <TextBlock Text="{Binding StatusText}" 
+                              Style="{StaticResource BodyMedium}"
+                              Foreground="{DynamicResource OnSurface}"
+                              TextWrapping="Wrap"/>
+                </Border>
 
                 <!-- Statistics (MVVM) -->
                 <TextBlock Text="📈 Mobile Statistiken" Style="{StaticResource TitleSmall}"
-                          Foreground="{DynamicResource OnSurface}" Margin="0,20,0,8" FontWeight="Bold"/>
+                          Foreground="{DynamicResource OnSurface}" Margin="0,0,0,8" FontWeight="Bold"/>
                 
                 <UniformGrid Columns="2" Margin="0,0,0,16">
                     <Border Style="{StaticResource Card}" 
@@ -260,7 +239,7 @@
                             </LinearGradientBrush>
                         </Border.Background>
                         <StackPanel>
-                            <TextBlock Text="{Binding TotalViews}" 
+                            <TextBlock Text="{Binding TotalViewsValue}" 
                                       Style="{StaticResource DisplayMedium}"
                                       Foreground="White" FontWeight="Bold"
                                       HorizontalAlignment="Center"/>
@@ -274,7 +253,7 @@
                            Margin="4,0,0,0" Padding="18"
                            Background="{DynamicResource Success}">
                         <StackPanel>
-                            <TextBlock Text="{Binding ActiveViewers}" 
+                            <TextBlock Text="{Binding ActiveViewersValue}" 
                                       Style="{StaticResource DisplayMedium}"
                                       Foreground="White" FontWeight="Bold"
                                       HorizontalAlignment="Center"/>
@@ -298,7 +277,7 @@
                         </StackPanel>
                     </Button>
                     
-                    <Button Command="{Binding TestApiCommand}" Style="{StaticResource OrangeMobileSecondaryButton}">
+                    <Button Command="{Binding TestAPICommand}" Style="{StaticResource OrangeMobileSecondaryButton}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Cog" Width="16" Height="16" 
                                            Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
@@ -322,7 +301,7 @@
                         </StackPanel>
                     </Button>
                     
-                    <Button Command="{Binding ShowNonAdminHelpCommand}" Style="{StaticResource OrangeMobileQuickActionButton}">
+                    <Button Command="{Binding NonAdminHelpCommand}" Style="{StaticResource OrangeMobileQuickActionButton}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="User" Width="16" Height="16" 
                                            Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>

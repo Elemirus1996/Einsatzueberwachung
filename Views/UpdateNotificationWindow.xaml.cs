@@ -11,7 +11,7 @@ namespace Einsatzueberwachung.Views
     /// </summary>
     public partial class UpdateNotificationWindow : Window
     {
-        private readonly UpdateNotificationViewModel _viewModel;
+        private readonly UpdateNotificationViewModel _viewModel = null!;
 
         public UpdateNotificationWindow(UpdateInfo updateInfo)
         {

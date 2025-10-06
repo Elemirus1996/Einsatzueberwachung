@@ -36,6 +36,9 @@ namespace Einsatzueberwachung.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
+        // Events
+        public event Action? RequestClose;
+
         // Properties
         public string WindowTitle
         {
@@ -144,8 +147,8 @@ namespace Einsatzueberwachung.ViewModels
                 // Subscribe to property changes
                 teamItem.PropertyChanged += TeamItem_PropertyChanged;
 
-                // Set up preset command with this ViewModel as parent
-                teamItem.ParentViewModel = this;
+                // Subscribe to preset commands
+                teamItem.ApplyPresetCommand = new RelayCommand<PresetInfo>(preset => ExecuteApplyPreset(teamItem, preset!));
 
                 TeamWarningItems.Add(teamItem);
             }
@@ -248,6 +251,9 @@ namespace Einsatzueberwachung.ViewModels
 
                 var summary = string.Join(", ", _teamSettings.Values.Select(s => $"{s.TeamName}: {s.FirstWarningMinutes}/{s.SecondWarningMinutes}"));
                 LoggingService.Instance.LogInfo($"Team warning settings saved via MVVM: {summary}");
+                
+                // Close window
+                RequestClose?.Invoke();
             }
             catch (Exception ex)
             {
@@ -263,6 +269,9 @@ namespace Einsatzueberwachung.ViewModels
             {
                 DialogResult = false;
                 LoggingService.Instance.LogInfo("Team warning settings cancelled via MVVM");
+                
+                // Close window
+                RequestClose?.Invoke();
             }
             catch (Exception ex)
             {
@@ -270,7 +279,7 @@ namespace Einsatzueberwachung.ViewModels
             }
         }
 
-        public void ExecuteApplyPreset(TeamWarningItemViewModel item, PresetInfo preset)
+        private void ExecuteApplyPreset(TeamWarningItemViewModel item, PresetInfo preset)
         {
             try
             {
@@ -348,9 +357,6 @@ namespace Einsatzueberwachung.ViewModels
         public string TeamTypeShortName { get; set; } = string.Empty;
         public string TeamTypeColorHex { get; set; } = "#F57C00";
 
-        // Reference to parent ViewModel for preset commands
-        public TeamWarningSettingsViewModel? ParentViewModel { get; set; }
-
         public int FirstWarningMinutes
         {
             get => _firstWarningMinutes;
@@ -363,11 +369,8 @@ namespace Einsatzueberwachung.ViewModels
             set => SetProperty(ref _secondWarningMinutes, value);
         }
 
-        // Preset Command (executed through parent ViewModel)
-        public ICommand ApplyPresetCommand => new RelayCommand<PresetInfo>(preset => 
-        {
-            ParentViewModel?.ExecuteApplyPreset(this, preset);
-        });
+        // Preset Command (will be set by parent ViewModel)
+        public ICommand? ApplyPresetCommand { get; set; }
 
         // Available presets
         public List<PresetInfo> AvailablePresets { get; } = new List<PresetInfo>

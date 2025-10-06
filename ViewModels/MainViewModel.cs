@@ -45,6 +45,7 @@ namespace Einsatzueberwachung.ViewModels
         private ObservableCollection<GlobalNotesEntry> _globalNotesCollection = new ObservableCollection<GlobalNotesEntry>();
         private ObservableCollection<GlobalNotesEntry> _filteredNotesCollection = new ObservableCollection<GlobalNotesEntry>();
         private ObservableCollection<NoteTarget> _noteTargets = new ObservableCollection<NoteTarget>();
+        private NoteTarget? _selectedNoteTarget = null;
         private string _quickNoteText = string.Empty;
 
         // Theme Management
@@ -156,7 +157,24 @@ namespace Einsatzueberwachung.ViewModels
         public string QuickNoteText
         {
             get => _quickNoteText;
-            set => SetProperty(ref _quickNoteText, value);
+            set 
+            { 
+                if (SetProperty(ref _quickNoteText, value))
+                {
+                    // Notify command that CanExecute may have changed
+                    if (AddQuickNoteCommand is RelayCommand command)
+                    {
+                        command.RaiseCanExecuteChanged();
+                    }
+                }
+            }
+        }
+
+        // Selected Note Target for ComboBox binding
+        public NoteTarget? SelectedNoteTarget
+        {
+            get => _selectedNoteTarget;
+            set => SetProperty(ref _selectedNoteTarget, value);
         }
 
         #endregion
@@ -266,12 +284,12 @@ namespace Einsatzueberwachung.ViewModels
                 if (string.IsNullOrWhiteSpace(QuickNoteText)) return;
 
                 // Get selected target
-                var selectedTarget = NoteTargets.FirstOrDefault()?.DisplayName ?? "Allgemein";
+                var selectedTarget = SelectedNoteTarget?.DisplayName ?? NoteTargets.FirstOrDefault()?.DisplayName ?? "Allgemein";
                 
                 AddGlobalNote(QuickNoteText, GlobalNotesEntryType.Manual, selectedTarget);
                 QuickNoteText = string.Empty;
                 
-                LoggingService.Instance.LogInfo("Quick note added via MVVM");
+                LoggingService.Instance.LogInfo($"Quick note added via MVVM to target: {selectedTarget}");
             }
             catch (Exception ex)
             {
@@ -518,6 +536,12 @@ namespace Einsatzueberwachung.ViewModels
                 _noteTargets.Add(new NoteTarget { DisplayName = "Einsatzleiter", DetailInfo = "👨‍💼", IsSpecialTarget = true });
                 _noteTargets.Add(new NoteTarget { DisplayName = "Drohnenstaffel", DetailInfo = "🚁", IsSpecialTarget = true });
                 _noteTargets.Add(new NoteTarget { DisplayName = "Funkzentrale", DetailInfo = "📻", IsSpecialTarget = true });
+                
+                // Set default selection to first item (Allgemein) - Note: SelectedNoteTarget property needed
+                if (_noteTargets.Count > 0)
+                {
+                    SelectedNoteTarget = _noteTargets.FirstOrDefault();
+                }
             }
             catch (Exception ex)
             {
@@ -530,6 +554,8 @@ namespace Einsatzueberwachung.ViewModels
             try
             {
                 var specialTargets = _noteTargets.Where(nt => nt.IsSpecialTarget).ToList();
+                var currentSelection = SelectedNoteTarget;
+                
                 _noteTargets.Clear();
                 
                 foreach (var target in specialTargets)
@@ -545,6 +571,16 @@ namespace Einsatzueberwachung.ViewModels
                         DetailInfo = team.TeamTypeShortName,
                         IsSpecialTarget = false 
                     });
+                }
+                
+                // Restore selection if it still exists, otherwise select first item
+                if (currentSelection != null && _noteTargets.Any(nt => nt.DisplayName == currentSelection.DisplayName))
+                {
+                    SelectedNoteTarget = _noteTargets.First(nt => nt.DisplayName == currentSelection.DisplayName);
+                }
+                else
+                {
+                    SelectedNoteTarget = _noteTargets.FirstOrDefault();
                 }
             }
             catch (Exception ex)

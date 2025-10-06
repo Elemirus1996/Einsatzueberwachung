@@ -13,8 +13,7 @@
     <!-- DataContext wird über Code-Behind gesetzt -->
 
     <Window.Resources>
-        <!-- Converter als Resource definieren -->
-        <views:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <!-- Converter wird jetzt über globale App-Resources referenziert -->
         
         <!-- Orange Card Style -->
         <Style x:Key="OrangeEditCard" TargetType="Border">
@@ -26,7 +25,7 @@
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
+                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                      ShadowDepth="0" BlurRadius="8" Opacity="0.1"/>
                 </Setter.Value>
             </Setter>
@@ -54,10 +53,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryVariant}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource Tertiary}"/>
                                 <Setter Property="Effect">
                                     <Setter.Value>
-                                        <DropShadowEffect Color="{DynamicResource Primary}" 
+                                        <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                                          ShadowDepth="0" BlurRadius="6" Opacity="0.2"/>
                                     </Setter.Value>
                                 </Setter>
@@ -94,7 +93,7 @@
                                 <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{DynamicResource PrimaryVariant}"/>
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="{DynamicResource Tertiary}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -124,7 +123,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryVariant}"/>
+                    <Setter Property="Background" Value="{DynamicResource Tertiary}"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Background" Value="{DynamicResource OutlineVariant}"/>

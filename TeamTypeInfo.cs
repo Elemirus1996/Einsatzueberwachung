@@ -29,7 +29,7 @@ namespace Einsatzueberwachung
                     Type = TeamType.Flaechensuchhund, 
                     DisplayName = "Flächensuchhund", 
                     ShortName = "FL",
-                    ColorHex = "#4CAF50",
+                    ColorHex = "#2196F3", // Blau
                     Description = "Suche in großen Flächen"
                 },
                 new TeamTypeInfo 
@@ -37,7 +37,7 @@ namespace Einsatzueberwachung
                     Type = TeamType.Truemmersuchhund, 
                     DisplayName = "Trümmersuchhund", 
                     ShortName = "TR",
-                    ColorHex = "#FF5722",
+                    ColorHex = "#FF9800", // Orange - passt zum Theme
                     Description = "Suche in Trümmern und Gebäuden"
                 },
                 new TeamTypeInfo 
@@ -45,7 +45,7 @@ namespace Einsatzueberwachung
                     Type = TeamType.Mantrailer, 
                     DisplayName = "Mantrailer", 
                     ShortName = "MT",
-                    ColorHex = "#9C27B0",
+                    ColorHex = "#4CAF50", // Grün statt Lila
                     Description = "Personenverfolgung über Geruchsspuren"
                 },
                 new TeamTypeInfo 
@@ -53,7 +53,7 @@ namespace Einsatzueberwachung
                     Type = TeamType.Wasserrettungshund, 
                     DisplayName = "Wasserrettungshund", 
                     ShortName = "WR",
-                    ColorHex = "#2196F3",
+                    ColorHex = "#00BCD4", // Cyan
                     Description = "Rettung aus und Suche im Wasser"
                 },
                 new TeamTypeInfo 
@@ -61,7 +61,7 @@ namespace Einsatzueberwachung
                     Type = TeamType.Lawinensuchhund, 
                     DisplayName = "Lawinensuchhund", 
                     ShortName = "LW",
-                    ColorHex = "#607D8B",
+                    ColorHex = "#607D8B", // Blaugrau statt Lila
                     Description = "Suche von Verschütteten in Lawinen"
                 },
                 new TeamTypeInfo 
@@ -69,7 +69,7 @@ namespace Einsatzueberwachung
                     Type = TeamType.Allgemein, 
                     DisplayName = "Allgemein", 
                     ShortName = "AL",
-                    ColorHex = "#795548",
+                    ColorHex = "#795548", // Braun
                     Description = "Allgemeine Rettungshundeteams"
                 }
             };

@@ -1,8 +1,7 @@
 <Application x:Class="Einsatzueberwachung.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:Einsatzueberwachung.Views"
-             StartupUri="Views/StartWindow.xaml">
+             xmlns:converters="clr-namespace:Einsatzueberwachung.Views">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

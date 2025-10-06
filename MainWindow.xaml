@@ -41,14 +41,7 @@
     <Window.Resources>
         <!-- Custom Styles for MainWindow using global design system -->
         <Style x:Key="HeaderCard" TargetType="Border" BasedOn="{StaticResource Card}">
-            <Setter Property="Background">
-                <Setter.Value>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#FF7043" Offset="0"/>
-                        <GradientStop Color="#F4511E" Offset="1"/>
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Background" Value="{DynamicResource PrimaryGradient}"/>
             <Setter Property="Effect" Value="{StaticResource Elevation2}"/>
             <Setter Property="CornerRadius" Value="0,0,16,16"/>
             <Setter Property="Margin" Value="0"/>
@@ -147,7 +140,7 @@
                             <TextBlock Text="F1-F10: Teams | Strg+N: + Team | F11: Vollbild" 
                                       FontSize="13"
                                       FontWeight="SemiBold"
-                                      Foreground="#F4511E"
+                                      Foreground="{DynamicResource Primary}"
                                       HorizontalAlignment="Center"/>
                         </Border>
                     </StackPanel>
@@ -205,9 +198,9 @@
                         
                         <Button Command="{Binding MenuCommand}" 
                                Style="{StaticResource IconButton}"
-                               Background="{DynamicResource Outline}"
-                               ToolTip="Menü">
-                            <fa:ImageAwesome Icon="Bars" Width="18" Height="18" Foreground="White"/>
+                               Background="{DynamicResource Primary}"
+                               ToolTip="Einstellungen">
+                            <fa:ImageAwesome Icon="Cog" Width="18" Height="18" Foreground="White"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -283,7 +276,7 @@
                     BorderBrush="{DynamicResource OutlineVariant}" BorderThickness="0,1,0,0" 
                     Padding="16,8">
                 <Border.Effect>
-                    <DropShadowEffect Color="Black" Direction="90" ShadowDepth="1" 
+                    <DropShadowEffect Color="{StaticResource ShadowColorLight}" Direction="90" ShadowDepth="1" 
                                     Opacity="0.1" BlurRadius="4"/>
                 </Border.Effect>
                 
@@ -335,13 +328,8 @@
             <!-- Header -->
             <Border Grid.Row="0" 
                     Padding="15"
-                    CornerRadius="5,5,0,0">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#FF7043" Offset="0"/>
-                        <GradientStop Color="#F4511E" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.Background>
+                    CornerRadius="5,5,0,0"
+                    Background="{DynamicResource PrimaryGradient}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -498,24 +486,35 @@
                                 BorderThickness="0"
                                 FontWeight="SemiBold"
                                 Command="{Binding AddQuickNoteCommand}"
+                                IsEnabled="{Binding AddQuickNoteCommand.CanExecute}"
                                 Cursor="Hand">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" 
+                                                <Border x:Name="border"
+                                                        Background="{TemplateBinding Background}" 
                                                         CornerRadius="5" 
                                                         Padding="{TemplateBinding Padding}">
                                                     <ContentPresenter HorizontalAlignment="Center" 
                                                                       VerticalAlignment="Center"/>
                                                 </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="border" Property="Background" Value="{DynamicResource OutlineVariant}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
                                     <Style.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter Property="Background" Value="{DynamicResource Tertiary}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Background" Value="{DynamicResource OutlineVariant}"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
@@ -527,8 +526,8 @@
                     <ComboBox Grid.Row="1"
                               Margin="0,5,0,0"
                               Padding="10,8"
-                              SelectedIndex="0"
                               ItemsSource="{Binding NoteTargets}"
+                              SelectedItem="{Binding SelectedNoteTarget}"
                               Style="{StaticResource ComboBoxStyle}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>

@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 using Einsatzueberwachung.ViewModels;
 using Einsatzueberwachung.Models;
 using Einsatzueberwachung.Services;
@@ -15,6 +16,9 @@ namespace Einsatzueberwachung.Views
 
         public StartWindow()
         {
+            // Initialize theme BEFORE InitializeComponent to ensure correct initial rendering
+            InitializeThemeEarly();
+            
             InitializeComponent();
             
             _viewModel = new StartViewModel();
@@ -24,9 +28,121 @@ namespace Einsatzueberwachung.Views
             _viewModel.RequestClose += OnRequestClose;
             _viewModel.ShowMessage += OnShowMessage;
             
-            InitializeTheme();
+            // Apply theme after component initialization
+            FinalizeThemeInitialization();
             
-            LoggingService.Instance?.LogInfo("StartWindow v1.9 initialized with MVVM pattern and Orange design");
+            LoggingService.Instance?.LogInfo($"StartWindow v1.9 initialized - Theme: {ThemeService.Instance.CurrentThemeStatus}, ScrollViewer optimized, Readability enhanced");
+        }
+
+        /// <summary>
+        /// Frühe Theme-Initialisierung vor InitializeComponent
+        /// </summary>
+        private void InitializeThemeEarly()
+        {
+            try
+            {
+                // Stelle sicher dass ThemeService initialisiert ist
+                var themeService = ThemeService.Instance;
+                
+                // ZUSÄTZLICHE SICHERHEIT: Theme auch hier nochmals anwenden
+                var currentTime = DateTime.Now.TimeOfDay;
+                bool shouldBeDark = currentTime >= new TimeSpan(18, 0, 0) || currentTime < new TimeSpan(8, 0, 0);
+                
+                System.Diagnostics.Debug.WriteLine($"=== StartWindow Theme Check ===");
+                System.Diagnostics.Debug.WriteLine($"Current Time: {currentTime:hh\\:mm\\:ss}");
+                System.Diagnostics.Debug.WriteLine($"Should be Dark: {shouldBeDark}");
+                System.Diagnostics.Debug.WriteLine($"ThemeService says Dark: {themeService.IsDarkMode}");
+                
+                // FORCE korrekte Theme-Anwendung falls Diskrepanz
+                if (themeService.IsDarkMode != shouldBeDark)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔧 FORCING theme correction in StartWindow");
+                    LoggingService.Instance.LogWarning($"StartWindow forcing theme correction: {shouldBeDark}");
+                    
+                    // Direkte Ressourcen-Anwendung
+                    var app = Application.Current;
+                    if (app?.Resources != null)
+                    {
+                        if (shouldBeDark)
+                        {
+                            app.Resources["Surface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(18, 18, 18));
+                            app.Resources["SurfaceContainer"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 26));
+                            app.Resources["OnSurface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(227, 227, 227));
+                            app.Resources["Primary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 183, 77));
+                            app.Resources["OnPrimary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 15, 0));
+                        }
+                        else
+                        {
+                            app.Resources["Surface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(254, 254, 254));
+                            app.Resources["SurfaceContainer"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(240, 240, 240));
+                            app.Resources["OnSurface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 28, 30));
+                            app.Resources["Primary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 124, 0));
+                            app.Resources["OnPrimary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255));
+                        }
+                    }
+                }
+                
+                LoggingService.Instance.LogInfo($"StartWindow theme early init completed - Should be: {(shouldBeDark ? "Dark" : "Light")}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in early theme initialization: {ex.Message}");
+                LoggingService.Instance.LogError("Error in early theme initialization", ex);
+            }
+        }
+
+        /// <summary>
+        /// Finale Theme-Initialisierung nach InitializeComponent
+        /// </summary>
+        private void FinalizeThemeInitialization()
+        {
+            try
+            {
+                var themeService = ThemeService.Instance;
+                
+                // Apply current theme to start window
+                ApplyTheme(themeService.IsDarkMode);
+                
+                // Subscribe to theme changes
+                themeService.ThemeChanged += OnThemeChanged;
+                
+                LoggingService.Instance?.LogInfo($"StartWindow theme finalized - Applied: {(themeService.IsDarkMode ? "Dark" : "Light")} mode");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance?.LogError("Error finalizing theme initialization", ex);
+            }
+        }
+
+        /// <summary>
+        /// Event-Handler für TextBox MouseWheel-Events
+        /// Leitet das MouseWheel-Event an den übergeordneten ScrollViewer weiter
+        /// </summary>
+        private void TextBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            try
+            {
+                // Verhindert dass TextBox das MouseWheel-Event konsumiert
+                // und leitet es an den MainScrollViewer weiter
+                if (sender is System.Windows.Controls.TextBox textBox && !textBox.IsFocused)
+                {
+                    e.Handled = true;
+                    
+                    // Erstelle neues MouseWheel-Event für den MainScrollViewer
+                    var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                    {
+                        RoutedEvent = UIElement.MouseWheelEvent,
+                        Source = sender
+                    };
+                    
+                    // Leite Event an MainScrollViewer weiter
+                    MainScrollViewer?.RaiseEvent(eventArg);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance?.LogError("Error handling TextBox MouseWheel event", ex);
+            }
         }
 
         private void OnRequestClose(object? sender, EventArgs e)
@@ -63,7 +179,7 @@ namespace Einsatzueberwachung.Views
                         // Close StartWindow (App won't exit because MainWindow is still open)
                         this.Close();
                         
-                        LoggingService.Instance?.LogInfo("✅ Transition from StartWindow to MainWindow completed with MVVM");
+                        LoggingService.Instance?.LogInfo("✅ Transition from StartWindow to MainWindow completed with theme and ScrollViewer optimizations");
                     }
                 }
                 else
@@ -101,20 +217,6 @@ namespace Einsatzueberwachung.Views
             }
         }
 
-        private void InitializeTheme()
-        {
-            try
-            {
-                // Apply current theme to start window
-                ApplyTheme(ThemeService.Instance.IsDarkMode);
-                ThemeService.Instance.ThemeChanged += OnThemeChanged;
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance?.LogError("Error initializing theme in StartWindow", ex);
-            }
-        }
-
         private void OnThemeChanged(bool isDarkMode)
         {
             Dispatcher.Invoke(() => ApplyTheme(isDarkMode));
@@ -124,13 +226,54 @@ namespace Einsatzueberwachung.Views
         {
             try
             {
-                // Theme is applied automatically through DynamicResource bindings
-                // No manual resource updates needed with MVVM and proper design system
-                LoggingService.Instance?.LogInfo($"Theme applied to StartWindow: {(isDarkMode ? "Dark" : "Light")} mode with Orange design");
+                System.Diagnostics.Debug.WriteLine($"Applying theme to StartWindow: {(isDarkMode ? "Dark" : "Light")}");
+
+                // Force visual update to ensure theme changes are applied
+                this.InvalidateVisual();
+                this.UpdateLayout();
+                
+                LoggingService.Instance?.LogInfo($"Theme applied to StartWindow: {(isDarkMode ? "Dark" : "Light")} mode");
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error applying theme: {ex.Message}");
                 LoggingService.Instance?.LogError("Error applying theme to StartWindow", ex);
+            }
+        }
+
+        /// <summary>
+        /// DEBUG: Event-Handler für Theme-Test Button (temporär)
+        /// </summary>
+        private void DebugThemeButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var themeService = ThemeService.Instance;
+                
+                System.Diagnostics.Debug.WriteLine($"\n=== MANUAL THEME TEST ===");
+                System.Diagnostics.Debug.WriteLine($"Before Toggle - IsDarkMode: {themeService.IsDarkMode}");
+                
+                // Toggle theme manually
+                themeService.ToggleTheme();
+                
+                System.Diagnostics.Debug.WriteLine($"After Toggle - IsDarkMode: {themeService.IsDarkMode}");
+                System.Diagnostics.Debug.WriteLine($"After Toggle - Status: {themeService.CurrentThemeStatus}");
+                System.Diagnostics.Debug.WriteLine("=== END MANUAL TEST ===\n");
+                
+                LoggingService.Instance?.LogInfo($"DEBUG: Manual theme toggle - New mode: {(themeService.IsDarkMode ? "Dark" : "Light")}");
+                
+                // Show simple success message
+                var message = $"Theme gewechselt zu: {(themeService.IsDarkMode ? "Dark Mode" : "Light Mode")}\n\n" +
+                             $"Status: {themeService.CurrentThemeStatus}\n" +
+                             "TextBoxen sollten jetzt automatisch die korrekten Farben verwenden.";
+                
+                MessageBox.Show(message, "Theme Debug Test", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in debug theme button: {ex.Message}");
+                LoggingService.Instance?.LogError("Error in debug theme button", ex);
+                MessageBox.Show($"Fehler beim Theme-Test: {ex.Message}", "Debug Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -9,9 +9,7 @@
         ResizeMode="NoResize"
         Background="{DynamicResource SurfaceContainer}">
 
-    <Window.DataContext>
-        <vm:TeamWarningSettingsViewModel/>
-    </Window.DataContext>
+    <!-- DataContext wird über Code-Behind gesetzt -->
 
     <Window.Resources>
         <!-- Enhanced Slider Style -->
@@ -49,7 +47,7 @@
                     <!-- Team Header -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
                         <!-- Team Type Badge -->
-                        <Border Background="{Binding TeamTypeColorHex, Converter={StaticResource ColorBrushConverter}}"
+                        <Border Background="{Binding TeamTypeColorHex}"
                                CornerRadius="12" Padding="8,4,8,4" Margin="0,0,12,0">
                             <TextBlock Text="{Binding TeamTypeShortName}" 
                                       Foreground="White" FontSize="10" FontWeight="Bold"/>
@@ -183,7 +181,7 @@
                 <!-- Icon -->
                 <Border Width="56" Height="56" CornerRadius="28" 
                        Background="{DynamicResource Primary}" Margin="0,0,16,0">
-                    <fa:ImageAwesome Icon="ClockOutline" Width="28" Height="28" 
+                    <fa:FontAwesome Icon="ClockOutline" FontSize="28" 
                                    Foreground="White"/>
                 </Border>
                 
@@ -205,7 +203,7 @@
                Margin="0,0,0,20">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <fa:ImageAwesome Icon="Globe" Width="16" Height="16" 
+                    <fa:FontAwesome Icon="Globe" FontSize="16" 
                                    Foreground="{DynamicResource Success}" Margin="0,0,8,0"/>
                     <TextBlock Text="Globale Einstellungen" Style="{StaticResource TitleSmall}"
                               Foreground="{DynamicResource OnSuccessContainer}"/>
@@ -266,7 +264,7 @@
                    Style="{StaticResource FilledButton}" 
                    Background="{DynamicResource Primary}" Margin="12,0,0,0">
                 <StackPanel Orientation="Horizontal">
-                    <fa:ImageAwesome Icon="Save" Width="14" Height="14" 
+                    <fa:FontAwesome Icon="Save" FontSize="14" 
                                    Foreground="White" Margin="0,0,8,0"/>
                     <TextBlock Text="Speichern" Foreground="White"/>
                 </StackPanel>

@@ -1,9 +1,10 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:Einsatzueberwachung.Views">
 
-    <!-- 🎨 PROFESSIONAL COLOR PALETTE - Orange-Focused Design System v1.9 -->
+    <!-- 🎨 PROFESSIONAL COLOR PALETTE - Orange-Focused Design System v1.9 mit Dark Mode -->
     
-    <!-- 🧡 PRIMARY COLORS - NOW ORANGE-BASED! -->
+    <!-- 🧡 LIGHT MODE PRIMARY COLORS - Orange-basiert -->
     <SolidColorBrush x:Key="Primary" Color="#F57C00"/> <!-- Orange als Hauptfarbe -->
     <SolidColorBrush x:Key="PrimaryContainer" Color="#FFE0B2"/> <!-- Helles Orange Container -->
     <SolidColorBrush x:Key="OnPrimary" Color="#FFFFFF"/>
@@ -29,7 +30,7 @@
     <SolidColorBrush x:Key="OnTertiary" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="OnTertiaryContainer" Color="#F57C00"/>
     
-    <!-- Surface Colors -->
+    <!-- Surface Colors - Light Mode -->
     <SolidColorBrush x:Key="Surface" Color="#FEFEFE"/> <!-- Fast weiß für besseren Kontrast -->
     <SolidColorBrush x:Key="SurfaceVariant" Color="#F5F5F5"/> <!-- Hellgrau -->
     <SolidColorBrush x:Key="SurfaceContainer" Color="#F0F0F0"/> <!-- Etwas dunkler grau -->
@@ -58,27 +59,7 @@
     <SolidColorBrush x:Key="OnError" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="OnErrorContainer" Color="#C62828"/>
     
-    <!-- 🚨 Emergency Team Type Colors mit Orange-Harmonie -->
-    <SolidColorBrush x:Key="FlächeColor" Color="#2196F3"/> <!-- Blau bleibt -->
-    <SolidColorBrush x:Key="TrümmerColor" Color="#F57C00"/> <!-- Orange -->
-    <SolidColorBrush x:Key="MantrailerColor" Color="#4CAF50"/> <!-- Grün -->
-    <SolidColorBrush x:Key="WasserColor" Color="#00BCD4"/> <!-- Cyan -->
-    <SolidColorBrush x:Key="LawineColor" Color="#9C27B0"/> <!-- Lila bleibt für Kontrast -->
-    <SolidColorBrush x:Key="GeländeColor" Color="#795548"/> <!-- Braun für Gelände -->
-    <SolidColorBrush x:Key="LeichenColor" Color="#607D8B"/> <!-- Blau-Grau -->
-    <SolidColorBrush x:Key="AllgemeinColor" Color="#FF9800"/> <!-- Orange für Allgemein -->
-    
-    <!-- 💤 NEUTRAL COLORS - Für verbesserten Kontrast -->
-    <SolidColorBrush x:Key="Neutral0" Color="#FFFFFF"/> <!-- Neutral Weiß -->
-    <SolidColorBrush x:Key="Neutral1" Color="#F5F5F5"/> <!-- Sehr helles Grau -->
-    <SolidColorBrush x:Key="Neutral2" Color="#EEEEEE"/> <!-- Helles Grau -->
-    <SolidColorBrush x:Key="Neutral3" Color="#E0E0E0"/> <!-- Mittelgrau -->
-    <SolidColorBrush x:Key="Neutral4" Color="#BDBDBD"/> <!-- Dunkelgrau -->
-    <SolidColorBrush x:Key="Neutral5" Color="#9E9E9E"/> <!-- Sehr dunkles Grau -->
-    <SolidColorBrush x:Key="Neutral6" Color="#757575"/> <!-- Grauton für Texte -->
-    <SolidColorBrush x:Key="Neutral7" Color="#616161"/> <!-- Dunkles Grau für Texte -->
-    
-    <!-- 🌓 DARK THEME COLORS - Orange-optimiert -->
+    <!-- 🌙 DARK THEME COLORS - Orange-optimiert -->
     
     <!-- Dark Primary Colors - Orange-basiert -->
     <SolidColorBrush x:Key="DarkPrimary" Color="#FFB74D"/> <!-- Helles Orange für Dark Mode -->
@@ -110,6 +91,42 @@
     <!-- Dark Outline Colors -->
     <SolidColorBrush x:Key="DarkOutline" Color="#404040"/>
     <SolidColorBrush x:Key="DarkOutlineVariant" Color="#2E2E2E"/>
+    
+    <!-- Dark Semantic Colors -->
+    <SolidColorBrush x:Key="DarkSuccess" Color="#81C784"/> <!-- Helleres Grün für Dark Mode -->
+    <SolidColorBrush x:Key="DarkSuccessContainer" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="DarkOnSuccess" Color="#1B5E20"/>
+    <SolidColorBrush x:Key="DarkOnSuccessContainer" Color="#C8E6C9"/>
+    
+    <SolidColorBrush x:Key="DarkWarning" Color="#FFCC80"/> <!-- Orange für Warnungen in Dark Mode -->
+    <SolidColorBrush x:Key="DarkWarningContainer" Color="#F57C00"/>
+    <SolidColorBrush x:Key="DarkOnWarning" Color="#2E1600"/>
+    <SolidColorBrush x:Key="DarkOnWarningContainer" Color="#FFE0B2"/>
+    
+    <SolidColorBrush x:Key="DarkError" Color="#EF5350"/> <!-- Helleres Rot für Dark Mode -->
+    <SolidColorBrush x:Key="DarkErrorContainer" Color="#C62828"/>
+    <SolidColorBrush x:Key="DarkOnError" Color="#FFEBEE"/>
+    <SolidColorBrush x:Key="DarkOnErrorContainer" Color="#FFCDD2"/>
+    
+    <!-- 🚨 Emergency Team Type Colors mit Orange-Harmonie -->
+    <SolidColorBrush x:Key="FlächeColor" Color="#2196F3"/> <!-- Blau bleibt -->
+    <SolidColorBrush x:Key="TrümmerColor" Color="#F57C00"/> <!-- Orange -->
+    <SolidColorBrush x:Key="MantrailerColor" Color="#4CAF50"/> <!-- Grün -->
+    <SolidColorBrush x:Key="WasserColor" Color="#00BCD4"/> <!-- Cyan -->
+    <SolidColorBrush x:Key="LawineColor" Color="#9C27B0"/> <!-- Lila bleibt für Kontrast -->
+    <SolidColorBrush x:Key="GeländeColor" Color="#795548"/> <!-- Braun für Gelände -->
+    <SolidColorBrush x:Key="LeichenColor" Color="#607D8B"/> <!-- Blau-Grau -->
+    <SolidColorBrush x:Key="AllgemeinColor" Color="#FF9800"/> <!-- Orange für Allgemein -->
+    
+    <!-- 💤 NEUTRAL COLORS - Für verbesserten Kontrast -->
+    <SolidColorBrush x:Key="Neutral0" Color="#FFFFFF"/> <!-- Neutral Weiß -->
+    <SolidColorBrush x:Key="Neutral1" Color="#F5F5F5"/> <!-- Sehr helles Grau -->
+    <SolidColorBrush x:Key="Neutral2" Color="#EEEEEE"/> <!-- Helles Grau -->
+    <SolidColorBrush x:Key="Neutral3" Color="#E0E0E0"/> <!-- Mittelgrau -->
+    <SolidColorBrush x:Key="Neutral4" Color="#BDBDBD"/> <!-- Dunkelgrau -->
+    <SolidColorBrush x:Key="Neutral5" Color="#9E9E9E"/> <!-- Sehr dunkles Grau -->
+    <SolidColorBrush x:Key="Neutral6" Color="#757575"/> <!-- Grauton für Texte -->
+    <SolidColorBrush x:Key="Neutral7" Color="#616161"/> <!-- Dunkles Grau für Texte -->
     
     <!-- 🎨 ORANGE ACCENT COLORS - Zusätzliche Orange-Variationen -->
     <SolidColorBrush x:Key="OrangeAccent1" Color="#FF6F00"/> <!-- Sehr dunkles Orange -->
@@ -246,11 +263,41 @@
     <DropShadowEffect x:Key="Elevation5" Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.30"/>
     
     <!-- 🧡 ORANGE ELEVATION für spezielle Elemente -->
-    <DropShadowEffect x:Key="OrangeElevation1" Color="#F57C00" BlurRadius="4" ShadowDepth="1" Opacity="0.15"/>
-    <DropShadowEffect x:Key="OrangeElevation2" Color="#FF9800" BlurRadius="8" ShadowDepth="2" Opacity="0.20"/>
-    <DropShadowEffect x:Key="OrangeElevation3" Color="#FFA726" BlurRadius="12" ShadowDepth="3" Opacity="0.25"/>
+    <DropShadowEffect x:Key="OrangeElevation1" Color="{StaticResource PrimaryColor}" BlurRadius="4" ShadowDepth="1" Opacity="0.15"/>
+    <DropShadowEffect x:Key="OrangeElevation2" Color="{StaticResource TertiaryColor}" BlurRadius="8" ShadowDepth="2" Opacity="0.20"/>
+    <DropShadowEffect x:Key="OrangeElevation3" Color="{StaticResource TertiaryColor}" BlurRadius="12" ShadowDepth="3" Opacity="0.25"/>
+    
+    <!-- 🧡 ORANGE GLOW EFFECT für spezielle UI-Elemente -->
+    <DropShadowEffect x:Key="OrangeGlow" Color="{StaticResource PrimaryColor}" BlurRadius="6" ShadowDepth="0" Opacity="0.3"/>
+    
+    <!-- 🌈 SHADOW COLOR RESOURCES für verschiedene Themes -->
+    <Color x:Key="ShadowColorLight">Black</Color>
+    <Color x:Key="ShadowColorDark">#404040</Color>
+    
+    <!-- 🎨 THEME-AWARE ELEVATION EFFECTS -->
+    <DropShadowEffect x:Key="ElevationThemed1" Color="{StaticResource ShadowColorLight}" BlurRadius="3" ShadowDepth="1" Opacity="0.12"/>
+    <DropShadowEffect x:Key="ElevationThemed2" Color="{StaticResource ShadowColorLight}" BlurRadius="6" ShadowDepth="2" Opacity="0.16"/>
+    <DropShadowEffect x:Key="ElevationThemed3" Color="{StaticResource ShadowColorLight}" BlurRadius="10" ShadowDepth="3" Opacity="0.19"/>
     
     <!-- 🎯 COMPONENT STYLES - Mit Orange-Fokus -->
+    
+    <!-- Standard TextBlock Style für automatische Anwendung -->
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+    </Style>
+    
+    <!-- Standard RadioButton Style für automatische Anwendung -->
+    <Style TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+    </Style>
+    
+    <!-- Standard CheckBox Style für automatische Anwendung -->
+    <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+    </Style>
     
     <!-- Help Window Specific Styles -->
     <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
@@ -695,7 +742,57 @@
     <!-- Standard ComboBox Style für automatische Anwendung -->
     <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}"/>
     
-    <!-- ✨ ANIMATIONS - Bleibt unverändert -->
+    <!-- 🕐 TIME INPUT TEXTBOX - Speziell für Zeiteneingabe mit hohem Kontrast -->
+    <Style x:Key="TimeInputTextBox" TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="FontFamily" Value="Consolas, 'Courier New', monospace"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource Primary}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryContainer}"/>
+        <Setter Property="SelectionTextBrush" Value="{DynamicResource OnPrimaryContainer}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="border" 
+                            Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                        <ScrollViewer x:Name="PART_ContentHost" 
+                                    Margin="{TemplateBinding Padding}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    HorizontalScrollBarVisibility="Hidden"
+                                    VerticalScrollBarVisibility="Hidden"
+                                    Focusable="False"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="border" Property="BorderThickness" Value="4"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SurfaceVariant}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     
     <!-- 🌈 DYNAMIC GRADIENTS für Dark/Light Mode - ORANGE FOKUS -->
     

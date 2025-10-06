@@ -20,12 +20,7 @@
             <Setter Property="Padding" Value="16"/>
             <Setter Property="MinHeight" Value="240"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
-                                     ShadowDepth="0" BlurRadius="8" Opacity="0.1"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Effect" Value="{StaticResource OrangeElevation1}"/>
         </Style>
         
         <!-- Orange Timer Display Style -->
@@ -33,12 +28,7 @@
             <Setter Property="Background" Value="{DynamicResource Primary}"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="12"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
-                                     ShadowDepth="0" BlurRadius="6" Opacity="0.2"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Effect" Value="{StaticResource OrangeElevation2}"/>
         </Style>
         
         <!-- Orange Timer Text Style -->
@@ -48,12 +38,7 @@
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="FontFamily" Value="Consolas"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="Black" 
-                                     ShadowDepth="1" BlurRadius="2" Opacity="0.3"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Effect" Value="{StaticResource Elevation1}"/>
         </Style>
         
         <!-- Orange Team Type Badge Style -->
@@ -61,12 +46,7 @@
             <Setter Property="Background" Value="{DynamicResource Primary}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
-                                     ShadowDepth="0" BlurRadius="4" Opacity="0.3"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Effect" Value="{StaticResource OrangeElevation1}"/>
         </Style>
         
         <!-- Orange Status Indicator Style -->
@@ -74,12 +54,7 @@
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="8,3"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="Black" 
-                                     ShadowDepth="0" BlurRadius="3" Opacity="0.2"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Effect" Value="{StaticResource Elevation1}"/>
         </Style>
         
         <!-- Orange Info Text Style -->

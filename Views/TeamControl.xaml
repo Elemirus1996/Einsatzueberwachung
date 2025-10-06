@@ -19,7 +19,7 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
+                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                      ShadowDepth="0" BlurRadius="12" Opacity="0.15"/>
                 </Setter.Value>
             </Setter>
@@ -50,7 +50,7 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Effect">
                         <Setter.Value>
-                            <DropShadowEffect Color="{DynamicResource Primary}" 
+                            <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                              ShadowDepth="0" BlurRadius="8" Opacity="0.3"/>
                         </Setter.Value>
                     </Setter>
@@ -87,7 +87,7 @@
                     <Setter Property="Background" Value="#D32F2F"/>
                     <Setter Property="Effect">
                         <Setter.Value>
-                            <DropShadowEffect Color="Red" 
+                            <DropShadowEffect Color="#F44336" 
                                              ShadowDepth="0" BlurRadius="8" Opacity="0.4"/>
                         </Setter.Value>
                     </Setter>
@@ -117,7 +117,7 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Effect">
                         <Setter.Value>
-                            <DropShadowEffect Color="{DynamicResource Primary}" 
+                            <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
                                              ShadowDepth="0" BlurRadius="6" Opacity="0.3"/>
                         </Setter.Value>
                     </Setter>

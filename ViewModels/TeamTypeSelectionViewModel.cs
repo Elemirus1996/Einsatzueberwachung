@@ -18,6 +18,7 @@ namespace Einsatzueberwachung.ViewModels
         private string _selectedTypesDisplayText = "Keine Auswahl";
         private bool _isOkButtonEnabled = false;
         private string _windowTitle = "Team-Spezialisierungen auswählen";
+        private bool? _dialogResult;
 
         // Collections
         public ObservableCollection<TeamTypeItem> TeamTypeItems { get; } = new ObservableCollection<TeamTypeItem>();
@@ -26,6 +27,9 @@ namespace Einsatzueberwachung.ViewModels
         public ICommand ClearAllCommand { get; }
         public ICommand OkCommand { get; }
         public ICommand CancelCommand { get; }
+
+        // Events
+        public event Action? RequestClose;
 
         // Properties
         public MultipleTeamTypes SelectedMultipleTeamTypes
@@ -57,8 +61,12 @@ namespace Einsatzueberwachung.ViewModels
             set => SetProperty(ref _windowTitle, value);
         }
 
-        // Dialog Result
-        public bool? DialogResult { get; private set; }
+        // Dialog Result with proper PropertyChanged notification
+        public bool? DialogResult
+        {
+            get => _dialogResult;
+            private set => SetProperty(ref _dialogResult, value);
+        }
 
         public TeamTypeSelectionViewModel(MultipleTeamTypes? currentSelection = null)
         {
@@ -200,6 +208,9 @@ namespace Einsatzueberwachung.ViewModels
 
                 DialogResult = true;
                 LoggingService.Instance.LogInfo($"Team types selected: {_selectedMultipleTeamTypes.DisplayName}");
+                
+                // Trigger window close
+                RequestClose?.Invoke();
             }
             catch (Exception ex)
             {
@@ -214,6 +225,9 @@ namespace Einsatzueberwachung.ViewModels
             {
                 DialogResult = false;
                 LoggingService.Instance.LogInfo("Team type selection cancelled");
+                
+                // Trigger window close
+                RequestClose?.Invoke();
             }
             catch (Exception ex)
             {

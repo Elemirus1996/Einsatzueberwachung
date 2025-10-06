@@ -4,235 +4,550 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:Einsatzueberwachung.Views"
         Title="Einsatzüberwachung Professional v1.9.0" 
-        Height="925" Width="580"
+        Height="880" Width="680"
         WindowStartupLocation="CenterScreen"
         Icon="pack://application:,,,/Resources/app.ico"
         ResizeMode="CanResize"
-        MinHeight="660" MinWidth="580"
+        MinHeight="660" MinWidth="680"
         Background="{DynamicResource SurfaceContainer}">
 
     <Window.Resources>
         <!-- Converter -->
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         
         <!-- Label Style using global colors -->
         <Style x:Key="FormLabel" TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="0,0,0,4"/>
+        </Style>
+        
+        <!-- Enhanced Section Header Style - FIXED: BasedOn anstelle von Style-Property -->
+        <Style x:Key="SectionHeader" TargetType="TextBlock" BasedOn="{StaticResource TitleMedium}">
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
         </Style>
         
         <!-- RadioButton Style -->
         <Style x:Key="FormRadioButton" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Margin" Value="0,0,20,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- ComboBox Style für Stammdaten -->
-        <Style x:Key="MasterDataComboBox" TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}">
-            <Setter Property="Height" Value="40"/>
+        <!-- Enhanced ComboBox Style mit Dark Mode Unterstützung -->
+        <Style x:Key="MasterDataComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="12,12"/>
+            <!-- DYNAMISCHE Farben für Dark/Light Mode -->
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <!-- Scrollviewer-Optimierungen -->
+            <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
+            <Setter Property="ScrollViewer.IsManipulationEnabled" Value="True"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <!-- Custom Template für Dark Mode Unterstützung -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton" 
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Focusable="False"
+                                        IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                        ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="border" 
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="6">
+                                            <Grid HorizontalAlignment="Right" Width="20" Margin="8,0">
+                                                <Path x:Name="Arrow" 
+                                                    Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
+                                                    HorizontalAlignment="Center" 
+                                                    VerticalAlignment="Center"
+                                                    Fill="{DynamicResource OnSurface}"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                                                <Setter TargetName="border" Property="BorderThickness" Value="3"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource SurfaceVariant}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentSite"
+                                            IsHitTestVisible="False"
+                                            Content="{TemplateBinding SelectionBoxItem}"
+                                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                            ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                            Margin="{TemplateBinding Padding}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Left"
+                                            TextElement.Foreground="{DynamicResource OnSurface}"/>
+                            <TextBox x:Name="PART_EditableTextBox"
+                                   Style="{x:Null}"
+                                   Background="Transparent"
+                                   Foreground="{DynamicResource OnSurface}"
+                                   CaretBrush="{DynamicResource Primary}"
+                                   SelectionBrush="{DynamicResource Primary}"
+                                   SelectionOpacity="0.3"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Margin="{TemplateBinding Padding}"
+                                   Focusable="True"
+                                   Visibility="Hidden"
+                                   IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                            <Popup x:Name="PART_Popup" 
+                                 Placement="Bottom"
+                                 IsOpen="{TemplateBinding IsDropDownOpen}"
+                                 AllowsTransparency="True" 
+                                 Focusable="False"
+                                 PopupAnimation="Slide">
+                                <Grid MinWidth="{TemplateBinding ActualWidth}" MaxHeight="200">
+                                    <Border Background="{DynamicResource Surface}"
+                                          BorderBrush="{DynamicResource Primary}" 
+                                          BorderThickness="2"
+                                          CornerRadius="6"
+                                          Effect="{StaticResource Elevation3}">
+                                        <ScrollViewer>
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasItems" Value="False">
+                                <Setter TargetName="PART_Popup" Property="MinHeight" Value="95"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                            <Trigger Property="IsGrouping" Value="True">
+                                <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+                            </Trigger>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Enhanced TextBox Style - VEREINFACHT für korrekte Theme-Unterstützung -->
+        <Style x:Key="EnhancedTextField" TargetType="TextBox">
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="12,12"/>
+            <!-- DYNAMISCHE Farben für korrekte Theme-Unterstützung -->
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource Primary}"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource Primary}"/>
+            <Setter Property="SelectionOpacity" Value="0.3"/>
+            <!-- Layout-Einstellungen -->
+            <Setter Property="AcceptsReturn" Value="False"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="TextWrapping" Value="NoWrap"/>
+            <!-- Scrollviewer-Optimierungen -->
+            <Setter Property="ScrollViewer.PanningMode" Value="None"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+            <!-- Style für den Border -->
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderThickness" Value="3"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.6"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Dismiss Button Style -->
+        <Style x:Key="DismissButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BorderThickness="{TemplateBinding BorderThickness}"
+                               CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource OnTertiaryContainer}"/>
+                                <Setter Property="Opacity" Value="0.1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBoxItem Style für Dark Mode Unterstützung -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4"
+                                Margin="2">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource Primary}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Header Section mit Orange-Design -->
-        <Border Grid.Row="0" Margin="0,0,0,24">
-            <Border.Background>
-                <DynamicResource ResourceKey="Primary"/> <!-- Orange! -->
-            </Border.Background>
-            <Border.Style>
-                <Style TargetType="Border" BasedOn="{StaticResource Card}">
-                    <Setter Property="Effect" Value="{StaticResource OrangeElevation3}"/>
-                </Style>
-            </Border.Style>
+    <!-- Optimierter ScrollViewer mit besseren Einstellungen -->
+    <ScrollViewer x:Name="MainScrollViewer"
+                  VerticalScrollBarVisibility="Auto" 
+                  HorizontalScrollBarVisibility="Disabled"
+                  PanningMode="VerticalOnly"
+                  CanContentScroll="False"
+                  IsDeferredScrollingEnabled="False"
+                  ScrollViewer.IsManipulationEnabled="True">
+        <Grid Margin="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            <!-- Header Section mit Theme-bewusstem Orange-Design -->
+            <Border Grid.Row="0" Margin="0,0,0,32">
+                <Border.Background>
+                    <DynamicResource ResourceKey="Primary"/> <!-- Orange! Theme-bewusst -->
+                </Border.Background>
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                        <Setter Property="Effect" Value="{StaticResource OrangeElevation3}"/>
+                    </Style>
+                </Border.Style>
                 
-                <!-- Professional Logo mit Orange Glow -->
-                <Border Grid.Column="0" Width="80" Height="80" CornerRadius="40" 
-                       Background="White" Margin="0,0,20,0" VerticalAlignment="Center"
-                       Effect="{StaticResource OrangeElevation2}">
+                <Grid Margin="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     
-                    <Grid>
-                        <Image x:Name="LogoImage" Source="/Resources/logo.jpeg" 
-                              Stretch="UniformToFill" Width="70" Height="70" ClipToBounds="True">
-                            <Image.Clip>
-                                <EllipseGeometry RadiusX="35" RadiusY="35" Center="35,35"/>
-                            </Image.Clip>
-                        </Image>
+                    <!-- Professional Logo mit Theme-bewusstem Hintergrund -->
+                    <Border Grid.Column="0" Width="90" Height="90" CornerRadius="45" 
+                           Background="{DynamicResource Surface}" Margin="0,0,24,0" VerticalAlignment="Center"
+                           Effect="{StaticResource OrangeElevation2}">
                         
-                        <!-- Orange Fallback Logo -->
-                        <Border Background="{DynamicResource Primary}" CornerRadius="35" Width="70" Height="70"
-                               Visibility="Collapsed" x:Name="LogoFallback">
-                            <fa:ImageAwesome Icon="Paw" Width="35" Height="35" Foreground="White"/>
-                        </Border>
-                    </Grid>
-                </Border>
-                
-                <!-- App Branding -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Einsatzüberwachung" 
-                              Style="{StaticResource HeadlineMedium}"
-                              Foreground="White" Margin="0,0,0,4"/>
-                    <TextBlock Text="Professional v1.9.0" 
-                              Style="{StaticResource TitleLarge}"
-                              Foreground="White" Opacity="0.9" Margin="0,0,0,8"/>
-                    <TextBlock Text="🧡 Orange Design &amp; MVVM Edition" 
-                              Style="{StaticResource BodyMedium}"
-                              Foreground="White" Opacity="0.8"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-        
-        <!-- Content Section -->
-        <StackPanel Grid.Row="1">
-            <!-- Mission Configuration -->
-            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-                <StackPanel>
-                    <!-- Orange Icon -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <fa:ImageAwesome Icon="List" Width="20" Height="20" 
-                                       Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Einsatz Konfiguration" Style="{StaticResource TitleMedium}"
-                                  Foreground="{DynamicResource Primary}"/>
-                    </StackPanel>
-                    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <Label Content="Einsatzleiter (GF/ZF/VF/EL)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
-                            <ComboBox ItemsSource="{Binding EinsatzleiterListe}"
-                                     SelectedItem="{Binding SelectedEinsatzleiter}"
-                                     Style="{StaticResource MasterDataComboBox}"
-                                     IsEditable="True"
-                                     Text="{Binding Einsatzleiter, UpdateSourceTrigger=PropertyChanged}"
-                                     DisplayMemberPath="FullName"
-                                     Margin="0,0,0,4"/>
+                        <Grid>
+                            <Image x:Name="LogoImage" Source="/Resources/logo.jpeg" 
+                                  Stretch="UniformToFill" Width="80" Height="80" ClipToBounds="True">
+                                <Image.Clip>
+                                    <EllipseGeometry RadiusX="40" RadiusY="40" Center="40,40"/>
+                                </Image.Clip>
+                            </Image>
                             
-                            <!-- MVVM Binding für Qualifikations-Anzeige -->
-                            <TextBlock Text="{Binding EinsatzleiterInfo}"
-                                      Style="{StaticResource BodySmall}"
-                                      Foreground="{DynamicResource Success}"
-                                      Margin="4,0,0,12" 
-                                      FontStyle="Italic"
-                                      TextWrapping="Wrap"/>
-
-                            <Label Content="Führungsassistent (optional)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
+                            <!-- Orange Fallback Logo mit Theme-bewusstem Icon -->
+                            <Border Background="{DynamicResource Primary}" CornerRadius="40" Width="80" Height="80"
+                                   Visibility="Collapsed" x:Name="LogoFallback">
+                                <fa:ImageAwesome Icon="Paw" Width="40" Height="40" 
+                                               Foreground="{DynamicResource OnPrimary}"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- App Branding mit Theme-bewussten Texten -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Einsatzüberwachung" 
+                                  Style="{StaticResource HeadlineLarge}"
+                                  Foreground="{DynamicResource OnPrimary}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Professional v1.9.0" 
+                                  Style="{StaticResource TitleLarge}"
+                                  Foreground="{DynamicResource OnPrimary}" Opacity="0.9" Margin="0,0,0,10"/>
+                        <TextBlock Text="🧡 Orange Design &amp; MVVM Edition" 
+                                  Style="{StaticResource BodyLarge}"
+                                  Foreground="{DynamicResource OnPrimary}" Opacity="0.8"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Loading Overlay mit Theme-bewussten Farben -->
+            <Border Grid.Row="1" Background="{DynamicResource SurfaceContainerHighest}" 
+                    CornerRadius="16" Margin="0,0,0,24"
+                    Visibility="{Binding IsLoadingMasterData, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="48">
+                    <fa:ImageAwesome Icon="Spinner" Spin="True" Width="40" Height="40" 
+                                   Foreground="{DynamicResource Primary}" Margin="0,0,0,20"/>
+                    <TextBlock Text="{Binding LoadingMessage}" 
+                              Style="{StaticResource TitleMedium}"
+                              Foreground="{DynamicResource OnSurfaceVariant}"
+                              HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Content Section -->
+            <StackPanel Grid.Row="1" IsEnabled="{Binding IsLoadingMasterData, Converter={StaticResource InverseBooleanConverter}}">
+                
+                <!-- Personal Configuration Section -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,24" Padding="28">
+                    <StackPanel>
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                            <fa:ImageAwesome Icon="Users" Width="24" Height="24" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,12,0"/>
+                            <TextBlock Text="Personal" Style="{StaticResource SectionHeader}"/>
+                        </StackPanel>
+                        
+                        <!-- Einsatzleiter Section -->
+                        <Grid Margin="0,0,0,24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0">
+                                <Label Content="Einsatzleiter (GF/ZF/VF/EL)" Style="{StaticResource FormLabel}"/>
+                                <ComboBox ItemsSource="{Binding EinsatzleiterListe}"
+                                         SelectedItem="{Binding SelectedEinsatzleiter}"
+                                         Style="{StaticResource MasterDataComboBox}"
+                                         IsEditable="True"
+                                         Text="{Binding Einsatzleiter, UpdateSourceTrigger=PropertyChanged}"
+                                         DisplayMemberPath="FullName"/>
+                                
+                                <!-- MVVM Binding für Qualifikations-Anzeige -->
+                                <TextBlock Text="{Binding EinsatzleiterInfo}"
+                                          Style="{StaticResource BodyMedium}"
+                                          Foreground="{DynamicResource Success}"
+                                          Margin="8,6,0,0" 
+                                          FontStyle="Italic"
+                                          TextWrapping="Wrap"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="2">
+                                <Label Content="Einsatztyp" Style="{StaticResource FormLabel}"/>
+                                <StackPanel Orientation="Vertical" Margin="0,8,0,0">
+                                    <RadioButton Content="🚨 Einsatz" IsChecked="{Binding IstEinsatz}" 
+                                               Margin="0,0,0,8" Style="{StaticResource FormRadioButton}"/>
+                                    <RadioButton Content="🎯 Übung" IsChecked="{Binding IstEinsatz, Converter={StaticResource InverseBooleanConverter}}" 
+                                               Style="{StaticResource FormRadioButton}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- Führungsassistent Section -->
+                        <StackPanel Margin="0,0,0,0">
+                            <Label Content="Führungsassistent (optional)" Style="{StaticResource FormLabel}"/>
                             <ComboBox ItemsSource="{Binding FuehrungsassistentList}"
                                      SelectedItem="{Binding SelectedFuehrungsassistent}"
                                      Style="{StaticResource MasterDataComboBox}"
                                      IsEditable="True"
                                      Text="{Binding Fuehrungsassistent, UpdateSourceTrigger=PropertyChanged}"
-                                     DisplayMemberPath="FullName"
-                                     Margin="0,0,0,12"/>
-                            
-                            <Label Content="Einsatzort" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding Einsatzort, UpdateSourceTrigger=PropertyChanged}" 
-                                    Style="{StaticResource TextField}" Margin="0,0,0,12"/>
+                                     DisplayMemberPath="FullName"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Mission Information Section mit optimierten TextBoxen -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,24" Padding="28">
+                    <StackPanel>
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                            <fa:ImageAwesome Icon="MapMarker" Width="24" Height="24" 
+                                           Foreground="{DynamicResource Primary}" Margin="0,0,12,0"/>
+                            <TextBlock Text="Einsatzinformationen" Style="{StaticResource SectionHeader}"/>
                         </StackPanel>
                         
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <Label Content="Typ" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <RadioButton Content="🚨 Einsatz" IsChecked="{Binding IstEinsatz}" 
-                                           Margin="0,0,16,0" Style="{StaticResource FormRadioButton}"/>
-                                <RadioButton Content="🎯 Übung" IsChecked="{Binding IstEinsatz, Converter={StaticResource InverseBooleanConverter}}" 
-                                           Style="{StaticResource FormRadioButton}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0">
+                                <Label Content="Einsatzort" Style="{StaticResource FormLabel}"/>
+                                <!-- Optimierte TextBox mit Scrollviewer-Fixes -->
+                                <TextBox x:Name="EinsatzortTextBox"
+                                        Text="{Binding Einsatzort, UpdateSourceTrigger=PropertyChanged}" 
+                                        Style="{StaticResource EnhancedTextField}"
+                                        ScrollViewer.PanningMode="None"
+                                        ScrollViewer.CanContentScroll="False"
+                                        PreviewMouseWheel="TextBox_PreviewMouseWheel"/>
                             </StackPanel>
                             
-                            <Label Content="Alarmiert durch" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding Alarmiert}" Style="{StaticResource TextField}" Margin="0,0,0,12"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- Timer Configuration mit Warning (Orange) -->
-            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <fa:ImageAwesome Icon="ClockOutline" Width="20" Height="20" 
-                                       Foreground="{DynamicResource Warning}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Timer Einstellungen" Style="{StaticResource TitleMedium}"
-                                  Foreground="{DynamicResource Warning}"/>
+                            <StackPanel Grid.Column="2">
+                                <Label Content="Alarmiert durch" Style="{StaticResource FormLabel}"/>
+                                <!-- Optimierte TextBox mit Scrollviewer-Fixes -->
+                                <TextBox x:Name="AlarmiertTextBox"
+                                        Text="{Binding Alarmiert}" 
+                                        Style="{StaticResource EnhancedTextField}"
+                                        ScrollViewer.PanningMode="None"
+                                        ScrollViewer.CanContentScroll="False"
+                                        PreviewMouseWheel="TextBox_PreviewMouseWheel"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
-                    
+                </Border>
+
+                <!-- Feature Highlight für v1.9 - nur bei den ersten 3 Starts -->
+                <Border Style="{StaticResource OrangeCard}" Padding="24" 
+                        Visibility="{Binding ShowFeatureHighlight, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                        <!-- Close Button -->
+                        <Button Style="{StaticResource DismissButton}" 
+                                Command="{Binding DismissFeatureHighlightCommand}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                Margin="0,-8,-8,0">
+                            <fa:ImageAwesome Icon="Close" Width="14" Height="14" 
+                                           Foreground="{DynamicResource OnTertiaryContainer}" 
+                                           Opacity="0.7"/>
+                        </Button>
                         
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <Label Content="1. Warnung (Minuten)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding Warnung1, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextField}"/>
-                        </StackPanel>
-                        
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <Label Content="2. Warnung (Minuten)" Style="{StaticResource FormLabel}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding Warnung2, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextField}"/>
+                        <StackPanel Margin="0,0,24,0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <fa:ImageAwesome Icon="Star" Width="20" Height="20" 
+                                               Foreground="{DynamicResource Primary}" Margin="0,0,10,0"/>
+                                <TextBlock Text="Neu in Version 1.9.0" Style="{StaticResource TitleMedium}"
+                                          Foreground="{DynamicResource OnTertiaryContainer}"/>
+                                <TextBlock Text="(wird nur 3× angezeigt)" Style="{StaticResource BodySmall}"
+                                          Foreground="{DynamicResource OnTertiaryContainer}" 
+                                          Opacity="0.7" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Style="{StaticResource BodyMedium}"
+                                              Foreground="{DynamicResource OnTertiaryContainer}" 
+                                              LineHeight="20" Margin="0,0,0,8">
+                                        <Run Text="🧡 Modernes Orange-Design-System"/>
+                                        <LineBreak/>
+                                        <Run Text="🏗️ MVVM-Architektur"/>
+                                        <LineBreak/>
+                                        <Run Text="📁 Optimierte Projektstruktur"/>
+                                        <LineBreak/>
+                                        <Run Text="⚡ Performance-Verbesserungen"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Style="{StaticResource BodyMedium}"
+                                              Foreground="{DynamicResource OnTertiaryContainer}" 
+                                              LineHeight="20">
+                                        <Run Text="👤 Stammdaten-Integration"/>
+                                        <LineBreak/>
+                                        <Run Text="📱 Mobile Verbindung"/>
+                                        <LineBreak/>
+                                        <Run Text="⏰ Individuelle Timer-Einstellungen"/>
+                                        <LineBreak/>
+                                        <Run Text="📊 Erweiterte Statistiken"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                            
+                            <!-- Hinweis auf Timer-Einstellungen -->
+                            <Border Background="{DynamicResource TertiaryContainer}" 
+                                   CornerRadius="8" Padding="16" Margin="0,16,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <fa:ImageAwesome Icon="InfoCircle" Width="16" Height="16" 
+                                                   Foreground="{DynamicResource OnTertiaryContainer}" 
+                                                   Margin="0,0,8,0" VerticalAlignment="Top" Opacity="0.8"/>
+                                    <TextBlock TextWrapping="Wrap" Style="{StaticResource BodySmall}"
+                                              Foreground="{DynamicResource OnTertiaryContainer}">
+                                        <Run Text="Timer-Warnzeiten können später in den Einstellungen oder pro Team individuell konfiguriert werden."/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Grid>
-                </StackPanel>
-            </Border>
+                </Border>
+            </StackPanel>
 
-            <!-- Feature Highlight für v1.9 -->
-            <Border Style="{StaticResource OrangeCard}">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <fa:ImageAwesome Icon="Star" Width="18" Height="18" 
-                                       Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Neu in Version 1.9.0" Style="{StaticResource TitleSmall}"
-                                  Foreground="{DynamicResource OnTertiaryContainer}"/>
+            <!-- Action Section mit Debug-Button -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" 
+                       Margin="0,32,0,0">
+                <Button Content="Abbrechen" Command="{Binding CancelCommand}"
+                       Style="{StaticResource OutlinedButton}" 
+                       Padding="24,12" Margin="0,0,20,0" FontSize="14"/>
+                
+                <!-- DEBUG: Theme-Test Button (temporär) -->
+                <Button Content="🌙 Theme Test" Click="DebugThemeButton_Click"
+                       Style="{StaticResource OutlinedButton}" 
+                       Padding="12,12" Margin="0,0,20,0" FontSize="12"
+                       ToolTip="Debug: Wechselt zwischen Light und Dark Mode"/>
+                
+                <Button Command="{Binding StartCommand}"
+                       Style="{StaticResource OrangeAccentButton}" 
+                       Padding="40,14" FontSize="14">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Play" Width="18" Height="18" 
+                                       Foreground="{DynamicResource OnPrimary}" Margin="0,0,10,0"/>
+                        <TextBlock Text="Einsatz starten" 
+                                  Foreground="{DynamicResource OnPrimary}" FontWeight="SemiBold"/>
                     </StackPanel>
-                    
-                    <TextBlock TextWrapping="Wrap" Style="{StaticResource BodySmall}"
-                              Foreground="{DynamicResource OnTertiaryContainer}" LineHeight="18">
-                        <Run Text="🧡 Modernes Orange-Design-System mit konsistenten Farben"/>
-                        <LineBreak/>
-                        <Run Text="🏗️ MVVM-Architektur für bessere Code-Struktur"/>
-                        <LineBreak/>
-                        <Run Text="📁 Optimierte Projektstruktur mit Views &amp; ViewModels"/>
-                        <LineBreak/>
-                        <Run Text="⚡ Erweiterte UI-Komponenten und Performance"/>
-                        <LineBreak/>
-                        <Run Text="👤 Einsatzleiter-Qualifikationen mit Stammdaten-Integration"/>
-                    </TextBlock>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-
-        <!-- Action Section -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" 
-                   Margin="0,24,0,0">
-            <Button Content="Abbrechen" Command="{Binding CancelCommand}"
-                   Style="{StaticResource OutlinedButton}" Margin="0,0,16,0"/>
-            
-            <Button Command="{Binding StartCommand}"
-                   Style="{StaticResource OrangeAccentButton}" 
-                   Padding="32,12">
-                <StackPanel Orientation="Horizontal">
-                    <fa:ImageAwesome Icon="Play" Width="16" Height="16" 
-                                   Foreground="White" Margin="0,0,8,0"/>
-                    <TextBlock Text="Einsatz starten" Foreground="White" FontWeight="Medium"/>
-                </StackPanel>
-            </Button>
-        </StackPanel>
-    </Grid>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </Window>

@@ -12,7 +12,7 @@ namespace Einsatzueberwachung.Views
     /// </summary>
     public partial class TeamTypeSelectionWindow : Window
     {
-        private readonly TeamTypeSelectionViewModel _viewModel;
+        private readonly TeamTypeSelectionViewModel _viewModel = null!;
 
         public MultipleTeamTypes SelectedMultipleTeamTypes => _viewModel.SelectedMultipleTeamTypes;
 
@@ -27,6 +27,7 @@ namespace Einsatzueberwachung.Views
                 
                 // Subscribe to ViewModel events
                 _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+                _viewModel.RequestClose += ViewModel_RequestClose;
                 
                 LoggingService.Instance.LogInfo($"TeamTypeSelectionWindow (MVVM) initialized for {(currentSelection != null ? "editing" : "creating")} selection");
             }
@@ -60,6 +61,25 @@ namespace Einsatzueberwachung.Views
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error handling ViewModel property change", ex);
+            }
+        }
+
+        private void ViewModel_RequestClose()
+        {
+            try
+            {
+                // Ensure DialogResult is set if not already
+                if (_viewModel.DialogResult.HasValue)
+                {
+                    DialogResult = _viewModel.DialogResult.Value;
+                }
+                
+                // Close the window
+                Close();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error closing TeamTypeSelectionWindow via RequestClose", ex);
             }
         }
 
@@ -108,6 +128,7 @@ namespace Einsatzueberwachung.Views
                 if (_viewModel != null)
                 {
                     _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                    _viewModel.RequestClose -= ViewModel_RequestClose;
                 }
                 
                 LoggingService.Instance.LogInfo("TeamTypeSelectionWindow (MVVM) closed");

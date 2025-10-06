@@ -41,6 +41,9 @@ namespace Einsatzueberwachung
                 DataContext = _viewModel;
                 SubscribeToViewModelEvents();
                 
+                // MainViewModel für globalen Zugriff registrieren
+                MainViewModelService.Instance.RegisterMainViewModel(_viewModel);
+                
                 LoggingService.Instance.LogInfo($"MainWindow initialized with mission data via MVVM: {einsatzData.EinsatzTyp}");
             }
             catch (Exception ex)
@@ -56,6 +59,9 @@ namespace Einsatzueberwachung
                 _viewModel = new MainViewModel();
                 DataContext = _viewModel;
                 SubscribeToViewModelEvents();
+                
+                // MainViewModel für globalen Zugriff registrieren
+                MainViewModelService.Instance.RegisterMainViewModel(_viewModel);
                 
                 // Check for recovery
                 CheckForRecoveryAsync();
@@ -363,13 +369,57 @@ namespace Einsatzueberwachung
         {
             try
             {
-                MessageBox.Show("Export-Funktionalität wurde auf MVVM umgestellt - Implementation folgt.", 
-                    "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Überprüfen ob Einsatz-Daten verfügbar sind
+                if (_viewModel?.Teams == null || !_viewModel.Teams.Any())
+                {
+                    MessageBox.Show("Keine Teams zum Exportieren vorhanden.", 
+                        "PDF-Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Erstelle EinsatzData für den Export
+                var einsatzData = CreateEinsatzDataForExport();
+                var teams = _viewModel.Teams.ToList();
+
+                // Öffne PDF-Export-Window
+                var exportWindow = new Views.PdfExportWindow(einsatzData, teams);
+                exportWindow.Owner = this;
+                exportWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                exportWindow.ShowDialog();
+                
+                LoggingService.Instance.LogInfo("PDF export window opened via MVVM");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error showing export dialog via MVVM", ex);
+                MessageBox.Show($"Fehler beim Öffnen des Export-Dialogs:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// Erstellt EinsatzData-Objekt für den PDF-Export aus den aktuellen ViewModel-Daten
+        /// </summary>
+        private EinsatzData CreateEinsatzDataForExport()
+        {
+            var einsatzData = new EinsatzData
+            {
+                EinsatzDatum = DateTime.Now,
+                IstEinsatz = true, // Dies setzt EinsatzTyp automatisch auf "Einsatz"
+                Einsatzort = _viewModel?.Einsatzort ?? "Unbekannt",
+                Einsatzleiter = _viewModel?.Einsatzleiter ?? "Unbekannt"
+            };
+
+            // Kopiere globale Notizen wenn verfügbar
+            if (_viewModel?.FilteredNotesCollection != null)
+            {
+                foreach (var note in _viewModel.FilteredNotesCollection)
+                {
+                    einsatzData.GlobalNotesEntries.Add(note);
+                }
+            }
+
+            return einsatzData;
         }
 
         private void ExportEinsatzLog()
@@ -400,31 +450,13 @@ namespace Einsatzueberwachung
         {
             try
             {
-                var contextMenu = new ContextMenu();
-                
-                AddMenuItem(contextMenu, "Stammdaten verwalten...", () => OpenMasterDataWindow());
-                AddMenuItem(contextMenu, "Mobile Verbindung...", () => OpenMobileConnectionWindow());
-                AddMenuItem(contextMenu, "Statistiken & Analytics...", () => OpenStatisticsWindow());
-                contextMenu.Items.Add(new Separator());
-                AddMenuItem(contextMenu, "Warnungs-Einstellungen...", () => OpenWarningSettingsWindow());
-                contextMenu.Items.Add(new Separator());
-                AddMenuItem(contextMenu, "Über...", () => OpenAboutWindow());
-                
-                contextMenu.PlacementTarget = this;
-                contextMenu.Placement = PlacementMode.Center;
-                contextMenu.IsOpen = true;
+                // Direkt zu den Settings-Fenster weiterleiten
+                OpenSettingsWindow();
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error showing context menu via MVVM", ex);
             }
-        }
-
-        private void AddMenuItem(ContextMenu menu, string header, Action action)
-        {
-            var item = new MenuItem { Header = header };
-            item.Click += (s, e) => action?.Invoke();
-            menu.Items.Add(item);
         }
 
         private void OpenMasterDataWindow()
@@ -446,14 +478,34 @@ namespace Einsatzueberwachung
         {
             try
             {
-                var window = new Views.MobileConnectionWindow();
+                // Verwende die neue Factory-Methode mit Daten-Integration
+                var window = Views.MobileConnectionWindow.CreateWithDataIntegration(_viewModel!);
                 window.Owner = this;
                 window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 window.Show();
+                
+                LoggingService.Instance.LogInfo("MobileConnectionWindow opened with data integration");
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.LogError("Error opening mobile connection window via MVVM", ex);
+                LoggingService.Instance.LogError("Error opening mobile connection window with data integration", ex);
+                
+                // Fallback: Normale MobileConnectionWindow ohne Daten-Integration
+                try
+                {
+                    var fallbackWindow = new Views.MobileConnectionWindow();
+                    fallbackWindow.Owner = this;
+                    fallbackWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    fallbackWindow.Show();
+                    
+                    LoggingService.Instance.LogWarning("MobileConnectionWindow opened without data integration (fallback)");
+                }
+                catch (Exception fallbackEx)
+                {
+                    LoggingService.Instance.LogError("Error opening fallback mobile connection window", fallbackEx);
+                    MessageBox.Show($"Fehler beim Öffnen der Mobile-Verbindung:\n{ex.Message}", 
+                        "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -506,6 +558,21 @@ namespace Einsatzueberwachung
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error opening about window via MVVM", ex);
+            }
+        }
+
+        private void OpenSettingsWindow()
+        {
+            try
+            {
+                var window = new Views.SettingsWindow();
+                window.Owner = this;
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                window.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error opening settings window via MVVM", ex);
             }
         }
 
@@ -564,6 +631,9 @@ namespace Einsatzueberwachung
                         startWindow.FirstWarningMinutes, startWindow.SecondWarningMinutes);
                     DataContext = _viewModel;
                     SubscribeToViewModelEvents();
+                    
+                    // Neues MainViewModel registrieren
+                    MainViewModelService.Instance.RegisterMainViewModel(_viewModel);
                 }
                 else
                 {
@@ -615,6 +685,9 @@ namespace Einsatzueberwachung
         {
             try
             {
+                // MainViewModel unregistrieren
+                MainViewModelService.Instance.UnregisterMainViewModel();
+                
                 _viewModel?.Dispose();
                 _teamCompactCards.Clear();
                 

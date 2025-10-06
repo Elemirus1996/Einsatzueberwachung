@@ -29,6 +29,7 @@ namespace Einsatzueberwachung.Views
 
                 // Subscribe to ViewModel events for dialog management
                 _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+                _viewModel.RequestClose += ViewModel_RequestClose;
 
                 ApplyCurrentTheme();
                 
@@ -70,6 +71,25 @@ namespace Einsatzueberwachung.Views
             }
         }
 
+        private void ViewModel_RequestClose()
+        {
+            try
+            {
+                // Ensure DialogResult is set if not already
+                if (_viewModel?.DialogResult.HasValue == true)
+                {
+                    DialogResult = _viewModel.DialogResult.Value;
+                }
+                
+                // Close the window
+                Close();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error closing TeamWarningSettingsWindow via RequestClose", ex);
+            }
+        }
+
         private void ApplyCurrentTheme()
         {
             try
@@ -102,6 +122,7 @@ namespace Einsatzueberwachung.Views
                 if (_viewModel != null)
                 {
                     _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                    _viewModel.RequestClose -= ViewModel_RequestClose;
                 }
                 
                 LoggingService.Instance.LogInfo("TeamWarningSettingsWindow closed - MVVM cleanup completed");

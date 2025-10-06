@@ -25,12 +25,7 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="8"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
-                                     ShadowDepth="0" BlurRadius="12" Opacity="0.15"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Effect" Value="{StaticResource Elevation3}"/>
         </Style>
 
         <!-- Orange Action Button Style -->
@@ -101,7 +96,7 @@
                 <!-- Orange Team Icon mit Glow -->
                 <Border Grid.Column="0" Width="56" Height="56" CornerRadius="28" 
                        Background="White" Margin="0,0,16,0"
-                       Effect="{DynamicResource OrangeGlow}">
+                       Effect="{StaticResource OrangeGlow}">
                     <fa:ImageAwesome Icon="Users" Width="28" Height="28" 
                                    Foreground="{DynamicResource Primary}"/>
                 </Border>
@@ -169,7 +164,7 @@
                 <Button Command="{Binding RefreshTeamCommand}"
                        Style="{StaticResource OrangeSecondaryButton}">
                     <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="Sync" Width="16" Height="16" 
+                        <fa:ImageAwesome Icon="Refresh" Width="16" Height="16" 
                                        Foreground="{DynamicResource OnSecondaryContainer}" Margin="0,0,8,0"/>
                         <TextBlock Text="Aktualisieren" 
                                   Foreground="{DynamicResource OnSecondaryContainer}"/>

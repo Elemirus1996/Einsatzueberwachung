@@ -8,6 +8,7 @@ namespace Einsatzueberwachung.ViewModels
     public class StartViewModel : BaseViewModel
     {
         private readonly MasterDataService _masterDataService;
+        private readonly FeatureHighlightService _featureHighlightService;
         
         // EinsatzData Properties
         private string _einsatzleiter = string.Empty;
@@ -17,13 +18,12 @@ namespace Einsatzueberwachung.ViewModels
         private bool _istEinsatz = true;
         private DateTime _einsatzDatum = DateTime.Now;
 
-        // Warning Settings
-        private int _warnung1 = 10;
-        private int _warnung2 = 20;
-
         // Validation and UI State
         private bool _isFormValid = false;
         private string _validationMessage = string.Empty;
+        private bool _isLoadingMasterData = true;
+        private string _loadingMessage = "Stammdaten werden geladen...";
+        private bool _showFeatureHighlight = false;
 
         // Collections for ComboBoxes
         private ObservableCollection<PersonalEntry> _einsatzleiterListe = new();
@@ -98,28 +98,6 @@ namespace Einsatzueberwachung.ViewModels
             }
         }
 
-        public int Warnung1
-        {
-            get => _warnung1;
-            set
-            {
-                _warnung1 = Math.Max(1, value);
-                OnPropertyChanged();
-                ValidateWarningSettings();
-            }
-        }
-
-        public int Warnung2
-        {
-            get => _warnung2;
-            set
-            {
-                _warnung2 = Math.Max(_warnung1 + 1, value);
-                OnPropertyChanged();
-                ValidateWarningSettings();
-            }
-        }
-
         public bool IsFormValid
         {
             get => _isFormValid;
@@ -137,6 +115,41 @@ namespace Einsatzueberwachung.ViewModels
             set
             {
                 _validationMessage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsLoadingMasterData
+        {
+            get => _isLoadingMasterData;
+            set
+            {
+                _isLoadingMasterData = value;
+                OnPropertyChanged();
+                ((RelayCommand)StartCommand).RaiseCanExecuteChanged();
+            }
+        }
+
+        public string LoadingMessage
+        {
+            get => _loadingMessage;
+            set
+            {
+                _loadingMessage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Bestimmt ob das Feature-Highlight angezeigt werden soll
+        /// Wird nur bei den ersten 3 Starts einer Version gezeigt
+        /// </summary>
+        public bool ShowFeatureHighlight
+        {
+            get => _showFeatureHighlight;
+            private set
+            {
+                _showFeatureHighlight = value;
                 OnPropertyChanged();
             }
         }
@@ -204,13 +217,16 @@ namespace Einsatzueberwachung.ViewModels
 
         // Result properties
         public EinsatzData? EinsatzData { get; private set; }
-        public int FirstWarningMinutes => Warnung1;
-        public int SecondWarningMinutes => Warnung2;
+        
+        // Standard Timer-Werte (können in Einstellungen geändert werden)
+        public int FirstWarningMinutes => 10;  // Standardwert
+        public int SecondWarningMinutes => 20; // Standardwert
 
         // Enhanced commands with parameter support
         public ICommand StartCommand { get; private set; } = null!;
         public ICommand CancelCommand { get; private set; } = null!;
         public ICommand ResetFormCommand { get; private set; } = null!;
+        public ICommand DismissFeatureHighlightCommand { get; private set; } = null!;
 
         // Events
         public event EventHandler? RequestClose;
@@ -219,12 +235,14 @@ namespace Einsatzueberwachung.ViewModels
         public StartViewModel()
         {
             _masterDataService = MasterDataService.Instance;
+            _featureHighlightService = FeatureHighlightService.Instance;
             
             InitializeCommands();
+            InitializeFeatureHighlight();
             LoadMasterDataAsync();
             ValidateForm();
             
-            LoggingService.Instance?.LogInfo("StartViewModel initialized with Einsatzleiter support");
+            LoggingService.Instance?.LogInfo("StartViewModel initialized with simplified form (no timer settings)");
         }
 
         private void InitializeCommands()
@@ -232,12 +250,61 @@ namespace Einsatzueberwachung.ViewModels
             StartCommand = new RelayCommand(ExecuteStart, CanExecuteStart);
             CancelCommand = new RelayCommand(ExecuteCancel);
             ResetFormCommand = new RelayCommand(ExecuteResetForm, CanExecuteResetForm);
+            DismissFeatureHighlightCommand = new RelayCommand(ExecuteDismissFeatureHighlight);
+        }
+
+        private void InitializeFeatureHighlight()
+        {
+            try
+            {
+                // Prüfe ob Feature-Highlight angezeigt werden soll
+                ShowFeatureHighlight = _featureHighlightService.ShouldShowFeatureHighlight();
+                
+                if (ShowFeatureHighlight)
+                {
+                    // Markiere als angezeigt
+                    _featureHighlightService.MarkAsShown();
+                    var (showCount, lastVersion, _) = _featureHighlightService.GetStatistics();
+                    LoggingService.Instance?.LogInfo($"FeatureHighlight displayed (count: {showCount}, version: {lastVersion})");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance?.LogError("Error initializing feature highlight", ex);
+                // Bei Fehler: Nicht anzeigen
+                ShowFeatureHighlight = false;
+            }
         }
 
         private async void LoadMasterDataAsync()
         {
             try
             {
+                LoadingMessage = "Stammdaten werden geladen...";
+                IsLoadingMasterData = true;
+
+                // Warte darauf, dass der MasterDataService seine Daten geladen hat
+                // Falls noch nicht geladen, warte bis zu 10 Sekunden
+                int maxWaitTime = 10000; // 10 Sekunden
+                int waitInterval = 100; // 100ms Intervalle
+                int totalWaited = 0;
+
+                while (_masterDataService.PersonalList.Count == 0 && totalWaited < maxWaitTime)
+                {
+                    await Task.Delay(waitInterval);
+                    totalWaited += waitInterval;
+                    
+                    // Update loading message
+                    LoadingMessage = $"Stammdaten werden geladen... ({totalWaited / 1000}s)";
+                }
+
+                // Force reload if still empty
+                if (_masterDataService.PersonalList.Count == 0)
+                {
+                    LoadingMessage = "Stammdaten werden neu geladen...";
+                    await _masterDataService.LoadDataAsync();
+                }
+
                 // Load personnel with leadership qualifications (GF, ZF, VF, EL)
                 var allPersonal = _masterDataService.GetAllPersonal();
                 var leadershipQualified = allPersonal
@@ -266,12 +333,27 @@ namespace Einsatzueberwachung.ViewModels
                     FuehrungsassistentList.Add(person);
                 }
 
+                IsLoadingMasterData = false;
+                LoadingMessage = "Stammdaten erfolgreich geladen";
+
                 LoggingService.Instance?.LogInfo($"Loaded personnel: {leadershipQualified.Count} qualified leaders, {assistenten.Count} assistants");
             }
             catch (Exception ex)
             {
+                IsLoadingMasterData = false;
+                LoadingMessage = "Fehler beim Laden der Stammdaten";
                 LoggingService.Instance?.LogError("Error loading master data in StartViewModel", ex);
                 ShowMessage?.Invoke(this, "Fehler beim Laden der Stammdaten");
+                
+                // Fallback: Erstelle mindestens einen manuellen Eintrag
+                if (EinsatzleiterListe.Count == 0)
+                {
+                    EinsatzleiterListe.Add(new PersonalEntry { Vorname = "(Manuell", Nachname = "eingeben)" });
+                }
+                if (FuehrungsassistentList.Count == 0)
+                {
+                    FuehrungsassistentList.Add(new PersonalEntry { Vorname = "(Leer", Nachname = "lassen)" });
+                }
             }
         }
 
@@ -298,18 +380,10 @@ namespace Einsatzueberwachung.ViewModels
             IsFormValid = errors.Count == 0;
         }
 
-        private void ValidateWarningSettings()
-        {
-            if (Warnung2 <= Warnung1)
-            {
-                Warnung2 = Warnung1 + 5;
-            }
-        }
-
         // Command implementations
         private bool CanExecuteStart()
         {
-            return IsFormValid;
+            return IsFormValid && !IsLoadingMasterData;
         }
 
         private void ExecuteStart()
@@ -326,7 +400,7 @@ namespace Einsatzueberwachung.ViewModels
                     EinsatzDatum = EinsatzDatum
                 };
 
-                LoggingService.Instance?.LogInfo($"Starting {EinsatzTyp}: {Einsatzort} with leader {Einsatzleiter}");
+                LoggingService.Instance?.LogInfo($"Starting {EinsatzTyp}: {Einsatzort} with leader {Einsatzleiter} (using default timer values)");
                 
                 RequestClose?.Invoke(this, EventArgs.Empty);
             }
@@ -369,8 +443,6 @@ namespace Einsatzueberwachung.ViewModels
                 Einsatzort = string.Empty;
                 IstEinsatz = true;
                 EinsatzDatum = DateTime.Now;
-                Warnung1 = 10;
-                Warnung2 = 20;
                 SelectedEinsatzleiter = null;
                 SelectedFuehrungsassistent = null;
 
@@ -379,6 +451,19 @@ namespace Einsatzueberwachung.ViewModels
             catch (Exception ex)
             {
                 LoggingService.Instance?.LogError("Error resetting form", ex);
+            }
+        }
+
+        private void ExecuteDismissFeatureHighlight()
+        {
+            try
+            {
+                ShowFeatureHighlight = false;
+                LoggingService.Instance?.LogInfo("Feature highlight manually dismissed by user");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance?.LogError("Error dismissing feature highlight", ex);
             }
         }
     }

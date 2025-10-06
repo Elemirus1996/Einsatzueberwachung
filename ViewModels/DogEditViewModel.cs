@@ -13,6 +13,7 @@ namespace Einsatzueberwachung.ViewModels
         private readonly MasterDataService _masterDataService;
         private readonly bool _isEditMode;
         private DogEntry _dogEntry;
+        private bool? _dialogResult;
 
         // Properties for UI binding
         private string _name = string.Empty;
@@ -37,6 +38,9 @@ namespace Einsatzueberwachung.ViewModels
         // Commands
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+
+        // Events
+        public event Action? RequestClose;
 
         // Properties
         public string WindowTitle => _isEditMode ? "Hund bearbeiten" : "Neuer Hund";
@@ -129,7 +133,12 @@ namespace Einsatzueberwachung.ViewModels
 
         // Result
         public DogEntry DogEntry => _dogEntry;
-        public bool? DialogResult { get; private set; }
+        
+        public bool? DialogResult
+        {
+            get => _dialogResult;
+            private set => SetProperty(ref _dialogResult, value);
+        }
 
         public DogEditViewModel(DogEntry? existingEntry = null)
         {
@@ -275,6 +284,9 @@ namespace Einsatzueberwachung.ViewModels
 
                 DialogResult = true;
                 LoggingService.Instance.LogInfo($"Dog {(_isEditMode ? "updated" : "created")}: {_dogEntry.Name}");
+                
+                // Trigger window close
+                RequestClose?.Invoke();
             }
             catch (Exception ex)
             {
@@ -289,6 +301,9 @@ namespace Einsatzueberwachung.ViewModels
             {
                 DialogResult = false;
                 LoggingService.Instance.LogInfo("Dog edit cancelled");
+                
+                // Trigger window close
+                RequestClose?.Invoke();
             }
             catch (Exception ex)
             {

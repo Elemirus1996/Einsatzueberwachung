@@ -18,7 +18,7 @@ namespace Einsatzueberwachung.Services
         private const string GITHUB_REPO = "Elemirus1996/Einsatzueberwachung";
         private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/releases/latest";
         private const string UPDATE_INFO_URL = "https://github.com/{0}/releases/latest/download/update-info.json";
-        private const string USER_AGENT = "Einsatzueberwachung-Professional-v1.7";
+        private const string USER_AGENT = "Einsatzueberwachung-Professional-v1.9";
 
         private readonly HttpClient _httpClient;
         private bool _disposed = false;
@@ -26,7 +26,7 @@ namespace Einsatzueberwachung.Services
         public GitHubUpdateService()
         {
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", USER_AGENT);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", VersionService.UserAgent);
             _httpClient.Timeout = TimeSpan.FromMinutes(10); // Für große Downloads
         }
 
@@ -115,14 +115,30 @@ namespace Einsatzueberwachung.Services
                 }
 
                 var currentVersion = GetCurrentVersion();
-                if (IsNewerVersion(updateInfo.Version, currentVersion))
+                var isNewerVersion = IsNewerVersion(updateInfo.Version, currentVersion);
+                
+                LoggingService.Instance.LogInfo($"📋 Update-Check: Current={currentVersion}, Available={updateInfo.Version}, IsNewer={isNewerVersion}");
+                
+                if (isNewerVersion)
                 {
                     LoggingService.Instance.LogInfo($"✅ Update verfügbar: {currentVersion} → {updateInfo.Version}");
                     return updateInfo;
                 }
                 else
                 {
-                    LoggingService.Instance.LogInfo($"✅ Anwendung ist aktuell: {currentVersion}");
+                    // Prüfe ob es ein Downgrade wäre
+                    var currentVersionObj = new Version(currentVersion.TrimStart('v'));
+                    var availableVersionObj = new Version(updateInfo.Version.TrimStart('v'));
+                    
+                    if (currentVersionObj > availableVersionObj)
+                    {
+                        LoggingService.Instance.LogInfo($"🚫 Entwicklungsversion erkannt: Local {currentVersion} ist neuer als verfügbare Version {updateInfo.Version} - kein Update-Dialog");
+                    }
+                    else
+                    {
+                        LoggingService.Instance.LogInfo($"✅ Anwendung ist aktuell: {currentVersion}");
+                    }
+                    
                     return null;
                 }
             }
@@ -253,14 +269,19 @@ namespace Einsatzueberwachung.Services
         {
             try
             {
-                // Entferne 'v' Prefix falls vorhanden
-                newVersionString = newVersionString.TrimStart('v');
-                currentVersionString = currentVersionString.TrimStart('v');
+                LoggingService.Instance.LogInfo($"🔍 Version-Vergleich: Remote={newVersionString}, Local={currentVersionString}");
 
-                var newVersion = new Version(newVersionString);
-                var currentVersion = new Version(currentVersionString);
+                var isNewer = VersionService.IsNewerVersion(newVersionString, currentVersionString);
+                
+                LoggingService.Instance.LogInfo($"📊 Vergleichsergebnis: {newVersionString} > {currentVersionString} = {isNewer}");
+                
+                // Verhindere Downgrades für Entwicklungsversionen
+                if (!isNewer && VersionService.IsNewerVersion(currentVersionString, newVersionString))
+                {
+                    LoggingService.Instance.LogInfo($"⚠️ Downgrade erkannt: Local {currentVersionString} ist neuer als Remote {newVersionString} - Update wird übersprungen");
+                }
 
-                return newVersion > currentVersion;
+                return isNewer;
             }
             catch (Exception ex)
             {
@@ -276,13 +297,8 @@ namespace Einsatzueberwachung.Services
         {
             try
             {
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
-                if (version != null)
-                {
-                    // Konvertiere zu 3-teiliger Version (X.Y.Z) für Vergleich mit update-info.json
-                    return $"{version.Major}.{version.Minor}.{version.Build}";
-                }
-                return "1.0.0";
+                // Verwende zentrale Versionsverwaltung
+                return VersionService.Version;
             }
             catch
             {

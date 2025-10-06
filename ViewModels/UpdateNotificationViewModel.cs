@@ -366,8 +366,8 @@ namespace Einsatzueberwachung.ViewModels
         {
             try
             {
-                // Zeige Update-Informationen
-                CurrentVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0.0";
+                // Zeige Update-Informationen mit zentraler Versionsverwaltung
+                CurrentVersion = VersionService.DisplayVersion;
                 NewVersion = _updateInfo.Version;
                 ReleaseDate = _updateInfo.ReleaseDate;
                 
@@ -393,7 +393,11 @@ namespace Einsatzueberwachung.ViewModels
                 {
                     IsSkipEnabled = false;
                     IsRemindEnabled = false;
-                    WindowTitle = "Wichtiges Update verfügbar - Einsatzüberwachung Professional";
+                    WindowTitle = $"Wichtiges Update verfügbar - {VersionService.ProductNameWithVersion}";
+                }
+                else
+                {
+                    WindowTitle = $"Update verfügbar - {VersionService.ProductNameWithVersion}";
                 }
 
                 LoggingService.Instance.LogInfo($"Update dialog initialized via MVVM: {CurrentVersion} → {NewVersion}");

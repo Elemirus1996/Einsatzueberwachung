@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         Title="{Binding WindowTitle}"
-        Width="650" Height="600"
+        Width="786" Height="600"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="{DynamicResource Surface}"
@@ -31,7 +31,7 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
         </Style>
-        
+
         <Style x:Key="UpdateInfoText" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
@@ -50,6 +50,32 @@
             <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <!-- Orange Progress Bar Style -->
+        <Style x:Key="OrangeProgressBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4">
+                            <Grid>
+                                <Rectangle x:Name="PART_Track" Fill="{TemplateBinding Background}"/>
+                                <Rectangle x:Name="PART_Indicator" 
+                                          Fill="{TemplateBinding Foreground}"
+                                          HorizontalAlignment="Left"
+                                          RadiusX="4" RadiusY="4"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -74,10 +100,10 @@
                 <!-- Icon with Orange Background -->
                 <Border Width="64" Height="64" CornerRadius="32" 
                        Background="{DynamicResource OnPrimary}" Margin="0,0,20,0">
-                    <fa:FontAwesome Icon="Download" FontSize="32" 
+                    <fa:ImageAwesome Icon="Download" Width="32" Height="32" 
                                    Foreground="{DynamicResource Primary}"/>
                 </Border>
-                
+
                 <!-- Title and Description -->
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Update verfügbar!" 
@@ -90,7 +116,7 @@
         </Border>
 
         <!-- Version Information Card -->
-        <Border Grid.Row="1" Style="{StaticResource UpdateCard}">
+        <Border Grid.Row="1" Style="{StaticResource UpdateCard}" Margin="0,0,0,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -101,11 +127,12 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Header -->
                 <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,16">
-                    <fa:FontAwesome Icon="InfoCircle" FontSize="18" 
+                    <fa:ImageAwesome Icon="InfoCircle" Width="18" Height="18" 
                                    Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
                     <TextBlock Text="Versions-Information" FontSize="18" FontWeight="SemiBold"
                               Foreground="{DynamicResource OnSurface}"/>
@@ -150,7 +177,7 @@
             <StackPanel>
                 <!-- Header -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                    <fa:FontAwesome Icon="List" FontSize="18" 
+                    <fa:ImageAwesome Icon="List" Width="18" Height="18" 
                                    Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
                     <TextBlock Text="Was ist neu?" FontSize="18" FontWeight="SemiBold"
                               Foreground="{DynamicResource OnSurface}"/>
@@ -172,43 +199,39 @@
             <StackPanel>
                 <!-- Progress Header -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <fa:FontAwesome Icon="CloudDownload" FontSize="16" 
+                    <fa:ImageAwesome Icon="CloudDownload" Width="16" Height="16" 
                                    Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
                     <TextBlock Text="{Binding ProgressText}" 
                               FontSize="14" FontWeight="Medium"
                               Foreground="{DynamicResource OnSurface}"/>
                 </StackPanel>
-                
+
                 <!-- Progress Bar with Orange Theme -->
                 <ProgressBar Value="{Binding ProgressValue}" 
-                            Height="8" 
-                            Background="{DynamicResource SurfaceVariant}" 
-                            Foreground="{DynamicResource Primary}" 
-                            BorderThickness="0"
-                            Style="{DynamicResource {x:Type ProgressBar}}"/>
+                            Style="{StaticResource OrangeProgressBar}"/>
             </StackPanel>
         </Border>
 
         <!-- Action Buttons with Orange Styling -->
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-            
+
             <!-- Release Notes Button -->
             <Button Command="{Binding ShowReleaseNotesCommand}" 
                    IsEnabled="{Binding IsReleaseNotesEnabled}"
                    Width="180" Height="44" Margin="0,0,12,0"
                    Style="{StaticResource OutlinedButton}">
                 <StackPanel Orientation="Horizontal">
-                    <fa:FontAwesome Icon="ExternalLink" FontSize="14" Margin="0,0,6,0"/>
+                    <fa:ImageAwesome Icon="ExternalLink" Width="14" Height="14" Margin="0,0,6,0"/>
                     <TextBlock Text="Release Notes"/>
                 </StackPanel>
             </Button>
-            
+
             <!-- Remind Later Button (only if not mandatory) -->
             <Button Command="{Binding RemindLaterCommand}" 
                    IsEnabled="{Binding IsRemindEnabled}"
                    Width="140" Height="44" Margin="12,0">
                 <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                    <Style TargetType="Button" BasedOn="{StaticResource TextButton}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsMandatoryUpdate}" Value="True">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -217,11 +240,11 @@
                     </Style>
                 </Button.Style>
                 <StackPanel Orientation="Horizontal">
-                    <fa:FontAwesome Icon="Clock" FontSize="14" Margin="0,0,6,0"/>
+                    <fa:ImageAwesome Icon="ClockOutline" Width="14" Height="14" Margin="0,0,6,0"/>
                     <TextBlock Text="Später"/>
                 </StackPanel>
             </Button>
-            
+
             <!-- Skip Update Button (only if not mandatory) -->
             <Button Command="{Binding SkipUpdateCommand}" 
                    IsEnabled="{Binding IsSkipEnabled}"
@@ -236,18 +259,18 @@
                     </Style>
                 </Button.Style>
                 <StackPanel Orientation="Horizontal">
-                    <fa:FontAwesome Icon="Times" FontSize="14" Margin="0,0,6,0"/>
+                    <fa:ImageAwesome Icon="Times" Width="14" Height="14" Margin="0,0,6,0"/>
                     <TextBlock Text="Überspringen"/>
                 </StackPanel>
             </Button>
-            
+
             <!-- Download Update Button -->
             <Button Command="{Binding DownloadUpdateCommand}" 
                    IsEnabled="{Binding IsDownloadEnabled}"
                    Width="180" Height="44" Margin="12,0,0,0"
-                   Style="{StaticResource PrimaryButton}">
+                   Style="{StaticResource FilledButton}">
                 <StackPanel Orientation="Horizontal">
-                    <fa:FontAwesome Icon="Download" FontSize="14" Margin="0,0,8,0"/>
+                    <fa:ImageAwesome Icon="Download" Width="14" Height="14" Margin="0,0,8,0"/>
                     <TextBlock Text="Update laden"/>
                 </StackPanel>
             </Button>

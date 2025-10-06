@@ -12,7 +12,7 @@ namespace Einsatzueberwachung.Views
     /// </summary>
     public partial class DogEditWindow : Window
     {
-        private readonly DogEditViewModel _viewModel;
+        private readonly DogEditViewModel _viewModel = null!;
 
         public DogEntry DogEntry => _viewModel.DogEntry;
 
@@ -27,6 +27,7 @@ namespace Einsatzueberwachung.Views
                 
                 // Subscribe to ViewModel events
                 _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+                _viewModel.RequestClose += ViewModel_RequestClose;
                 
                 LoggingService.Instance.LogInfo($"DogEditWindow (MVVM) initialized for {(existingEntry != null ? "editing" : "creating")} dog");
             }
@@ -60,6 +61,25 @@ namespace Einsatzueberwachung.Views
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error handling ViewModel property change", ex);
+            }
+        }
+
+        private void ViewModel_RequestClose()
+        {
+            try
+            {
+                // Ensure DialogResult is set if not already
+                if (_viewModel.DialogResult.HasValue)
+                {
+                    DialogResult = _viewModel.DialogResult.Value;
+                }
+                
+                // Close the window
+                Close();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error closing DogEditWindow via RequestClose", ex);
             }
         }
 
@@ -103,6 +123,7 @@ namespace Einsatzueberwachung.Views
                 if (_viewModel != null)
                 {
                     _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                    _viewModel.RequestClose -= ViewModel_RequestClose;
                 }
                 
                 LoggingService.Instance.LogInfo("DogEditWindow (MVVM) closed");

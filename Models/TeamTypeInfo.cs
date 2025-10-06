@@ -70,7 +70,7 @@ namespace Einsatzueberwachung.Models
                     DisplayName = "Lawinensuchhund",
                     ShortName = "LW",
                     Description = "Suche nach Verschütteten in Lawinen",
-                    ColorHex = "#9C27B0" // Lila
+                    ColorHex = "#607D8B" // Blaugrau statt Lila
                 }
             },
             {
