@@ -19,14 +19,14 @@
     Aktuelle Version aus VersionService: 1.9.0.1 (Bug-Fix Release)
     Beim Release-Update diese Werte entsprechend VersionService.GetProjectVersions() anpassen
     -->
-    <AssemblyTitle>Einsatzüberwachung Professional v1.9.0</AssemblyTitle>
+    <AssemblyTitle>Einsatzüberwachung Professional v1.9.1</AssemblyTitle>
     <AssemblyDescription>Professionelle Einsatzüberwachung für Rettungshunde-Teams mit Dashboard-Übersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
-    <AssemblyProduct>Einsatzüberwachung Professional v1.9.0</AssemblyProduct>
+    <AssemblyProduct>Einsatzüberwachung Professional v1.9.1</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2024 RescueDog_SW</AssemblyCopyright>
-    <AssemblyVersion>1.9.0.1</AssemblyVersion>
-    <FileVersion>1.9.0.1</FileVersion>
-    <Version>1.9.0</Version>
+    <AssemblyVersion>1.9.1.1</AssemblyVersion>
+    <FileVersion>1.9.1.1</FileVersion>
+    <Version>1.9.1</Version>
     
     <!-- Release Configuration -->
     <PublishSingleFile>true</PublishSingleFile>
