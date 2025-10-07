@@ -5,8 +5,8 @@
         xmlns:vm="clr-namespace:Einsatzueberwachung.ViewModels"
         xmlns:views="clr-namespace:Einsatzueberwachung.Views"
         Title="{Binding WindowTitle}" 
-        Height="850" Width="650"
-        MinHeight="750" MinWidth="600"
+        Height="900" Width="700"
+        MinHeight="800" MinWidth="650"
         WindowStyle="SingleBorderWindow"
         ResizeMode="CanResize"
         Background="{DynamicResource Surface}">
@@ -17,14 +17,14 @@
         <!-- Converter als Resource definieren -->
         <views:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         
-        <!-- Orange Team Detail Card Style -->
+        <!-- Orange Team Detail Card Style - Optimiert für TeamControl -->
         <Style x:Key="OrangeTeamDetailCard" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource SurfaceContainer}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="0"/>
             <Setter Property="Effect" Value="{StaticResource Elevation3}"/>
         </Style>
 
@@ -71,20 +71,38 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <!-- Danger Button Style -->
+        <Style x:Key="OrangeDangerButton" TargetType="Button" BasedOn="{StaticResource OrangeActionButton}">
+            <Setter Property="Background" Value="{DynamicResource Error}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#D32F2F"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#F44336" 
+                                             ShadowDepth="0" BlurRadius="8" Opacity="0.4"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
-    <Grid Margin="30">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Orange Header mit Gradient -->
         <Border Grid.Row="0" 
                 Background="{DynamicResource PrimaryGradient}" 
                 CornerRadius="12" 
-                Padding="24"
+                Padding="20"
                 Margin="0,0,0,16">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -94,21 +112,21 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Orange Team Icon mit Glow -->
-                <Border Grid.Column="0" Width="56" Height="56" CornerRadius="28" 
+                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24" 
                        Background="White" Margin="0,0,16,0"
                        Effect="{StaticResource OrangeGlow}">
-                    <fa:ImageAwesome Icon="Users" Width="28" Height="28" 
+                    <fa:ImageAwesome Icon="Users" Width="24" Height="24" 
                                    Foreground="{DynamicResource Primary}"/>
                 </Border>
 
                 <!-- Team Info -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="{Binding TeamName}" 
-                              FontSize="28" 
+                              FontSize="24" 
                               FontWeight="Bold"
                               Foreground="White"/>
                     <TextBlock Text="{Binding TeamType}" 
-                              FontSize="16"
+                              FontSize="14"
                               Foreground="White"
                               Opacity="0.9"
                               Margin="0,4,0,0"/>
@@ -119,83 +137,135 @@
                        Command="{Binding CloseWindowCommand}"
                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
                        Style="{StaticResource OrangeAccentButton}" 
-                       Width="40" Height="40" Margin="8,0,0,0">
-                    <fa:ImageAwesome Icon="Times" Width="16" Height="16" Foreground="White"/>
+                       Width="36" Height="36" Margin="8,0,0,0">
+                    <fa:ImageAwesome Icon="Times" Width="14" Height="14" Foreground="White"/>
                 </Button>
             </Grid>
         </Border>
 
-        <!-- Orange Action Bar -->
-        <Border Grid.Row="1" Style="{StaticResource OrangeCard}" Margin="0,0,0,16">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <!-- Timer Toggle Button -->
-                <Button Command="{Binding ToggleTimerCommand}"
-                       Style="{StaticResource OrangeActionButton}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="PlayCircle" Width="16" Height="16" 
-                                       Foreground="White" Margin="0,0,8,0"/>
-                        <TextBlock Text="Timer Start/Stop" Foreground="White"/>
-                    </StackPanel>
-                </Button>
+        <!-- Orange Action Bar - Kompakter -->
+        <Border Grid.Row="1" Style="{StaticResource OrangeCard}" Margin="0,0,0,12" Padding="12">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- Timer Toggle Button -->
+                    <Button Command="{Binding ToggleTimerCommand}"
+                           Style="{StaticResource OrangeActionButton}"
+                           Padding="12,8" Margin="2">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="PlayCircle" Width="14" Height="14" 
+                                           Foreground="White" Margin="0,0,6,0"/>
+                            <TextBlock Text="Timer" Foreground="White" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
 
-                <!-- Reset Button -->
-                <Button Command="{Binding ResetTimerCommand}"
-                       Style="{StaticResource OrangeSecondaryButton}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="Refresh" Width="16" Height="16" 
-                                       Foreground="{DynamicResource OnSecondaryContainer}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Timer Reset" 
-                                  Foreground="{DynamicResource OnSecondaryContainer}"/>
-                    </StackPanel>
-                </Button>
+                    <!-- Reset Button -->
+                    <Button Command="{Binding ResetTimerCommand}"
+                           Style="{StaticResource OrangeSecondaryButton}"
+                           Padding="12,8" Margin="2">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Refresh" Width="14" Height="14" 
+                                           Foreground="{DynamicResource OnSecondaryContainer}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Reset" 
+                                      Foreground="{DynamicResource OnSecondaryContainer}" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
 
-                <!-- Edit Button -->
-                <Button Command="{Binding OpenTeamEditCommand}"
-                       Style="{StaticResource OrangeSecondaryButton}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="Edit" Width="16" Height="16" 
-                                       Foreground="{DynamicResource OnSecondaryContainer}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Bearbeiten" 
-                                  Foreground="{DynamicResource OnSecondaryContainer}"/>
-                    </StackPanel>
-                </Button>
+                    <!-- Edit Button -->
+                    <Button Command="{Binding OpenTeamEditCommand}"
+                           Style="{StaticResource OrangeSecondaryButton}"
+                           Padding="12,8" Margin="2">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Edit" Width="14" Height="14" 
+                                           Foreground="{DynamicResource OnSecondaryContainer}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Bearbeiten" 
+                                      Foreground="{DynamicResource OnSecondaryContainer}" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
 
-                <!-- Refresh Button -->
-                <Button Command="{Binding RefreshTeamCommand}"
-                       Style="{StaticResource OrangeSecondaryButton}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="Refresh" Width="16" Height="16" 
-                                       Foreground="{DynamicResource OnSecondaryContainer}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Aktualisieren" 
-                                  Foreground="{DynamicResource OnSecondaryContainer}"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
+                    <!-- Refresh Button -->
+                    <Button Command="{Binding RefreshTeamCommand}"
+                           Style="{StaticResource OrangeSecondaryButton}"
+                           Padding="12,8" Margin="2">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Refresh" Width="14" Height="14" 
+                                           Foreground="{DynamicResource OnSecondaryContainer}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Aktualisieren" 
+                                      Foreground="{DynamicResource OnSecondaryContainer}" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
 
-        <!-- TeamControl Container mit Orange Design -->
-        <Border x:Name="TeamControlContainer" 
-                Grid.Row="2"
-                Style="{StaticResource OrangeTeamDetailCard}">
-            
-            <!-- Placeholder Content wenn kein Team geladen -->
-            <Grid>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding IsTeamLoaded, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverted}">
-                    <fa:ImageAwesome Icon="ExclamationTriangle" Width="64" Height="64" 
-                                   Foreground="{DynamicResource Primary}" Margin="0,0,0,16"/>
-                    <TextBlock Text="Kein Team geladen" 
-                              Style="{StaticResource TitleMedium}"
-                              Foreground="{DynamicResource OnSurfaceVariant}"
-                              HorizontalAlignment="Center"/>
-                    <TextBlock Text="Das Team konnte nicht geladen werden." 
-                              Style="{StaticResource BodyMedium}"
-                              Foreground="{DynamicResource OnSurfaceVariant}"
-                              HorizontalAlignment="Center"
-                              Margin="0,8,0,0"/>
-                </StackPanel>
+        <!-- TeamControl Container - Optimiert für vollständige Anzeige -->
+        <ScrollViewer Grid.Row="2" 
+                      VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="0" Margin="0,0,0,12">
+            <Border x:Name="TeamControlContainer" 
+                    Style="{StaticResource OrangeTeamDetailCard}">
                 
-                <!-- TeamControl wird hier programmatisch eingefügt -->
+                <!-- Placeholder Content wenn kein Team geladen -->
+                <Grid>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding IsTeamLoaded, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverted}">
+                        <fa:ImageAwesome Icon="ExclamationTriangle" Width="48" Height="48" 
+                                       Foreground="{DynamicResource Primary}" Margin="0,0,0,12"/>
+                        <TextBlock Text="Kein Team geladen" 
+                                  Style="{StaticResource TitleMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="Das Team konnte nicht geladen werden." 
+                                  Style="{StaticResource BodyMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"
+                                  HorizontalAlignment="Center"
+                                  Margin="0,8,0,0"/>
+                    </StackPanel>
+                    
+                    <!-- TeamControl wird hier programmatisch eingefügt -->
+                </Grid>
+            </Border>
+        </ScrollViewer>
+
+        <!-- Untere Action-Leiste mit Delete-Button - Kompakter -->
+        <Border Grid.Row="3" Style="{StaticResource OrangeCard}" Margin="0" Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Info Text -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <fa:ImageAwesome Icon="InfoCircle" Width="14" Height="14" 
+                                   Foreground="{DynamicResource OnSurfaceVariant}" Margin="0,0,6,0"/>
+                    <TextBlock Text="Automatisch gespeichert" 
+                              FontSize="11"
+                              Foreground="{DynamicResource OnSurfaceVariant}"/>
+                </StackPanel>
+
+                <!-- Delete Button -->
+                <Button Grid.Column="1" 
+                       Command="{Binding DeleteTeamCommand}"
+                       Style="{StaticResource OrangeDangerButton}"
+                       ToolTip="Team permanent löschen"
+                       Padding="16,10">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Trash" Width="14" Height="14" 
+                                       Foreground="White" Margin="0,0,8,0"/>
+                        <TextBlock Text="Team löschen" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Status Info -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <TextBlock Text="Detailansicht" 
+                              FontSize="11"
+                              Foreground="{DynamicResource OnSurfaceVariant}" Margin="0,0,6,0"/>
+                    <fa:ImageAwesome Icon="Eye" Width="14" Height="14" 
+                                   Foreground="{DynamicResource Primary}"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

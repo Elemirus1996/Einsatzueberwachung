@@ -18,6 +18,7 @@ namespace Einsatzueberwachung.Views
         private readonly TeamControlViewModel _viewModel;
         private Storyboard? _blinkingStoryboard;
         private Storyboard? _entranceStoryboard;
+        private Team? _team;
 
         public static readonly DependencyProperty TeamProperty =
             DependencyProperty.Register("Team", typeof(Team), typeof(TeamControl),
@@ -28,8 +29,18 @@ namespace Einsatzueberwachung.Views
         /// </summary>
         public Team? Team
         {
-            get => (Team?)GetValue(TeamProperty);
-            set => SetValue(TeamProperty, value);
+            get => _team;
+            set
+            {
+                if (_team != value)
+                {
+                    _team = value;
+                    if (value != null)
+                    {
+                        _viewModel.SetTeam(value);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -77,6 +88,41 @@ namespace Einsatzueberwachung.Views
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error applying theme to TeamControl", ex);
+            }
+        }
+
+        /// <summary>
+        /// Aktualisiert die Team-Daten
+        /// </summary>
+        public void RefreshTeamData()
+        {
+            try
+            {
+                if (_team != null)
+                {
+                    // ViewModel benachrichtigen, dass sich die Daten geändert haben könnten
+                    _viewModel.SetTeam(_team);
+                    LoggingService.Instance.LogInfo($"Team data refreshed for {_team.TeamName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error refreshing team data in TeamControl", ex);
+            }
+        }
+
+        /// <summary>
+        /// Startet die Entrance-Animation
+        /// </summary>
+        public void TriggerEntranceAnimation()
+        {
+            try
+            {
+                _viewModel.TriggerEntranceAnimation();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error triggering entrance animation", ex);
             }
         }
 
@@ -312,5 +358,58 @@ namespace Einsatzueberwachung.Views
         }
 
         #endregion
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Entrance-Animation beim Laden starten
+                Dispatcher.BeginInvoke(() =>
+                {
+                    try
+                    {
+                        var storyboard = FindResource("CardEntranceAnimation") as Storyboard;
+                        if (storyboard != null)
+                        {
+                            Storyboard.SetTarget(storyboard, TeamBorder);
+                            storyboard.Begin();
+                            LoggingService.Instance.LogInfo("TeamControl loaded and entrance animation triggered");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingService.Instance.LogError("Error triggering entrance animation on load", ex);
+                    }
+                }, System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error during TeamControl load", ex);
+            }
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Events aufräumen
+                _viewModel.TeamDeleteRequested -= OnViewModelTeamDeleteRequested;
+                _viewModel.DataChanged -= OnViewModelDataChanged;
+                _viewModel.EntranceAnimationRequested -= OnViewModelEntranceAnimationRequested;
+                _viewModel.BlinkingAnimationRequested -= OnViewModelBlinkingAnimationRequested;
+                
+                // ViewModel aufräumen
+                if (_viewModel is IDisposable disposableViewModel)
+                {
+                    disposableViewModel.Dispose();
+                }
+                
+                LoggingService.Instance.LogInfo("TeamControl unloaded and cleaned up");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error during TeamControl unload", ex);
+            }
+        }
     }
 }

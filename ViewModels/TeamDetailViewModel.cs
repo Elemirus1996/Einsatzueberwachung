@@ -106,6 +106,7 @@ namespace Einsatzueberwachung.ViewModels
         public ICommand OpenTeamEditCommand { get; private set; } = null!;
         public ICommand ToggleTimerCommand { get; private set; } = null!;
         public ICommand ResetTimerCommand { get; private set; } = null!;
+        public ICommand DeleteTeamCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
@@ -114,6 +115,7 @@ namespace Einsatzueberwachung.ViewModels
             OpenTeamEditCommand = new RelayCommand(ExecuteOpenTeamEdit, CanExecuteTeamOperations);
             ToggleTimerCommand = new RelayCommand(ExecuteToggleTimer, CanExecuteTeamOperations);
             ResetTimerCommand = new RelayCommand(ExecuteResetTimer, CanExecuteTeamOperations);
+            DeleteTeamCommand = new RelayCommand(ExecuteDeleteTeam, CanExecuteTeamOperations);
         }
 
         #endregion
@@ -141,6 +143,7 @@ namespace Einsatzueberwachung.ViewModels
                 {
                     // Team-Properties aktualisieren
                     UpdateTeamProperties();
+                    TeamRefreshed?.Invoke(Team);
                     LoggingService.Instance.LogInfo($"Team details refreshed for {Team.TeamName}");
                 }
             }
@@ -193,6 +196,7 @@ namespace Einsatzueberwachung.ViewModels
                     
                     // Properties aktualisieren
                     OnPropertyChanged(nameof(Team));
+                    TeamTimerChanged?.Invoke(Team);
                 }
             }
             catch (Exception ex)
@@ -221,12 +225,73 @@ namespace Einsatzueberwachung.ViewModels
                         
                         // Properties aktualisieren
                         OnPropertyChanged(nameof(Team));
+                        TeamTimerChanged?.Invoke(Team);
                     }
                 }
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error resetting timer via DetailWindow", ex);
+            }
+        }
+
+        private void ExecuteDeleteTeam()
+        {
+            try
+            {
+                if (Team != null)
+                {
+                    var result = Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        return MessageBox.Show(
+                            $"Möchten Sie das Team '{Team.TeamName}' wirklich permanent löschen?\n\n" +
+                            "Diese Aktion kann nicht rückgängig gemacht werden!",
+                            "Team löschen", 
+                            MessageBoxButton.YesNo, 
+                            MessageBoxImage.Warning,
+                            MessageBoxResult.No);
+                    });
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        var teamToDelete = Team;
+                        
+                        // Timer stoppen falls aktiv
+                        teamToDelete.StopTimer();
+                        
+                        // Event für Team-Löschung auslösen
+                        TeamDeleteRequested?.Invoke(teamToDelete);
+                        
+                        LoggingService.Instance.LogInfo($"Team deletion requested via DetailWindow: {teamToDelete.TeamName}");
+                        
+                        // Fenster schließen nach erfolgreichem Löschen
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (Application.Current.Windows.Count > 0)
+                            {
+                                foreach (Window window in Application.Current.Windows)
+                                {
+                                    if (window is Views.TeamDetailWindow detailWindow && 
+                                        detailWindow.DataContext == this)
+                                    {
+                                        window.Close();
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error deleting team via DetailWindow", ex);
+                
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show($"Fehler beim Löschen des Teams: {ex.Message}", 
+                        "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                });
             }
         }
 
@@ -275,6 +340,7 @@ namespace Einsatzueberwachung.ViewModels
                     ((RelayCommand)OpenTeamEditCommand).RaiseCanExecuteChanged();
                     ((RelayCommand)ToggleTimerCommand).RaiseCanExecuteChanged();
                     ((RelayCommand)ResetTimerCommand).RaiseCanExecuteChanged();
+                    ((RelayCommand)DeleteTeamCommand).RaiseCanExecuteChanged();
                 }
             }
             catch (Exception ex)
@@ -288,6 +354,25 @@ namespace Einsatzueberwachung.ViewModels
             IsDarkMode = isDarkMode;
             LoggingService.Instance.LogInfo($"Theme changed in TeamDetailViewModel: {(isDarkMode ? "Dark" : "Light")} mode");
         }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Event wird ausgelöst, wenn das Team gelöscht werden soll
+        /// </summary>
+        public event Action<Team>? TeamDeleteRequested;
+
+        /// <summary>
+        /// Event wird ausgelöst, wenn das Team aktualisiert wurde
+        /// </summary>
+        public event Action<Team>? TeamRefreshed;
+
+        /// <summary>
+        /// Event wird ausgelöst, wenn der Timer geändert wurde
+        /// </summary>
+        public event Action<Team>? TeamTimerChanged;
 
         #endregion
 
