@@ -16,7 +16,7 @@ namespace Einsatzueberwachung.Services
         private const string BUILD_VERSION = "0";
         
         // Development/Release Kennzeichnung
-        private const bool IS_DEVELOPMENT_VERSION = true;
+        private const bool IS_DEVELOPMENT_VERSION = false;
         private const string DEVELOPMENT_SUFFIX = "-dev";
         
         /// <summary>
