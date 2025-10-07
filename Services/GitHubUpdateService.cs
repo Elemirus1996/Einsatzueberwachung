@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -27,6 +29,16 @@ namespace Einsatzueberwachung.Services
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", VersionService.UserAgent);
+            
+            // ✅ FIXED: Korrekte Cache-Bypass Headers
+            _httpClient.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+            {
+                NoCache = true,
+                NoStore = true,
+                MustRevalidate = true
+            };
+            _httpClient.DefaultRequestHeaders.Add("Pragma", "no-cache");
+            
             _httpClient.Timeout = TimeSpan.FromMinutes(10); // Für große Downloads
         }
 
@@ -38,18 +50,40 @@ namespace Einsatzueberwachung.Services
             try
             {
                 LoggingService.Instance.LogInfo("🔄 Prüfe auf Updates über GitHub...");
+                LoggingService.Instance.LogInfo($"🔍 Lokale Version: {GetCurrentVersion()} (Development: {VersionService.IsDevelopmentVersion})");
+                LoggingService.Instance.LogInfo($"📡 GitHub Repository: {GITHUB_REPO}");
 
-                // Erst GitHub Releases API prüfen
+                // ✅ DEBUG: Teste GitHub API Zugriff ausführlich
                 var apiUrl = string.Format(GITHUB_API_URL, GITHUB_REPO);
-                var response = await _httpClient.GetAsync(apiUrl);
+                LoggingService.Instance.LogInfo($"🌐 API URL: {apiUrl}");
+                
+                // ✅ FIXED: Korrekte Cache-Bypass Headers für Request
+                var requestMessage = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+                requestMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true,
+                    MustRevalidate = true
+                };
+                requestMessage.Headers.Add("Pragma", "no-cache");
+                
+                var response = await _httpClient.SendAsync(requestMessage);
+                LoggingService.Instance.LogInfo($"📊 API Response Status: {response.StatusCode}");
 
                 if (!response.IsSuccessStatusCode)
                 {
                     LoggingService.Instance.LogWarning($"GitHub API nicht erreichbar: {response.StatusCode}");
+                    LoggingService.Instance.LogWarning($"Response Headers: {string.Join(", ", response.Headers.Select(h => $"{h.Key}={string.Join(",", h.Value)}"))}");
                     return null;
                 }
 
                 var apiContent = await response.Content.ReadAsStringAsync();
+                LoggingService.Instance.LogInfo($"📄 API Response Length: {apiContent.Length} characters");
+                
+                // ✅ DEBUG: Logge ersten Teil der Antwort
+                var preview = apiContent.Length > 500 ? apiContent.Substring(0, 500) + "..." : apiContent;
+                LoggingService.Instance.LogInfo($"📋 API Response Preview: {preview}");
+
                 var releaseInfo = JsonSerializer.Deserialize<GitHubReleaseInfo>(apiContent, new JsonSerializerOptions 
                 { 
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
@@ -58,36 +92,152 @@ namespace Einsatzueberwachung.Services
                 if (releaseInfo?.TagName == null)
                 {
                     LoggingService.Instance.LogWarning("Keine gültige Release-Information gefunden");
+                    LoggingService.Instance.LogWarning($"Parsed Release Info: TagName={releaseInfo?.TagName}, Name={releaseInfo?.Name}, Draft={releaseInfo?.Draft}, Prerelease={releaseInfo?.Prerelease}");
                     return null;
                 }
 
-                // Update-Info JSON laden falls verfügbar
+                // ✅ DEBUG: Ausführliche Release-Info
+                LoggingService.Instance.LogInfo($"🌐 GitHub Latest Release:");
+                LoggingService.Instance.LogInfo($"   Tag: {releaseInfo.TagName}");
+                LoggingService.Instance.LogInfo($"   Name: {releaseInfo.Name}");
+                LoggingService.Instance.LogInfo($"   Published: {releaseInfo.PublishedAt}");
+                LoggingService.Instance.LogInfo($"   Draft: {releaseInfo.Draft}");
+                LoggingService.Instance.LogInfo($"   Prerelease: {releaseInfo.Prerelease}");
+                LoggingService.Instance.LogInfo($"   Assets Count: {releaseInfo.Assets?.Length ?? 0}");
+
+                // ✅ DEBUG: Prüfe ob es ein Draft oder Prerelease ist
+                if (releaseInfo.Draft)
+                {
+                    LoggingService.Instance.LogWarning($"⚠️ PROBLEM GEFUNDEN: Latest Release {releaseInfo.TagName} ist als DRAFT markiert!");
+                    LoggingService.Instance.LogWarning($"   Lösung: Gehen Sie zu GitHub und veröffentlichen Sie das Release als finale Version.");
+                }
+                
+                if (releaseInfo.Prerelease)
+                {
+                    LoggingService.Instance.LogWarning($"⚠️ PROBLEM GEFUNDEN: Latest Release {releaseInfo.TagName} ist als PRE-RELEASE markiert!");
+                    LoggingService.Instance.LogWarning($"   Lösung: Gehen Sie zu GitHub und entfernen Sie das Pre-release Häkchen.");
+                }
+
+                // ✅ DEBUG: Teste auch alle Releases API
+                try
+                {
+                    var allReleasesUrl = $"https://api.github.com/repos/{GITHUB_REPO}/releases";
+                    LoggingService.Instance.LogInfo($"🔍 Prüfe alle Releases: {allReleasesUrl}");
+                    
+                    var allReleasesResponse = await _httpClient.GetAsync(allReleasesUrl);
+                    if (allReleasesResponse.IsSuccessStatusCode)
+                    {
+                        var allReleasesContent = await allReleasesResponse.Content.ReadAsStringAsync();
+                        var allReleases = JsonSerializer.Deserialize<GitHubReleaseInfo[]>(allReleasesContent, new JsonSerializerOptions 
+                        { 
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+                        });
+
+                        LoggingService.Instance.LogInfo($"📊 Alle Releases gefunden: {allReleases?.Length ?? 0}");
+                        
+                        if (allReleases != null && allReleases.Length > 0)
+                        {
+                            LoggingService.Instance.LogInfo($"📋 Release-Übersicht:");
+                            foreach (var release in allReleases.Take(10)) // Nur erste 10 zeigen
+                            {
+                                var status = "";
+                                if (release.Draft) status += " [DRAFT]";
+                                if (release.Prerelease) status += " [PRE-RELEASE]";
+                                
+                                LoggingService.Instance.LogInfo($"   • {release.TagName} - {release.Name}{status}");
+                            }
+                            
+                            // Prüfe ob es neuere non-draft Releases gibt
+                            var finalReleases = allReleases.Where(r => !r.Draft && !r.Prerelease).ToArray();
+                            if (finalReleases.Length > 0)
+                            {
+                                var newestFinalRelease = finalReleases.First();
+                                if (newestFinalRelease.TagName != releaseInfo.TagName)
+                                {
+                                    LoggingService.Instance.LogWarning($"🚨 PROBLEM IDENTIFIZIERT:");
+                                    LoggingService.Instance.LogWarning($"   Latest Release API gibt: {releaseInfo.TagName} (Draft/Pre-Release)");
+                                    LoggingService.Instance.LogWarning($"   Neuestes finales Release: {newestFinalRelease.TagName}");
+                                    LoggingService.Instance.LogWarning($"   Das erklärt warum ältere Versionen angezeigt werden!");
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LoggingService.Instance.LogWarning($"Fehler beim Abrufen aller Releases: {ex.Message}");
+                }
+
+                // ✅ IMPROVED: Frühe Prüfung für Development-Versionen
+                var currentVersion = GetCurrentVersion();
+                var availableVersion = releaseInfo.TagName.TrimStart('v');
+                
+                LoggingService.Instance.LogInfo($"🔢 Version-Vergleich:");
+                LoggingService.Instance.LogInfo($"   Lokal: {currentVersion}");
+                LoggingService.Instance.LogInfo($"   GitHub: {availableVersion}");
+                
+                // Für Development-Versionen: Nur Updates anzeigen, wenn eine NEUERE Version verfügbar ist
+                if (VersionService.IsDevelopmentVersion)
+                {
+                    var currentVersionNumber = ParseVersionSafely(currentVersion);
+                    var availableVersionNumber = ParseVersionSafely(availableVersion);
+                    
+                    LoggingService.Instance.LogInfo($"📊 Parsed Versions:");
+                    LoggingService.Instance.LogInfo($"   Lokal Parsed: {currentVersionNumber}");
+                    LoggingService.Instance.LogInfo($"   GitHub Parsed: {availableVersionNumber}");
+                    
+                    if (currentVersionNumber != null && availableVersionNumber != null)
+                    {
+                        // Development-Version ist gleich oder neuer als verfügbare Release-Version
+                        if (currentVersionNumber >= availableVersionNumber)
+                        {
+                            LoggingService.Instance.LogInfo($"🚧 Development-Version {currentVersion} ist aktuell oder neuer als verfügbare Release-Version {availableVersion} - kein Update erforderlich");
+                            return null;
+                        }
+                    }
+                }
+
+                // ✅ TEMPORÄR DEAKTIVIERT: Update-Info JSON laden falls verfügbar
+                // Problem-Debugging: Verwende nur GitHub API Daten
                 var updateInfoUrl = string.Format(UPDATE_INFO_URL, GITHUB_REPO);
                 UpdateInfo? updateInfo = null;
 
+                // ❌ DISABLED FOR DEBUGGING - Skip update-info.json completely
+                LoggingService.Instance.LogInfo($"🚧 DEBUG MODE: Überspringe update-info.json, verwende nur GitHub API Daten");
+                /*
                 try
                 {
+                    LoggingService.Instance.LogInfo($"📄 Lade Update-Info JSON: {updateInfoUrl}");
                     var updateResponse = await _httpClient.GetAsync(updateInfoUrl);
+                    LoggingService.Instance.LogInfo($"📄 Update-Info Response: {updateResponse.StatusCode}");
+                    
                     if (updateResponse.IsSuccessStatusCode)
                     {
                         var updateContent = await updateResponse.Content.ReadAsStringAsync();
+                        LoggingService.Instance.LogInfo($"📄 Update-Info Content Length: {updateContent.Length}");
+                        
                         updateInfo = JsonSerializer.Deserialize<UpdateInfo>(updateContent, new JsonSerializerOptions 
                         { 
                             PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
                         });
+                        
+                        LoggingService.Instance.LogInfo($"✅ Update-Info JSON erfolgreich geladen");
                     }
                 }
                 catch (Exception ex)
                 {
                     LoggingService.Instance.LogWarning($"Update-Info JSON nicht verfügbar: {ex.Message}");
                 }
+                */
 
                 // Fallback: Basis-Info aus GitHub Release
                 if (updateInfo == null)
                 {
+                    LoggingService.Instance.LogInfo($"📋 Erstelle Fallback Update-Info aus GitHub Release");
+                    
                     updateInfo = new UpdateInfo
                     {
-                        Version = releaseInfo.TagName.TrimStart('v'),
+                        Version = availableVersion,
                         ReleaseDate = releaseInfo.PublishedAt?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd"),
                         ReleaseNotesUrl = releaseInfo.HtmlUrl ?? $"https://github.com/{GITHUB_REPO}/releases/tag/{releaseInfo.TagName}",
                         Mandatory = false,
@@ -102,6 +252,19 @@ namespace Einsatzueberwachung.Services
                     {
                         updateInfo.DownloadUrl = setupAsset.BrowserDownloadUrl;
                         updateInfo.FileSize = setupAsset.Size;
+                        LoggingService.Instance.LogInfo($"📦 Setup Asset gefunden: {setupAsset.Name} ({setupAsset.Size} bytes)");
+                    }
+                    else
+                    {
+                        LoggingService.Instance.LogWarning($"⚠️ Kein Setup.exe Asset im Release gefunden!");
+                        if (releaseInfo.Assets?.Length > 0)
+                        {
+                            LoggingService.Instance.LogInfo($"📦 Verfügbare Assets:");
+                            foreach (var asset in releaseInfo.Assets)
+                            {
+                                LoggingService.Instance.LogInfo($"   • {asset.Name} ({asset.Size} bytes)");
+                            }
+                        }
                     }
 
                     // Basis Release Notes
@@ -114,10 +277,12 @@ namespace Einsatzueberwachung.Services
                     };
                 }
 
-                var currentVersion = GetCurrentVersion();
                 var isNewerVersion = IsNewerVersion(updateInfo.Version, currentVersion);
                 
-                LoggingService.Instance.LogInfo($"📋 Update-Check: Current={currentVersion}, Available={updateInfo.Version}, IsNewer={isNewerVersion}");
+                LoggingService.Instance.LogInfo($"📋 FINALER Update-Check:");
+                LoggingService.Instance.LogInfo($"   Current: {currentVersion}");
+                LoggingService.Instance.LogInfo($"   Available: {updateInfo.Version}");
+                LoggingService.Instance.LogInfo($"   IsNewer: {isNewerVersion}");
                 
                 if (isNewerVersion)
                 {
@@ -126,17 +291,28 @@ namespace Einsatzueberwachung.Services
                 }
                 else
                 {
-                    // Prüfe ob es ein Downgrade wäre
-                    var currentVersionObj = new Version(currentVersion.TrimStart('v'));
-                    var availableVersionObj = new Version(updateInfo.Version.TrimStart('v'));
+                    // ✅ IMPROVED: Bessere Behandlung für verschiedene Szenarien
+                    var currentVersionObj = ParseVersionSafely(currentVersion);
+                    var availableVersionObj = ParseVersionSafely(updateInfo.Version);
                     
-                    if (currentVersionObj > availableVersionObj)
+                    if (currentVersionObj != null && availableVersionObj != null)
                     {
-                        LoggingService.Instance.LogInfo($"🚫 Entwicklungsversion erkannt: Local {currentVersion} ist neuer als verfügbare Version {updateInfo.Version} - kein Update-Dialog");
-                    }
-                    else
-                    {
-                        LoggingService.Instance.LogInfo($"✅ Anwendung ist aktuell: {currentVersion}");
+                        if (currentVersionObj > availableVersionObj)
+                        {
+                            if (VersionService.IsDevelopmentVersion)
+                            {
+                                LoggingService.Instance.LogInfo($"🚧 Development-Version {currentVersion} ist neuer als verfügbare Release-Version {updateInfo.Version} - normaler Zustand während der Entwicklung");
+                            }
+                            else
+                            {
+                                LoggingService.Instance.LogWarning($"⚠️ DOWNGRADE SITUATION: Release-Version {currentVersion} ist neuer als verfügbare Version {updateInfo.Version}");
+                                LoggingService.Instance.LogWarning($"   Das sollte nicht passieren! Prüfen Sie die GitHub Releases.");
+                            }
+                        }
+                        else if (currentVersionObj == availableVersionObj)
+                        {
+                            LoggingService.Instance.LogInfo($"✅ Anwendung ist aktuell: {currentVersion}");
+                        }
                     }
                     
                     return null;
@@ -145,6 +321,7 @@ namespace Einsatzueberwachung.Services
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Update-Check fehlgeschlagen", ex);
+                LoggingService.Instance.LogError($"Exception Details: {ex}");
                 return null;
             }
         }
@@ -303,6 +480,28 @@ namespace Einsatzueberwachung.Services
             catch
             {
                 return "1.0.0";
+            }
+        }
+
+        /// <summary>
+        /// ✅ Sichere Version-Parsing mit besserer Fehlerbehandlung
+        /// </summary>
+        private Version? ParseVersionSafely(string versionString)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(versionString))
+                    return null;
+
+                // Entferne 'v' Prefix und Development-Suffix falls vorhanden
+                var cleanVersion = versionString.TrimStart('v').Split('-')[0];
+                
+                return new Version(cleanVersion);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogWarning($"Fehler beim Parsen der Version '{versionString}': {ex.Message}");
+                return null;
             }
         }
 

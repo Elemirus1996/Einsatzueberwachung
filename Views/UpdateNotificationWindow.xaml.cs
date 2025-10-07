@@ -106,20 +106,24 @@ namespace Einsatzueberwachung.Views
         {
             try
             {
-                // For mandatory updates, prevent closing unless download is complete
-                if (_viewModel.IsMandatoryUpdate && _viewModel.IsDownloadEnabled)
+                // ✅ FIXED: Null-Check für _viewModel hinzugefügt
+                if (_viewModel != null)
                 {
-                    var result = MessageBox.Show(
-                        "Dies ist ein wichtiges Update und kann nicht übersprungen werden.\n\n" +
-                        "Möchten Sie das Fenster wirklich schließen ohne das Update zu installieren?",
-                        "Wichtiges Update",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-                    
-                    if (result == MessageBoxResult.No)
+                    // For mandatory updates, prevent closing unless download is complete
+                    if (_viewModel.IsMandatoryUpdate && _viewModel.IsDownloadEnabled)
                     {
-                        e.Cancel = true;
-                        return;
+                        var result = MessageBox.Show(
+                            "Dies ist ein wichtiges Update und kann nicht übersprungen werden.\n\n" +
+                            "Möchten Sie das Fenster wirklich schließen ohne das Update zu installieren?",
+                            "Wichtiges Update",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+                        
+                        if (result == MessageBoxResult.No)
+                        {
+                            e.Cancel = true;
+                            return;
+                        }
                     }
                 }
                 

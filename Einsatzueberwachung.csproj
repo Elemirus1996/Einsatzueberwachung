@@ -16,7 +16,7 @@
     ZENTRALE VERSIONSVERWALTUNG via VersionService.cs
     WICHTIG: Diese Werte müssen manuell mit VersionService.cs synchronisiert werden!
     
-    Aktuelle Version aus VersionService: 1.9.0.0
+    Aktuelle Version aus VersionService: 1.9.0.1 (Bug-Fix Release)
     Beim Release-Update diese Werte entsprechend VersionService.GetProjectVersions() anpassen
     -->
     <AssemblyTitle>Einsatzüberwachung Professional v1.9.0</AssemblyTitle>
@@ -24,8 +24,8 @@
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
     <AssemblyProduct>Einsatzüberwachung Professional v1.9.0</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2024 RescueDog_SW</AssemblyCopyright>
-    <AssemblyVersion>1.9.0.0</AssemblyVersion>
-    <FileVersion>1.9.0.0</FileVersion>
+    <AssemblyVersion>1.9.0.1</AssemblyVersion>
+    <FileVersion>1.9.0.1</FileVersion>
     <Version>1.9.0</Version>
     
     <!-- Release Configuration -->
@@ -90,6 +90,7 @@
 
   <ItemGroup>
     <Folder Include="Controls\" />
+    <Folder Include="Setup\Output\" />
   </ItemGroup>
 
 </Project>

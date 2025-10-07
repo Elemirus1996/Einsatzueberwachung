@@ -256,30 +256,56 @@ namespace Einsatzueberwachung.Views
             }
         }
 
-        private void OnUpdateCheckRequested()
+        private async void OnUpdateCheckRequested()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("OnUpdateCheckRequested called - creating dummy UpdateInfo");
-                // Erstelle eine Dummy UpdateInfo für Testing
-                var dummyUpdate = new UpdateInfo 
-                { 
-                    Version = "1.7.0",
-                    ReleaseNotes = new[] { "Test Update Check" }
-                };
+                System.Diagnostics.Debug.WriteLine("OnUpdateCheckRequested called - performing REAL update check");
                 
-                System.Diagnostics.Debug.WriteLine("Creating UpdateNotificationWindow with dummy data");
-                var updateWindow = new UpdateNotificationWindow(dummyUpdate);
-                updateWindow.Owner = this;
-                updateWindow.ShowDialog();
-                System.Diagnostics.Debug.WriteLine("UpdateNotificationWindow should be displayed now");
+                // ✅ FIXED: Use REAL update service instead of dummy data
+                using var updateService = new NewGitHubUpdateService();
+                var updateResult = await updateService.CheckForUpdatesAsync();
+                
+                if (updateResult != null)
+                {
+                    // Convert SimpleUpdateInfo to UpdateInfo for compatibility
+                    var updateInfo = new UpdateInfo
+                    {
+                        Version = updateResult.Version,
+                        ReleaseDate = updateResult.ReleaseDate,
+                        ReleaseNotesUrl = updateResult.ReleaseNotesUrl,
+                        DownloadUrl = updateResult.DownloadUrl,
+                        ReleaseNotes = updateResult.ReleaseNotes,
+                        Mandatory = false,
+                        MinimumVersion = "1.0.0",
+                        FileSize = 0,
+                        Checksum = ""
+                    };
+                    
+                    System.Diagnostics.Debug.WriteLine($"Real update found: {updateInfo.Version}");
+                    var updateWindow = new UpdateNotificationWindow(updateInfo);
+                    updateWindow.Owner = this;
+                    updateWindow.ShowDialog();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("No update available - showing success message");
+                    MessageBox.Show(this,
+                        "✅ Anwendung ist aktuell!\n\n" +
+                        $"Sie verwenden bereits die neueste Version ({VersionService.DisplayVersion}).\n" +
+                        "Es sind keine Updates verfügbar.",
+                        "Update-Prüfung",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"ERROR in OnUpdateCheckRequested: {ex.Message}");
                 MessageBox.Show(this, 
-                    $"Fehler beim Prüfen auf Updates:\n{ex.Message}", 
-                    "Update-Prüfung", 
+                    $"Fehler beim Prüfen auf Updates:\n{ex.Message}\n\n" +
+                    "Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+                    "Update-Prüfung fehlgeschlagen", 
                     MessageBoxButton.OK, 
                     MessageBoxImage.Error);
             }
@@ -402,50 +428,6 @@ namespace Einsatzueberwachung.Views
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Fehler beim Setzen des Zeit-Presets 'Winter': {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region DEBUG Test Methods
-
-        private void TestHelpButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("TEST: Direct HelpWindow creation");
-                MessageBox.Show("Test: Öffne HelpWindow direkt", "Debug", MessageBoxButton.OK);
-                
-                var helpWindow = new HelpWindow();
-                helpWindow.Owner = this;
-                helpWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"FEHLER beim direkten HelpWindow-Test: {ex.Message}", "Debug Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void TestUpdateButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("TEST: Direct UpdateNotificationWindow creation");
-                MessageBox.Show("Test: Öffne UpdateNotificationWindow direkt", "Debug", MessageBoxButton.OK);
-                
-                var dummyUpdate = new UpdateInfo 
-                { 
-                    Version = "1.7.0",
-                    ReleaseNotes = new[] { "Test Update Check (Direct)" }
-                };
-                
-                var updateWindow = new UpdateNotificationWindow(dummyUpdate);
-                updateWindow.Owner = this;
-                updateWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"FEHLER beim direkten UpdateWindow-Test: {ex.Message}", "Debug Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

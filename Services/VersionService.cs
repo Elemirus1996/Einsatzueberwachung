@@ -13,10 +13,10 @@ namespace Einsatzueberwachung.Services
         private const string MAJOR_VERSION = "1";
         private const string MINOR_VERSION = "9";
         private const string PATCH_VERSION = "0";
-        private const string BUILD_VERSION = "0";
+        private const string BUILD_VERSION = "1";  // ✅ UPDATED: Bug-Fix Release 1.9.0.1
         
         // Development/Release Kennzeichnung
-        private const bool IS_DEVELOPMENT_VERSION = false;
+        private const bool IS_DEVELOPMENT_VERSION = false;  // ✅ Release-Modus aktiviert
         private const string DEVELOPMENT_SUFFIX = "-dev";
         
         /// <summary>

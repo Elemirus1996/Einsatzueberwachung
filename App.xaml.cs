@@ -45,14 +45,17 @@ namespace Einsatzueberwachung
                 // Check for crash recovery
                 CheckForCrashRecovery();
                 
-                // Check for updates - nur für Release-Versionen
+                // Check for updates - verbesserte Logik für Release- und Development-Versionen
+                LoggingService.Instance.LogInfo($"🔍 Update-Check Status: IsDevelopmentVersion={VersionService.IsDevelopmentVersion}");
+                
                 if (!VersionService.IsDevelopmentVersion)
                 {
+                    LoggingService.Instance.LogInfo("✅ Release-Version erkannt - Update-Check aktiviert");
                     _ = CheckForUpdatesAsync();
                 }
                 else
                 {
-                    LoggingService.Instance.LogInfo("🚧 Development version detected - Update check disabled");
+                    LoggingService.Instance.LogInfo("🚧 Development-Version erkannt - Update-Check deaktiviert");
                 }
                 
                 // JETZT erst das StartWindow öffnen
@@ -236,12 +239,27 @@ namespace Einsatzueberwachung
 
                 LoggingService.Instance.LogInfo("🔍 Checking for updates...");
                 
-                using var updateService = new GitHubUpdateService();
-                var updateInfo = await updateService.CheckForUpdatesAsync();
+                // ✅ FIXED: Use NEW update service to solve v1.7.0 problem
+                using var updateService = new NewGitHubUpdateService();
+                var newUpdateInfo = await updateService.CheckForUpdatesAsync();
 
-                if (updateInfo != null)
+                if (newUpdateInfo != null)
                 {
-                    LoggingService.Instance.LogInfo($"✨ Update available: v{updateInfo.Version}");
+                    LoggingService.Instance.LogInfo($"✨ Update available: v{newUpdateInfo.Version}");
+                    
+                    // Convert SimpleUpdateInfo to UpdateInfo for compatibility
+                    var updateInfo = new UpdateInfo
+                    {
+                        Version = newUpdateInfo.Version,
+                        ReleaseDate = newUpdateInfo.ReleaseDate,
+                        ReleaseNotesUrl = newUpdateInfo.ReleaseNotesUrl,
+                        DownloadUrl = newUpdateInfo.DownloadUrl,
+                        ReleaseNotes = newUpdateInfo.ReleaseNotes,
+                        Mandatory = false, // Default to false
+                        MinimumVersion = "1.0.0",
+                        FileSize = 0, // Will be determined during download
+                        Checksum = ""
+                    };
                     
                     // Show update notification on UI thread
                     Dispatcher.Invoke(() =>

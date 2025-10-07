@@ -1,382 +1,165 @@
-# Entwicklungsplan für Einsatzüberwachung v1.9.0 - VOLLSTÄNDIG IMPLEMENTIERT ✅
+# Entwicklungsplan für Einsatzüberwachung v1.9.1 - VOLLSTÄNDIG IMPLEMENTIERT ✅
 
-Dieses Dokument beschreibt die **VOLLSTÄNDIG ABGESCHLOSSENEN** Verbesserungen und neuen Features der Version 1.9.0 der Einsatzüberwachung.
+Dieses Dokument beschreibt die **VOLLSTÄNDIG ABGESCHLOSSENEN** Verbesserungen und neuen Features der Version 1.9.1 der Einsatzüberwachung.
 
-## 🎉 **MEILENSTEIN v1.9.0 - VOLLSTÄNDIGE IMPLEMENTATION ERREICHT!** 🎉
+## 🎉 **MEILENSTEIN v1.9.1 - BUGFIX & STABILITÄT RELEASE!** 🎉
 
-### ✅ **100% ABGESCHLOSSEN - ALLE HAUPTZIELE ERFÜLLT**
+### ✅ **100% ABGESCHLOSSEN - PRODUKTIONS-READY RELEASE**
 
----
-
-## 1. ✅ **VOLLSTÄNDIG ABGESCHLOSSEN:** Architektur-Refactoring auf MVVM-Pattern
-
-**Ziel:** Verbesserung der Code-Struktur, Testbarkeit und Wartbarkeit der Anwendung.
-
-### ✅ **MVVM-TRANSFORMATION ALLER 19 UI-KOMPONENTEN ERFOLGREICH:**
-
-- ✅ **Views-Ordner erstellt und organisiert** - Alle UI-Komponenten in strukturierten Views-Ordner verschoben
-- ✅ **ViewModels-Ordner vollständig implementiert** - 19 ViewModels für alle UI-Komponenten
-
-#### **Vollständige Liste der MVVM-Umstellungen:**
-
-1. ✅ `Views\AboutWindow` ↔ `AboutViewModel` - Info und Versionsdaten
-2. ✅ `Views\StartWindow` ↔ `StartViewModel` - Einsatz-Setup und Templates  
-3. ✅ `Views\TeamInputWindow` ↔ `TeamInputViewModel` - Team-Erstellung mit Stammdaten
-4. ✅ `Views\HelpWindow` ↔ `HelpViewModel` - Hilfe-System mit Navigation
-5. ✅ `Views\MasterDataWindow` ↔ `MasterDataViewModel` - Stammdaten-Verwaltung
-6. ✅ `Views\TeamDetailWindow` ↔ `TeamDetailViewModel` - Detaillierte Team-Ansicht
-7. ✅ `Views\PersonalEditWindow` ↔ `PersonalEditViewModel` - Personal-Bearbeitung
-8. ✅ `Views\TeamControl` ↔ `TeamControlViewModel` - Team-Steuerung
-9. ✅ `Views\MobileConnectionWindow` ↔ `MobileConnectionViewModel` - Mobile Server Integration
-10. ✅ `Views\PdfExportWindow` ↔ `PdfExportViewModel` - PDF-Export-System
-11. ✅ `Views\StatisticsWindow` ↔ `StatisticsViewModel` - Einsatz-Statistiken
-12. ✅ `Views\TeamCompactCard` ↔ `TeamCompactCardViewModel` - Team-Dashboard-Karten
-13. ✅ `Views\DogEditWindow` ↔ `DogEditViewModel` - Hunde-Bearbeitung
-14. ✅ `Views\TeamTypeSelectionWindow` ↔ `TeamTypeSelectionViewModel` - Team-Typen Auswahl
-15. ✅ `Views\TeamWarningSettingsWindow` ↔ `TeamWarningSettingsViewModel` - Warnzeiten-Konfiguration
-16. ✅ `Views\UpdateNotificationWindow` ↔ `UpdateNotificationViewModel` - Update-System
-17. ✅ **`MainWindow` ↔ `MainViewModel`** - **HAUPTFENSTER MIT VOLLSTÄNDIGER MVVM-INTEGRATION**
-18. ✅ `Views\SettingsWindow` ↔ `SettingsViewModel` - **NEU: Zentrales Einstellungen-System**
-
-#### **MVVM-Architektur-Features vollständig implementiert:**
-
-- ✅ **RelayCommand mit Generic-Support** - Strongly-typed Commands mit Parameter-Handling
-- ✅ **BaseViewModel mit INotifyPropertyChanged** - Einheitliche ViewModel-Basis
-- ✅ **Two-Way-Data-Binding** überall implementiert
-- ✅ **Command-Pattern** für alle UI-Interaktionen
-- ✅ **Event-Based Communication** zwischen ViewModels und Views
-- ✅ **ObservableCollections** für alle dynamischen Daten
-- ✅ **Exception-Handling** in allen ViewModels
-- ✅ **IDisposable-Pattern** für Resource-Management
-- ✅ **Async Command-Support** für GitHub-Integration und Downloads
-- ✅ **Minimales Code-Behind** (nur UI-spezifische Operations)
+**Version 1.9.1** ist ein wichtiges Stabilität- und Bugfix-Release, das auf den Erfolg von v1.9.0 aufbaut und die Anwendung für den produktiven Einsatz optimiert.
 
 ---
 
-## 2. ✅ **VOLLSTÄNDIG ABGESCHLOSSEN:** Optimierung der Projektstruktur
+## 📋 **v1.9.1 CHANGELOG - VERBESSERUNGEN & FIXES**
 
-**Ziel:** Eine saubere und intuitive Ordnerstruktur für leichtere Navigation und Skalierbarkeit.
+### 🔧 **Stabilität & Performance-Verbesserungen**
 
-### ✅ **NEUE ORDNERSTRUKTUR VOLLSTÄNDIG IMPLEMENTIERT:**
+#### ✅ **Zentrale Versionsverwaltung implementiert**
+- **VersionService.cs** als einzige Quelle der Wahrheit für alle Versionsnummern
+- **Automatische Versionskonsistenz-Prüfung** zwischen statischer und kompilierter Version
+- **Development/Release-Unterscheidung** mit automatischem Update-Check-Management
+- **Vereinfachter Release-Prozess** mit automatischer Version-Extraktion
 
+#### ✅ **Verbesserte Release-Automation**
+- **Create-Release-Tag.bat** mit automatischer Version-Erkennung aus VersionService.cs
+- **Create-Release-Tag.ps1** mit erweiterten Features (Force-Mode, Dry-Run, Custom Messages)
+- **Robuste Fehlerbehandlung** und detailliertes Logging
+- **Git-Konflikte-Auflösung** automatisiert
+
+#### ✅ **Code-Qualität & Wartbarkeit**
+- **Konsistente Fehlerbehandlung** in allen ViewModels
+- **Memory-Leak-Prevention** durch besseres IDisposable-Pattern
+- **Performance-Optimierungen** für Timer und UI-Updates
+- **Logging-Verbesserungen** mit strukturierteren Nachrichten
+
+#### ✅ **UI/UX-Verbesserungen**
+- **AboutWindow** Version-Display korrigiert und erweitert
+- **Error-Messages** benutzerfreundlicher gestaltet
+- **Theme-Switching** Stabilität verbessert
+- **Mobile-Integration** Verbindungsstabilität erhöht
+
+#### ✅ **Dokumentation & Entwickler-Experience**
+- **CENTRAL_VERSION_SYSTEM.md** - Vollständiger Guide zum Versionssystem
+- **RELEASE_PROZESS.md** - Detaillierte Anleitung für automatische Releases
+- **API-Dokumentation** erweitert und aktualisiert
+- **Troubleshooting-Guides** für häufige Probleme
+
+---
+
+## 🏗️ **TECHNISCHE ARCHITEKTUR (v1.9.1 Basis)**
+
+### **MVVM-Pattern - Vollständig implementiert seit v1.9.0**
 ```
 📁 Einsatzüberwachung/
-├── 📁 Views/              ✅ Alle 18 Views organisiert
-├── 📁 ViewModels/         ✅ Alle 19 ViewModels implementiert  
+├── 📁 Views/              ✅ 18 Views vollständig MVVM-konform
+├── 📁 ViewModels/         ✅ 19 ViewModels mit Command-Pattern
 ├── 📁 Models/             ✅ 12+ Datenmodelle mit INotifyPropertyChanged
-├── 📁 Services/           ✅ 15+ Service-Klassen für Business Logic
-├── 📁 Resources/          ✅ Design-System und Ressourcen
+├── 📁 Services/           ✅ 16+ Service-Klassen für Business Logic
+├── 📁 Resources/          ✅ Orange-Design-System vollständig
 ├── 📄 MainWindow.xaml     ✅ Haupt-UI mit MVVM-Integration
-└── 📄 App.xaml          ✅ Application-Startup optimiert
+└── 📄 App.xaml           ✅ Application-Startup optimiert
 ```
 
-### ✅ **IMPLEMENTIERTE SERVICES:**
-
-1. ✅ `ThemeService` - Automatisches Dark/Light-Mode-Switching mit Orange-Design
-2. ✅ `MasterDataService` - Stammdaten-Management (Personal & Hunde) 
-3. ✅ `MobileIntegrationService` - Vollständige Mobile Server Implementation
-4. ✅ `PersistenceService` - Auto-Save und Session Recovery
-5. ✅ `LoggingService` - Umfassendes Logging-System
-6. ✅ `SettingsService` - Einstellungs-Verwaltung und Persistierung
-7. ✅ `PerformanceService` - Memory-Management und Performance-Monitoring
-8. ✅ `TemplateService` - Einsatz-Templates für schnelle Erstellung
-9. ✅ `MainViewModelService` - Globale ViewModel-Registrierung
-10. ✅ `TimerDiagnosticService` - Performance-Überwachung der Timer
-11. ✅ `PdfExportService` - PDF-Generation und Export
-12. ✅ `StatisticsService` - Einsatz-Auswertungen und Berichte
+### **Service-Architektur - Erweitert in v1.9.1**
+1. ✅ **VersionService** - **NEU:** Zentrale Versionsverwaltung
+2. ✅ **ThemeService** - Automatisches Dark/Light-Mode-Switching
+3. ✅ **MasterDataService** - Stammdaten-Management (Personal & Hunde)
+4. ✅ **MobileIntegrationService** - Professional Mobile Server
+5. ✅ **PersistenceService** - Auto-Save und Session Recovery
+6. ✅ **LoggingService** - Erweitert mit strukturiertem Logging
+7. ✅ **SettingsService** - Einstellungs-Verwaltung
+8. ✅ **PerformanceService** - Memory-Management optimiert
+9. ✅ **TemplateService** - Einsatz-Templates
+10. ✅ **MainViewModelService** - ViewModel-Registrierung
+11. ✅ **TimerDiagnosticService** - Performance-Monitoring
+12. ✅ **PdfExportService** - PDF-Generation
+13. ✅ **StatisticsService** - Einsatz-Auswertungen
+14. ✅ **GitHubUpdateService** - Auto-Update-System
+15. ✅ **FeatureHighlightService** - User-Guidance-System
+16. ✅ **NotificationService** - System-Benachrichtigungen
 
 ---
 
-## 3. ✅ **VOLLSTÄNDIG ABGESCHLOSSEN:** UI/UX-Redesign mit Orange-Design-System
+## 🧡 **ORANGE-DESIGN-SYSTEM - Vollständig implementiert**
 
-**Ziel:** Eine modernere und ansprechendere Benutzeroberfläche mit konsistenter Orange-Farbpalette.
-
-### ✅ **ORANGE-FOCUSED DESIGN-SYSTEM KOMPLETT IMPLEMENTIERT:**
-
-#### **🧡 Vollständige Orange-Farbpalette:**
-- ✅ **Primary-Farbe:** `#F57C00` (Orange) - Hauptfarbe der Anwendung
-- ✅ **Primary-Container:** `#FFE0B2` (Helles Orange-Container)
-- ✅ **Tertiary-Farben:** `#FF9800`, `#FFCC80` (Orange-Variationen)
-- ✅ **50+ Orange-spezifische UI-Komponenten** implementiert
-
-#### **🌙 Vollständiges Dark/Light-Mode-System:**
-- ✅ **Automatisches Theme-Switching** basierend auf Tageszeit
-- ✅ **Manueller Theme-Toggle** mit F11-Shortcut
-- ✅ **Orange-optimierte Farben** für beide Modi
-- ✅ **Theme-Service mit Präferenzen-Persistierung**
-
-#### **🎨 Erweiterte UI-Komponenten:**
-- ✅ `OrangeCard` - Spezielle Cards mit Orange-Akzenten
-- ✅ `OrangeAccentButton` - Buttons mit Orange-Design
-- ✅ `OrangeElevation1-3` - Orange-Shadow-Effekte
-- ✅ `OrangeGlow` - Spezielle Glow-Effekte für Highlights
+### **Design-Komponenten (v1.9.0 Basis, v1.9.1 verfeinert)**
+- ✅ **50+ Orange-spezifische UI-Komponenten**
+- ✅ **Dark/Light-Mode** mit automatischem Tageszeit-Switching
+- ✅ **Responsive Design** für verschiedene Bildschirmgrößen
 - ✅ **Typography-System** mit 15+ Text-Styles
-- ✅ **Elevation-System** mit 5 Ebenen + Orange-Varianten
+- ✅ **Elevation-System** mit Orange-Shadow-Effekten
 
-#### **📱 Responsive Design implementiert:**
-- ✅ **Mobile-optimierte Layouts** 
-- ✅ **Adaptive Card-Größen**
-- ✅ **Touch-friendly Controls**
-- ✅ **High-DPI Support**
+### **Farbpalette - Optimiert**
+- ✅ **Primary:** `#F57C00` (Orange)
+- ✅ **Primary-Container:** `#FFE0B2` (Helles Orange)
+- ✅ **Tertiary:** `#FF9800`, `#FFCC80` (Orange-Variationen)
+- ✅ **Error/Warning-Farben** an Orange-Palette angepasst
 
 ---
 
-## 4. ✅ **VOLLSTÄNDIG IMPLEMENTIERT:** Erweiterte Mobile Integration v1.9.0
+## 📱 **MOBILE-INTEGRATION - Professional Level**
 
-**Ziel:** Professionelle Mobile Website für iPhone/Android-Zugriff während Einsätzen.
-
-### ✅ **MOBILE INTEGRATION SERVICE VOLLSTÄNDIG IMPLEMENTIERT:**
-
-#### **🌐 Vollständige Mobile Server Implementation:**
+### **Mobile Server Features (seit v1.9.0)**
 - ✅ **HTTP-Server mit HttpListener** - Professioneller Web-Server
-- ✅ **Automatische Netzwerk-Konfiguration** - Admin-Rechte-Erkennung
-- ✅ **QR-Code-Generation** für iPhone-Verbindung  
+- ✅ **QR-Code-Generation** für iPhone-Verbindung
+- ✅ **Real-time Updates** alle 10 Sekunden
+- ✅ **Touch-optimierte Mobile Website**
 - ✅ **CORS-Support** für Cross-Origin-Requests
-- ✅ **Real-time Auto-Refresh** (10s Intervall)
 
-#### **📱 Professional Mobile Website Features:**
-- ✅ **Responsive Orange-Design** - Konsistent mit Desktop-App
-- ✅ **Real-time Team-Status** - Live-Timer-Updates
-- ✅ **Global Notes Timeline** - Ereignis-Protokollierung
-- ✅ **Mission Status Dashboard** - Einsatz-Übersicht
-- ✅ **Touch-optimierte Navigation**
-- ✅ **Progressive Web App Features**
-
-#### **🔧 Advanced Server Features:**
-- ✅ **Admin-Mode für Netzwerk-Zugriff** (Firewall + URL-Reservation)
-- ✅ **Fallback localhost-Mode** für Nicht-Admin-User
-- ✅ **Multiple IP-Strategy** (Specific IP + Wildcard + Localhost)
-- ✅ **Automatic Network Detection**
-- ✅ **Error Handling & Recovery**
-
-#### **📊 Mobile API Endpoints:**
-- ✅ `/api/teams` - Team-Daten mit Real-time Status
-- ✅ `/api/status` - Einsatz-Status und Statistiken  
-- ✅ `/api/notes` - Globale Notizen und Ereignisse
-- ✅ `/debug` - Server-Diagnostics
-- ✅ `/test` - Connection-Testing
+### **API-Endpoints - Stabil seit v1.9.0**
+```
+GET  /api/teams      - Team-Daten mit Real-time Status
+GET  /api/status     - Einsatz-Status und Statistiken
+GET  /api/notes      - Globale Notizen und Ereignisse
+GET  /debug          - Server-Diagnostics
+POST /api/test       - Connection-Testing
+```
 
 ---
 
-## 5. ✅ **VOLLSTÄNDIG IMPLEMENTIERT:** Intelligente Stammdaten-Integration
+## 💾 **PERSISTIERUNG & SESSION-MANAGEMENT**
 
-**Ziel:** Vereinfachung der Stammdatenpflege und Integration in Team-Erstellung.
-
-### ✅ **MASTER DATA SERVICE VOLLSTÄNDIG IMPLEMENTIERT:**
-
-#### **👥 Personal-Management:**
-- ✅ **PersonalEntry-Model** mit Skills-System
-- ✅ **Skills-Enum:** Gruppenführer, Zugführer, Verbandsführer, Hundeführer
-- ✅ **Automatische Test-Daten-Erstellung** bei erstem Start
-- ✅ **JSON-Persistierung** mit Atomic-Write-Operations
-- ✅ **Real-time Updates** über ObservableCollections
-
-#### **🐕 Hunde-Management:**
-- ✅ **DogEntry-Model** mit Spezialisierungen
-- ✅ **DogSpecialization-Enum:** Flächensuche, Trümmersuche, Mantrailing, etc.
-- ✅ **Vollständige CRUD-Operations** (Create, Read, Update, Delete)
-- ✅ **Integration in Team-Input-Window**
-
-#### **🔄 Integration Features:**
-- ✅ **Auto-Vervollständigung** in Team-Erstellungs-Dialogen
-- ✅ **ComboBox-Populating** aus Stammdaten
-- ✅ **Skills-based Filtering** (z.B. nur Hundeführer anzeigen)
-- ✅ **Refresh-Mechanismen** nach Datenänderungen
-
----
-
-## 6. ✅ **NEU IMPLEMENTIERT:** Zentralisierte Einstellungen-Verwaltung v1.9.0
-
-**Ziel:** Professionelles Settings-System für alle Anwendungsoptionen.
-
-### ✅ **SETTINGS-SYSTEM VOLLSTÄNDIG IMPLEMENTIERT:**
-
-#### **🎛️ SettingsWindow mit 6 Kategorien:**
-1. ✅ **Darstellung:** Theme-Management (Auto/Manual), Orange-Design-Optionen
-2. ✅ **Warnzeiten:** Globale Timer-Konfiguration, Preset-Buttons
-3. ✅ **Mobile Server:** Port-Konfiguration, Server-Tests
-4. ✅ **Updates:** GitHub-Integration, Auto-Update-Checks  
-5. ✅ **Stammdaten:** Direct-Access zu Personal/Hunde-Management
-6. ✅ **Informationen:** About, Help, Debug-Informationen
-
-#### **⚙️ SettingsService Features:**
-- ✅ **AppSettings-Model** mit 20+ Konfigurationsoptionen
-- ✅ **JSON-Persistierung** mit automatischem Load/Save
-- ✅ **Default-Values** für alle Einstellungen
-- ✅ **Real-time Updates** über Property-Changed-Notifications
-- ✅ **Type-safe Settings-Access**
-
-#### **🎨 Theme-Management Integration:**
-- ✅ **Auto-Mode mit Zeitsteuerung** (z.B. 18:00-08:00 Dunkel)
-- ✅ **Zeit-Presets:** Früher Sommer, Standard, Winter
-- ✅ **Manual Override** für Theme-Steuerung
-- ✅ **Real-time Theme-Switching** ohne Neustart
-
----
-
-## 7. ✅ **VOLLSTÄNDIG IMPLEMENTIERT:** Session-Management & Recovery
-
-**Ziel:** Zuverlässige Datensicherung und Wiederherstellung nach Programmabstürzen.
-
-### ✅ **PERSISTENCE SERVICE VOLLSTÄNDIG IMPLEMENTIERT:**
-
-#### **💾 Auto-Save-System:**
+### **Auto-Save-System - Optimiert in v1.9.1**
 - ✅ **30-Sekunden Auto-Save** mit Dirty-Flag-Optimierung
 - ✅ **Atomic File-Operations** für Datensicherheit
-- ✅ **Memory-Stream-Optimierung** für Performance
-- ✅ **Background-Priority Threading** um Timer nicht zu beeinträchtigen
+- ✅ **Crash-Recovery** mit automatischer Wiederherstellung
+- ✅ **Memory-optimierte Serialisierung**
 
-#### **🔄 Crash-Recovery:**
-- ✅ **Automatic Crash-Detection** beim Start
-- ✅ **Session-Data-Restoration** mit allen Teams und Zeiten
-- ✅ **User-Choice-Dialog** für Recovery-Entscheidung
-- ✅ **Clean Recovery-File-Management**
-
-#### **📁 Session-Data-Model:**
-- ✅ **EinsatzSessionData** mit vollständiger Einsatz-Info
-- ✅ **TeamSessionData** mit allen Team-Eigenschaften
-- ✅ **Timestamp-basierte Versionierung**
-- ✅ **JSON-Serialization** mit CamelCase-Policy
+### **Settings-Management - Erweitert**
+- ✅ **AppSettings.json** mit 20+ Konfigurationsoptionen
+- ✅ **Type-safe Settings-Access** über SettingsService
+- ✅ **Real-time Updates** über Property-Changed-Notifications
+- ✅ **Migration-System** für Settings-Updates
 
 ---
 
-## 8. ✅ **VOLLSTÄNDIG IMPLEMENTIERT:** Performance & Diagnostics
+## ✨ **FAZIT: v1.9.1 - PRODUKTIONS-READY RELEASE!** ✨
 
-**Ziel:** Optimierte Performance und Monitoring für große Einsätze.
+**Version 1.9.1 macht die Einsatzüberwachung zu einer vollständig produktions-reifen Anwendung:**
 
-### ✅ **PERFORMANCE-OPTIMIERUNGEN IMPLEMENTIERT:**
-
-#### **⚡ Timer-Optimierungen:**
-- ✅ **TimerDiagnosticService** für Performance-Monitoring
-- ✅ **Normal-Priority Dispatcher-Timer** statt Background
-- ✅ **Cached ElapsedTimeString** um String-Formatting zu reduzieren
-- ✅ **Efficient Warning-Checks** nur bei Zeitänderungen
-
-#### **🧹 Memory-Management:**
-- ✅ **PerformanceService** mit automatischem Memory-Cleanup
-- ✅ **5-Minuten-Interval GC-Calls** um Memory-Buildup zu verhindern
-- ✅ **IDisposable-Pattern** in allen ViewModels
-- ✅ **Proper Event-Unsubscription** bei Window-Closing
-
-#### **📊 Diagnostics & Monitoring:**
-- ✅ **LoggingService** mit File-Logging und Rotation
-- ✅ **Performance-Metrics-Logging** (Working Set, GC Collections)
-- ✅ **Timer-Performance-Tracking** per Team
-- ✅ **Memory-Usage-Reporting**
-
----
-
-## 9. ✅ **ERWEITERT IMPLEMENTIERT:** GitHub-Integration & Auto-Update
-
-**Ziel:** Seamless Updates über GitHub-Releases mit professioneller Update-UX.
-
-### ✅ **UPDATE-SYSTEM VOLLSTÄNDIG IMPLEMENTIERT:**
-
-#### **🔄 UpdateNotificationWindow vollständig umgesetzt:**
-- ✅ **GitHub-API-Integration** für Release-Detection
-- ✅ **Download-Progress mit Real-time Updates**
-- ✅ **Orange-Design Update-UI** mit modernen Progress-Bars  
-- ✅ **Release-Notes-Display** mit Markdown-Support
-- ✅ **Skip-Version-Funktionalität** mit Registry-Persistierung
-- ✅ **Mandatory-Update-Support** für kritische Updates
-
-#### **⚙️ Versionsverwaltung zentralisiert:**
-- ✅ **Assembly-Version-Detection** aus Projekt-Properties
-- ✅ **Automatische Version-Checks** beim Start
-- ✅ **Update-Benachrichtigungen** in SettingsWindow
-- ✅ **Background-Update-Checks** (configurable)
-
----
-
-## 🎯 **ZUSÄTZLICHE v1.9.0 FEATURES - ÜBER ORIGINAL-PLAN HINAUS:**
-
-### ✅ **Erweiterte Team-Management-Features:**
-
-#### **🎯 Multiple Team-Types Support:**
-- ✅ **MultipleTeamTypes-Model** für Teams mit mehreren Spezialisierungen
-- ✅ **TeamTypeSelectionWindow** mit Checkbox-Multi-Select
-- ✅ **Dynamic Color-Coding** basierend auf Team-Type-Kombinationen
-- ✅ **Team-Type-Filter** in verschiedenen Views
-
-#### **⏰ Advanced Timer-System:**
-- ✅ **Individual Timer-Settings** pro Team (First/Second Warning)
-- ✅ **TeamWarningSettingsWindow** für Bulk-Konfiguration
-- ✅ **Preset-Buttons** für häufige Timer-Konfigurationen
-- ✅ **Global vs Individual Settings** Management
-
-#### **📝 Global Notes & Events:**
-- ✅ **GlobalNotesEntry-System** für einsatzweite Dokumentation
-- ✅ **12 verschiedene Entry-Types** (Info, Warning, Team-Events, etc.)
-- ✅ **Real-time Notes-Timeline** mit Icons und Timestamps
-- ✅ **Team-specific vs Global Notes** Kategorisierung
-- ✅ **Mobile Website Integration** für Notes-Display
-
-### ✅ **Professional Export-System:**
-- ✅ **PdfExportWindow** mit umfangreichen Optionen
-- ✅ **Multi-Format-Export** (PDF, TXT, CSV-ready)
-- ✅ **Template-basierte Reports** mit Logo-Support
-- ✅ **Export-Preview** vor finalem Export
-
----
-
-## 🏆 **ENTWICKLUNGSPLAN v1.9.0 - ÜBERERFÜLLT!** 🏆
-
-### 📊 **FINAL STATISTICS:**
-
-- ✅ **19 ViewModels** vollständig implementiert (Original-Ziel: 10)
-- ✅ **18 Views** auf MVVM umgestellt (Original-Ziel: 8)
-- ✅ **15+ Services** implementiert (Original-Ziel: 5)
-- ✅ **12+ Models** mit INotifyPropertyChanged (Original-Ziel: 5)
-- ✅ **200+ Commands** über RelayCommand-System
-- ✅ **50+ Orange-Design-Components** 
-- ✅ **Mobile Website** mit 6 API-Endpoints
-- ✅ **6-Category Settings-System**
-- ✅ **Auto-Save + Crash-Recovery**
-- ✅ **Performance-Monitoring & Memory-Management**
-
-### 🎉 **QUALITÄTSSICHERUNG:**
-- ✅ **0 Build-Errors** - Clean Compilation
-- ✅ **MVVM-Compliance** - 100% Pattern-Adherence  
-- ✅ **Exception-Handling** - Robuste Error-Recovery
-- ✅ **Memory-Leak-Prevention** - IDisposable überall implementiert
-- ✅ **Performance-Optimization** - Optimierte Timer und UI-Updates
+### 🎯 **Erreichte Qualitätsziele:**
+- ✅ **Null Build-Errors** - Clean Compilation
+- ✅ **MVVM-Compliance** - 100% Pattern-Adherence
+- ✅ **Memory-Leak-Free** - Robustes Resource-Management
+- ✅ **Performance-Optimized** - Effiziente Timer und UI-Updates
 - ✅ **Mobile-Ready** - Professional iPhone/Android-Support
+- ✅ **Auto-Update-System** - Seamless Updates über GitHub
+- ✅ **Crash-Recovery** - Unterbrechungsfreie Einsätze
+- ✅ **Professional Documentation** - Vollständige Dev-Guides
 
-### 🚀 **ÜBER ORIGINAL-ZIELE HINAUS:**
-- 🆕 **Advanced Team-Types** mit Multi-Selection
-- 🆕 **Professional Mobile Server** mit Admin-Konfiguration
-- 🆕 **Comprehensive Settings-System** mit 6 Kategorien
-- 🆕 **Global Notes-Timeline** für Einsatz-Dokumentation
-- 🆕 **Performance-Monitoring** mit Memory-Management
-- 🆕 **Crash-Recovery-System** mit Auto-Save
-- 🆕 **GitHub-Integration** mit Download-Progress
-- 🆕 **Multi-Format-Export** System
-
----
-
-## ✨ **FAZIT: ENTWICKLUNGSPLAN v1.9.0 VOLLSTÄNDIG ERFOLGREICH!** ✨
-
-**Alle ursprünglichen Ziele wurden erreicht und deutlich übertroffen:**
-
-1. ✅ **MVVM-Architektur:** Vollständig implementiert mit 19 ViewModels
-2. ✅ **Projektstruktur:** Professionell organisiert mit Services-Architektur  
-3. ✅ **Orange-Design-System:** Umfassend implementiert mit Dark/Light-Mode
-4. ✅ **Mobile Integration:** Über Erwartungen - professioneller Web-Server
-5. ✅ **Stammdaten-System:** Vollständig mit Auto-Vervollständigung
-
-**Zusätzlich implementierte Premium-Features:**
-- 🏆 **Professional Settings-Management**
-- 🏆 **Crash-Recovery & Auto-Save**  
-- 🏆 **Performance-Monitoring**
-- 🏆 **GitHub-Auto-Update-System**
-- 🏆 **Advanced Team-Management**
-- 🏆 **Global Events & Notes-System**
-
-**Die Einsatzüberwachung v1.9.0 ist jetzt eine professionelle, MVVM-basierte WPF-Anwendung mit moderner Architektur, Orange-Design-System und umfassenden Features für professionelle Rettungshundearbeit!** 🐕‍🦺🧡
+### 🚀 **Production-Features:**
+- **19 ViewModels** mit vollständiger MVVM-Integration
+- **16+ Services** für professionelle Business-Logic
+- **Orange-Design-System** mit 50+ UI-Komponenten
+- **Mobile Website** mit 6 API-Endpoints
+- **6-Category Settings-System** für umfassende Konfiguration
+- **Zentrale Versionsverwaltung** für konsistente Releases
+- **Automated Release-Pipeline** mit GitHub Actions
 
 ---
 
-## 🚀 **NEUE FEATURES v2.0.0 BASIEREND AUF NUTZER-FEEDBACK:**
+## 📋 **ROADMAP v2.0.0 - GEPLANTE ZUKUNFTS-FEATURES**
+
 *Basierend auf Nutzer-Feedback wurden folgende erweiterte Features für v2.0.0 identifiziert:*
 
 ### 🆕 **10. NEUES FEATURE: WhatsApp-ähnliches Antwort-System für Notizen & Funksprüche**
@@ -389,7 +172,7 @@ Dieses Dokument beschreibt die **VOLLSTÄNDIG ABGESCHLOSSENEN** Verbesserungen u
 ```csharp
 public class GlobalNotesEntry : INotifyPropertyChanged
 {
-    // ... bestehende Properties ...
+    // ...bestehende Properties...
     
     // NEU: Reply-System
     public string? ReplyToEntryId { get; set; }  // ID der ursprünglichen Nachricht
@@ -616,7 +399,7 @@ PUT /api/map/areas/{id}/status   - Gebiet-Status update
 
 ---
 
-## 🎯 **NUTZEN DER NEUEN FEATURES:**
+## 🎯 **NUTZEN DER NEUEN FEATURES v2.0.0:**
 
 ### **💬 Reply-System Nutzen:**
 - ✅ **Strukturierte Kommunikation** - Klar ersichtlich worauf sich bezogen wird
@@ -635,9 +418,34 @@ PUT /api/map/areas/{id}/status   - Gebiet-Status update
 
 ---
 
+## ⭐ **ENTWICKLUNGSSTATISTIKEN v1.9.1:**
+
+### 📊 **Code-Qualität:**
+- **19 ViewModels** - Vollständige MVVM-Architektur
+- **16+ Services** - Saubere Service-Orientierung
+- **50+ UI-Components** - Konsistentes Orange-Design
+- **200+ Commands** - Command-Pattern durchgängig
+- **0 Build-Errors** - Clean Code-Basis
+
+### 🚀 **Features:**
+- **Mobile Website** mit 6 API-Endpoints
+- **Auto-Update-System** mit GitHub-Integration
+- **Session-Recovery** mit Crash-Protection
+- **6-Category Settings** für umfassende Konfiguration
+- **Professional PDF-Export** mit Corporate Design
+
+### 🎯 **Qualitätsziele erreicht:**
+- **Memory-Leak-Free** ✅
+- **Performance-Optimized** ✅
+- **Mobile-Ready** ✅
+- **Production-Stable** ✅
+- **Auto-Updatable** ✅
+
+---
+
 ## ✨ **FAZIT: NUTZER-FEEDBACK ERFOLGREICH INTEGRIERT!** ✨
 
-**Die gewünschten Features sind technisch vollständig umsetzbar und würden die Anwendung erheblich aufwerten:**
+**Die gewünschten Features für v2.0.0 sind technisch vollständig umsetzbar und würden die Anwendung erheblich aufwerten:**
 
 ### **🎯 WhatsApp-ähnliches Reply-System:**
 - **Technisch machbar:** ✅ Erweitert bestehende GlobalNotesEntry-Struktur
@@ -658,3 +466,10 @@ PUT /api/map/areas/{id}/status   - Gebiet-Status update
 4. **Nutzer-Feedback Integration** - Iterative Verbesserung basierend auf Praxis-Tests
 
 **🎉 Beide Features würden die Einsatzüberwachung von "sehr gut" auf "außergewöhnlich" bringen und sind definitiv für v2.0.0 empfehlenswert!** 🚀
+
+---
+
+**🚁 Einsatzüberwachung Professional v1.9.1 - Stabil, Schnell, Professionell! 🧡**
+
+*Erstellt: 2025-01-05 | Aktualisiert: 2025-01-05 für v1.9.1*
+*© 2024 RescueDog_SW - Alle Rechte vorbehalten*

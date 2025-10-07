@@ -379,23 +379,6 @@
                                        Style="{StaticResource OutlinedButton}"
                                        ToolTip="Info-Fenster öffnen"/>
                             </StackPanel>
-                            
-                            <!-- DEBUG: Test-Buttons -->
-                            <TextBlock Text="DEBUG-Tests:" FontWeight="Bold" Margin="0,20,0,8"
-                                      Foreground="{DynamicResource OnSurface}"/>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="Test: Command Binding" 
-                                       Command="{Binding DebugTestCommand}"
-                                       Style="{StaticResource FilledButton}" 
-                                       Margin="0,0,10,0"/>
-                                <Button Content="Test: Hilfe (Click)" 
-                                       Click="TestHelpButton_Click"
-                                       Style="{StaticResource OutlinedButton}" 
-                                       Margin="0,0,10,0"/>
-                                <Button Content="Test: Update (Click)" 
-                                       Click="TestUpdateButton_Click"
-                                       Style="{StaticResource OutlinedButton}"/>
-                            </StackPanel>
                         </StackPanel>
                     </Border>
                 </StackPanel>

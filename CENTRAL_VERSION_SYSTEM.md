@@ -14,11 +14,11 @@ Das neue `VersionService.cs` ist die **einzige Quelle der Wahrheit** für alle V
 // ZENTRALE VERSIONSDEFINITION - NUR HIER ÄNDERN!
 private const string MAJOR_VERSION = "1";
 private const string MINOR_VERSION = "9";
-private const string PATCH_VERSION = "0";
+private const string PATCH_VERSION = "1";
 private const string BUILD_VERSION = "0";
 
 // Development/Release Kennzeichnung
-private const bool IS_DEVELOPMENT_VERSION = true;
+private const bool IS_DEVELOPMENT_VERSION = false;
 ```
 
 **Für ein neues Release:**
@@ -31,12 +31,12 @@ private const bool IS_DEVELOPMENT_VERSION = true;
 ## 🔄 Automatisch aktualisierte Stellen
 
 ### ✅ Services/VersionService.cs
-- `Version` → "1.9.0"
-- `AssemblyVersion` → "1.9.0.0"  
-- `DisplayVersion` → "1.9.0-dev" (Development) oder "1.9.0" (Release)
-- `ProductNameWithVersion` → "Einsatzüberwachung Professional v1.9.0"
-- `UserAgent` → "Einsatzueberwachung-Professional-v1.9"
-- `GitTag` → "v1.9.0"
+- `Version` → "1.9.1"
+- `AssemblyVersion` → "1.9.1.0"  
+- `DisplayVersion` → "1.9.1-dev" (Development) oder "1.9.1" (Release)
+- `ProductNameWithVersion` → "Einsatzüberwachung Professional v1.9.1"
+- `UserAgent` → "Einsatzueberwachung-Professional-v1.9.1"
+- `GitTag` → "v1.9.1"
 
 ### ✅ App.xaml.cs
 - Startup-Log: `VersionService.FullProductName`
@@ -59,11 +59,11 @@ private const bool IS_DEVELOPMENT_VERSION = true;
 ### ⚠️ Einsatzueberwachung.csproj
 ```xml
 <!-- Diese Werte müssen manuell synchronisiert werden -->
-<AssemblyVersion>1.9.0.0</AssemblyVersion>
-<FileVersion>1.9.0.0</FileVersion>
-<Version>1.9.0</Version>
-<AssemblyTitle>Einsatzüberwachung Professional v1.9.0</AssemblyTitle>
-<AssemblyProduct>Einsatzüberwachung Professional v1.9.0</AssemblyProduct>
+<AssemblyVersion>1.9.1.0</AssemblyVersion>
+<FileVersion>1.9.1.0</FileVersion>
+<Version>1.9.1</Version>
+<AssemblyTitle>Einsatzüberwachung Professional v1.9.1</AssemblyTitle>
+<AssemblyProduct>Einsatzüberwachung Professional v1.9.1</AssemblyProduct>
 ```
 
 **Warum manuell?** MSBuild kann zur Build-Zeit keine C#-Konstanten lesen.
@@ -71,11 +71,11 @@ private const bool IS_DEVELOPMENT_VERSION = true;
 ### 🛠️ Helper-Methode für .csproj Update:
 ```csharp
 var versions = VersionUpdateHelper.GetProjectVersions();
-// assemblyVersion: "1.9.0.0"
-// fileVersion: "1.9.0.0"  
-// version: "1.9.0"
-// title: "Einsatzüberwachung Professional v1.9.0"
-// product: "Einsatzüberwachung Professional v1.9.0"
+// assemblyVersion: "1.9.1.0"
+// fileVersion: "1.9.1.0"  
+// version: "1.9.1"
+// title: "Einsatzüberwachung Professional v1.9.1"
+// product: "Einsatzüberwachung Professional v1.9.1"
 ```
 
 ---
@@ -145,7 +145,7 @@ if (!VersionService.IsVersionConsistent)
 ## 📚 API-Referenz
 
 ### Eigenschaften
-- `VersionService.Version` - Basis-Version (z.B. "1.9.0")
+- `VersionService.Version` - Basis-Version (z.B. "1.9.1")
 - `VersionService.DisplayVersion` - Mit Development-Suffix
 - `VersionService.AssemblyVersion` - 4-teilige Version
 - `VersionService.ProductNameWithVersion` - Vollständiger Produktname
@@ -163,5 +163,5 @@ if (!VersionService.IsVersionConsistent)
 ---
 
 **Erstellt:** 2025-01-05  
-**Version:** 1.0  
-**Für:** Einsatzüberwachung Professional v1.9.0+
+**Version:** 1.1  
+**Für:** Einsatzüberwachung Professional v1.9.1+

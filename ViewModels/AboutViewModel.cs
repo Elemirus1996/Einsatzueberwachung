@@ -80,7 +80,7 @@ namespace Einsatzueberwachung.ViewModels
                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
                 var version = assembly.GetName().Version;
                 
-                ApplicationVersion = $"v1.9.0 - MVVM Edition ({version?.ToString() ?? "Unknown"})";
+                ApplicationVersion = $"v1.9.1 - MVVM Edition ({version?.ToString() ?? "Unknown"})";
                 
                 // Build date from assembly
                 var buildDate = GetBuildDate(assembly);
@@ -92,7 +92,7 @@ namespace Einsatzueberwachung.ViewModels
             catch (Exception ex)
             {
                 LoggingService.Instance?.LogError("Error initializing AboutViewModel properties", ex);
-                ApplicationVersion = "v1.9.0 - MVVM Edition";
+                ApplicationVersion = "v1.9.1 - MVVM Edition";
                 BuildDate = DateTime.Now.ToString("dd.MM.yyyy");
                 CopyrightText = "© 2024 Einsatzüberwachung Professional";
                 DeveloperInfo = "Entwickelt für Rettungshunde-Staffeln";
