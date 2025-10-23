@@ -4,7 +4,7 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:views="clr-namespace:Einsatzueberwachung.Views"
         Title="Team-Details" 
-        Height="600" Width="800"
+        Height="813" Width="800"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         MinHeight="500" MinWidth="700"

@@ -11,19 +11,19 @@
     <AssemblyName>Einsatzueberwachung</AssemblyName>
     <!-- 
     ZENTRALE VERSIONSVERWALTUNG via VersionService.cs
-    WICHTIG: Diese Werte mÃƒÂ¼ssen manuell mit VersionService.cs synchronisiert werden!
+    WICHTIG: Diese Werte mÃƒÆ’Ã‚Â¼ssen manuell mit VersionService.cs synchronisiert werden!
     
     Aktuelle Version aus VersionService: 1.9.6.0 (Development Version)
     Beim Release-Update diese Werte entsprechend VersionService.GetProjectVersions() anpassen
     -->
-    <AssemblyTitle>EinsatzÃ¼berwachung Professional v1.9.7</AssemblyTitle>
-    <AssemblyDescription>Professionelle EinsatzÃƒÂ¼berwachung fÃƒÂ¼r Rettungshunde-Teams mit Dashboard-ÃƒÅ“bersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
+    <AssemblyTitle>EinsatzÃ¼berwachung Professional v2.0.0</AssemblyTitle>
+    <AssemblyDescription>Professionelle EinsatzÃƒÆ’Ã‚Â¼berwachung fÃƒÆ’Ã‚Â¼r Rettungshunde-Teams mit Dashboard-ÃƒÆ’Ã…â€œbersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
-    <AssemblyProduct>EinsatzÃ¼berwachung Professional v1.9.7</AssemblyProduct>
+    <AssemblyProduct>EinsatzÃ¼berwachung Professional v2.0.0</AssemblyProduct>
     <AssemblyCopyright>Copyright @ 2025 RescueDog_SW</AssemblyCopyright>
-    <AssemblyVersion>1.9.7.0</AssemblyVersion>
-    <FileVersion>1.9.7.0</FileVersion>
-    <Version>1.9.7</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Version>2.0.0</Version>
     <!-- Release Configuration -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>false</SelfContained>
@@ -42,7 +42,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="Mapsui" Version="5.0.0-beta.3" />
+    <PackageReference Include="Mapsui.Wpf" Version="5.0.0-beta.3" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
+    <PackageReference Include="NetTopologySuite" Version="2.5.0" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="QuestPDF" Version="2024.12.3" />
   </ItemGroup>

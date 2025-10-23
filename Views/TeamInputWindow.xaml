@@ -183,14 +183,18 @@
                              SelectedItem="{Binding SelectedSearchArea}"
                              Style="{StaticResource ResponsiveTeamComboBox}"
                              IsEditable="True"
-                             Text="{Binding Suchgebiet, UpdateSourceTrigger=PropertyChanged}">
+                             IsTextSearchEnabled="True"
+                             TextSearch.TextPath="Name">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <Ellipse Width="12" Height="12" 
-                                             Fill="{Binding Color}" 
                                              Margin="0,0,8,0"
-                                             VerticalAlignment="Center"/>
+                                             VerticalAlignment="Center">
+                                        <Ellipse.Fill>
+                                            <SolidColorBrush Color="{Binding Color}"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
                                     <TextBlock Text="{Binding Name}" 
                                                FontWeight="Medium" 
                                                Margin="0,0,8,0"
@@ -201,12 +205,15 @@
                                                VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding AssignedTeam}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding AssignedTeam}" Value="">
                                                         <Setter Property="Text" Value="(Verfügbar)"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource Success}"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding AssignedTeam}" Value="{x:Null}">
                                                         <Setter Property="Text" Value="(Verfügbar)"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource Success}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>

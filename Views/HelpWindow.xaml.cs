@@ -8,9 +8,9 @@ using Einsatzueberwachung.Services;
 namespace Einsatzueberwachung.Views
 {
     /// <summary>
-    /// HelpWindow v2.0 - Enhanced with Interactive Navigation and Modern UX
+    /// HelpWindow v2.0.0 - Enhanced with Map Integration Features
     /// Now inherits from BaseThemeWindow for automatic theme support
-    /// Features: Section navigation, search functionality, quick actions
+    /// Features: OpenLayers Map Integration, Search Areas, GPS Tracking
     /// </summary>
     public partial class HelpWindow : BaseThemeWindow
     {
@@ -26,6 +26,7 @@ namespace Einsatzueberwachung.Views
             _contentSections = new Dictionary<string, StackPanel>
             {
                 ["QuickStart"] = QuickStartContent,
+                ["MapIntegration"] = MapIntegrationContent,
                 ["Teams"] = TeamsContent,
                 ["Theme"] = ThemeContent,
                 ["Mobile"] = MobileContent,
@@ -35,7 +36,7 @@ namespace Einsatzueberwachung.Views
             };
 
             InitializeContent();
-            LoggingService.Instance.LogInfo("HelpWindow v2.0 initialized with enhanced navigation and theme integration");
+            LoggingService.Instance.LogInfo("HelpWindow v2.0.0 initialized with Map Integration features and theme integration");
         }
 
         private void InitializeContent()
@@ -61,7 +62,7 @@ namespace Einsatzueberwachung.Views
                 // Apply theme-specific styling
                 base.ApplyThemeToWindow(isDarkMode);
                 
-                LoggingService.Instance.LogInfo($"Theme applied to HelpWindow v2.0: {(isDarkMode ? "Dark" : "Light")} mode with Orange design");
+                LoggingService.Instance.LogInfo($"Theme applied to HelpWindow v2.0.0: {(isDarkMode ? "Dark" : "Light")} mode with Orange design");
             }
             catch (Exception ex)
             {
@@ -110,7 +111,7 @@ namespace Einsatzueberwachung.Views
             try
             {
                 // Reset all navigation buttons
-                var navButtons = new[] { QuickStartBtn, TeamsBtn, ThemeBtn, MobileBtn, ShortcutsBtn, TipsBtn, TroubleshootBtn };
+                var navButtons = new[] { QuickStartBtn, MapIntegrationBtn, TeamsBtn, ThemeBtn, MobileBtn, ShortcutsBtn, TipsBtn, TroubleshootBtn };
                 
                 foreach (var btn in navButtons)
                 {
@@ -139,6 +140,7 @@ namespace Einsatzueberwachung.Views
                     var section = button.Name switch
                     {
                         "QuickStartBtn" => "QuickStart",
+                        "MapIntegrationBtn" => "MapIntegration",
                         "TeamsBtn" => "Teams",
                         "ThemeBtn" => "Theme", 
                         "MobileBtn" => "Mobile",
@@ -166,8 +168,13 @@ namespace Einsatzueberwachung.Views
                 {
                     var searchTerm = textBox.Text.ToLower();
                     
-                    // Simple search logic - could be enhanced
-                    if (searchTerm.Contains("theme") || searchTerm.Contains("design") || searchTerm.Contains("farbe"))
+                    // Enhanced search logic including map features
+                    if (searchTerm.Contains("map") || searchTerm.Contains("karte") || searchTerm.Contains("openstreet"))
+                    {
+                        ShowSection("MapIntegration");
+                        SetActiveNavigationButton(MapIntegrationBtn);
+                    }
+                    else if (searchTerm.Contains("theme") || searchTerm.Contains("design") || searchTerm.Contains("farbe"))
                     {
                         ShowSection("Theme");
                         SetActiveNavigationButton(ThemeBtn);
@@ -211,11 +218,29 @@ namespace Einsatzueberwachung.Views
             try
             {
                 Close();
-                LoggingService.Instance.LogInfo("HelpWindow v2.0 closed by user");
+                LoggingService.Instance.LogInfo("HelpWindow v2.0.0 closed by user");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error closing HelpWindow", ex);
+            }
+        }
+
+        private void OpenMapManagementButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Open map management - delegate to MainWindow
+                ShowSection("MapIntegration");
+                SetActiveNavigationButton(MapIntegrationBtn);
+                
+                LoggingService.Instance.LogInfo("Map management section opened from HelpWindow");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error opening map management from HelpWindow", ex);
+                MessageBox.Show($"Fehler beim Öffnen der Karten-Verwaltung:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -232,7 +257,7 @@ namespace Einsatzueberwachung.Views
                 settingsWindow.ShowThemeSettings();
                 settingsWindow.ShowDialog();
                 
-                LoggingService.Instance.LogInfo("Settings window opened from HelpWindow v2.0");
+                LoggingService.Instance.LogInfo("Settings window opened from HelpWindow v2.0.0");
             }
             catch (Exception ex)
             {
@@ -313,7 +338,7 @@ namespace Einsatzueberwachung.Views
                 aboutWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 aboutWindow.ShowDialog();
                 
-                LoggingService.Instance.LogInfo("AboutWindow opened from HelpWindow v2.0");
+                LoggingService.Instance.LogInfo("AboutWindow opened from HelpWindow v2.0.0");
             }
             catch (Exception ex)
             {
@@ -475,7 +500,7 @@ namespace Einsatzueberwachung.Views
         {
             try
             {
-                LoggingService.Instance.LogInfo("HelpWindow v2.0 closed and cleaned up");
+                LoggingService.Instance.LogInfo("HelpWindow v2.0.0 closed and cleaned up");
             }
             catch (Exception ex)
             {

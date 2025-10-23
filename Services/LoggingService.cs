@@ -66,18 +66,18 @@ namespace Einsatzueberwachung.Services
                 var logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
                 LastLogEntry = logEntry;
 
+                // IMMER in Debug-Konsole schreiben (für Visual Studio)
+                System.Diagnostics.Debug.WriteLine(logEntry);
+                Console.WriteLine(logEntry); // Auch in Console schreiben
+
                 // Write to file
                 File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
-
-                if (_verboseLogging)
-                {
-                    System.Diagnostics.Debug.WriteLine(logEntry);
-                }
             }
             catch (Exception ex)
             {
                 // Fallback - log to system event log or ignore
                 System.Diagnostics.Debug.WriteLine($"Logging failed: {ex.Message}");
+                Console.WriteLine($"Logging failed: {ex.Message}");
             }
         }
 

@@ -36,6 +36,22 @@ namespace Einsatzueberwachung.Views
             
             LoggingService.Instance.LogInfo("TeamInputWindow initialized without search areas");
         }
+        
+        /// <summary>
+        /// Konstruktor mit SearchAreas für Suchgebiets-Zuweisung
+        /// </summary>
+        public TeamInputWindow(System.Collections.ObjectModel.ObservableCollection<SearchArea> searchAreas)
+        {
+            InitializeComponent();
+            InitializeThemeSupport();
+            
+            _viewModel = new TeamInputViewModel(searchAreas);
+            DataContext = _viewModel;
+            
+            SubscribeToEvents();
+            
+            LoggingService.Instance.LogInfo($"TeamInputWindow initialized with {searchAreas?.Count ?? 0} search areas");
+        }
 
         private void SubscribeToEvents()
         {

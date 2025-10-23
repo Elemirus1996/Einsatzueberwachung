@@ -23,6 +23,12 @@
             <viewConverters:TimeSpanToStringConverter x:Key="TimeSpanToStringConverter"/>
             <viewConverters:MultiBooleanConverter x:Key="MultiBooleanConverter"/>
             
+            <!-- Map Converters -->
+            <viewConverters:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+            <viewConverters:BoolToMapTypeConverter x:Key="BoolToMapTypeConverter"/>
+            <viewConverters:BoolToDrawingStatusConverter x:Key="BoolToDrawingStatusConverter"/>
+            <viewConverters:BoolToElwStatusConverter x:Key="BoolToElwStatusConverter"/>
+            
             <!-- Thread Margin Converter aus separatem Namespace -->
             <converters:ThreadMarginConverter x:Key="ThreadMarginConverter"/>
             

@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:Einsatzueberwachung.Views"
         xmlns:views="clr-namespace:Einsatzueberwachung.Views"
         Title="Einsatzüberwachung Professional v1.9.0" 
-        Height="880" Width="680"
+        Height="1317" Width="680"
         WindowStartupLocation="CenterScreen"
         Icon="pack://application:,,,/Resources/app.ico"
         ResizeMode="CanResize"
@@ -266,7 +266,7 @@
                   PanningMode="VerticalOnly"
                   CanContentScroll="False"
                   IsDeferredScrollingEnabled="False"
-                  ScrollViewer.IsManipulationEnabled="True">
+                  ScrollViewer.IsManipulationEnabled="True" Margin="0,0,0,13">
         <Grid Margin="32">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -421,32 +421,75 @@
                         </StackPanel>
                         
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             
-                            <StackPanel Grid.Column="0">
-                                <Label Content="Einsatzort" Style="{StaticResource FormLabel}"/>
-                                <!-- RESTORED: Working TextBox from previous version -->
-                                <TextBox x:Name="EinsatzortTextBox"
-                                        Text="{Binding Einsatzort, UpdateSourceTrigger=PropertyChanged}" 
-                                        Style="{StaticResource EnhancedTextField}"
-                                        ScrollViewer.PanningMode="None"
-                                        ScrollViewer.CanContentScroll="False"
-                                        PreviewMouseWheel="TextBox_PreviewMouseWheel"/>
-                            </StackPanel>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="24"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0">
+                                    <Label Content="Einsatzort" Style="{StaticResource FormLabel}"/>
+                                    <!-- RESTORED: Working TextBox from previous version -->
+                                    <TextBox x:Name="EinsatzortTextBox"
+                                            Text="{Binding Einsatzort, UpdateSourceTrigger=PropertyChanged}" 
+                                            Style="{StaticResource EnhancedTextField}"
+                                            ScrollViewer.PanningMode="None"
+                                            ScrollViewer.CanContentScroll="False"
+                                            PreviewMouseWheel="TextBox_PreviewMouseWheel"/>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="2">
+                                    <Label Content="Alarmiert durch" Style="{StaticResource FormLabel}"/>
+                                    <!-- RESTORED: Working TextBox from previous version -->
+                                    <TextBox x:Name="AlarmiertTextBox"
+                                            Text="{Binding Alarmiert, UpdateSourceTrigger=PropertyChanged}" 
+                                            Style="{StaticResource EnhancedTextField}"
+                                            ScrollViewer.PanningMode="None"
+                                            ScrollViewer.CanContentScroll="False"
+                                            PreviewMouseWheel="TextBox_PreviewMouseWheel"/>
+                                </StackPanel>
+                            </Grid>
                             
-                            <StackPanel Grid.Column="2">
-                                <Label Content="Alarmiert durch" Style="{StaticResource FormLabel}"/>
-                                <!-- RESTORED: Working TextBox from previous version -->
-                                <TextBox x:Name="AlarmiertTextBox"
-                                        Text="{Binding Alarmiert, UpdateSourceTrigger=PropertyChanged}" 
-                                        Style="{StaticResource EnhancedTextField}"
-                                        ScrollViewer.PanningMode="None"
-                                        ScrollViewer.CanContentScroll="False"
-                                        PreviewMouseWheel="TextBox_PreviewMouseWheel"/>
+                            <!-- NEU: Genaue Adresse für Karte -->
+                            <StackPanel Grid.Row="2">
+                                <Label Content="📍 Genaue Adresse für Kartenansicht (optional)" Style="{StaticResource FormLabel}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBox x:Name="MapAddressTextBox"
+                                            Grid.Column="0"
+                                            Text="{Binding MapAddress, UpdateSourceTrigger=PropertyChanged}" 
+                                            Style="{StaticResource EnhancedTextField}"
+                                            ScrollViewer.PanningMode="None"
+                                            ScrollViewer.CanContentScroll="False"
+                                            PreviewMouseWheel="TextBox_PreviewMouseWheel"
+                                            Margin="0,0,12,0"/>
+                                    
+                                    <Button Grid.Column="1"
+                                            Content="🗺️ Karte öffnen"
+                                            Click="OpenMapButton_Click"
+                                            Style="{StaticResource OutlinedButton}"
+                                            Padding="16,14"
+                                            Height="48"
+                                            VerticalAlignment="Bottom"/>
+                                </Grid>
+                                
+                                <TextBlock Text="💡 Geben Sie eine vollständige Adresse ein, um die Karte automatisch zu zentrieren"
+                                          Style="{StaticResource BodySmall}"
+                                          Foreground="{DynamicResource OnSurfaceVariant}"
+                                          Opacity="0.7"
+                                          Margin="8,8,0,0"
+                                          TextWrapping="Wrap"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>

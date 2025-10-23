@@ -398,4 +398,96 @@ namespace Einsatzueberwachung.Views
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Konvertiert System.Windows.Media.Color zu SolidColorBrush
+    /// </summary>
+    public class ColorToBrushConverter : IValueConverter
+    {
+        public static readonly ColorToBrushConverter Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is Color color)
+            {
+                return new SolidColorBrush(color);
+            }
+            return new SolidColorBrush(Colors.Gray);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is SolidColorBrush brush)
+            {
+                return brush.Color;
+            }
+            return Colors.Gray;
+        }
+    }
+
+    /// <summary>
+    /// Konvertiert Boolean zu Karten-Icon (Satellit/Straße)
+    /// </summary>
+    public class BoolToMapTypeConverter : IValueConverter
+    {
+        public static readonly BoolToMapTypeConverter Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool showSatellite)
+            {
+                return showSatellite ? "🗺️" : "🛰️";
+            }
+            return "🗺️";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Konvertiert Boolean (IsDrawing) zu Status-Text
+    /// </summary>
+    public class BoolToDrawingStatusConverter : IValueConverter
+    {
+        public static readonly BoolToDrawingStatusConverter Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool isDrawing)
+            {
+                return isDrawing ? "✏️ Zeichenmodus aktiv - Klicken Sie auf die Karte" : "";
+            }
+            return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Konvertiert Boolean (IsSettingElw) zu Status-Text
+    /// </summary>
+    public class BoolToElwStatusConverter : IValueConverter
+    {
+        public static readonly BoolToElwStatusConverter Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool isSettingElw)
+            {
+                return isSettingElw ? "📍 ELW-Modus aktiv - Klicken Sie auf die Karte für ELW-Position" : "";
+            }
+            return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

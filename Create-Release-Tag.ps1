@@ -47,7 +47,7 @@ try {
     # PrÃ¼fe Development-Flag
     $isDevelopment = $versionServiceContent -match 'private const bool IS_DEVELOPMENT_VERSION = true'
     
-    $version = "1.9.7"
+    $version = "2.0.0"
     $tag = "v$version"
     
     Write-Host "================================================" -ForegroundColor Green
@@ -261,6 +261,7 @@ Write-Host "ðŸŽ¯ Release-Prozess erfolgreich abgeschlossen!" -ForegroundColo
 Write-Host ""
 
 Read-Host "DrÃ¼cken Sie Enter zum Beenden"
+
 
 
 

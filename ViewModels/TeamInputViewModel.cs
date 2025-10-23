@@ -81,12 +81,38 @@ namespace Einsatzueberwachung.ViewModels
         private ObservableCollection<ComboBoxDogItem> _dogsList = new();
         private ObservableCollection<ComboBoxPersonalItem> _personalList = new();
         
-        // Suchgebiete für Dropdown (nur als Strings)
+        // NEU: SearchAreas für echte Suchgebiete-Zuweisung
+        private ObservableCollection<SearchArea> _availableSearchAreas = new();
+        private SearchArea? _selectedSearchArea;
+        
+        // Suchgebiete für Dropdown (nur als Strings) - DEPRECATED, wird durch AvailableSearchAreas ersetzt
         private ObservableCollection<string> _suchgebiete = new();
         public ObservableCollection<string> Suchgebiete
         {
             get => _suchgebiete;
             set => SetProperty(ref _suchgebiete, value);
+        }
+        
+        // NEU: ObservableCollection für SearchArea-Objekte
+        public ObservableCollection<SearchArea> AvailableSearchAreas
+        {
+            get => _availableSearchAreas;
+            set => SetProperty(ref _availableSearchAreas, value);
+        }
+        
+        // NEU: Ausgewähltes SearchArea-Objekt
+        public SearchArea? SelectedSearchArea
+        {
+            get => _selectedSearchArea;
+            set
+            {
+                if (SetProperty(ref _selectedSearchArea, value))
+                {
+                    // Synchronisiere mit dem String-Property für Backward-Compatibility
+                    Suchgebiet = value?.Name ?? string.Empty;
+                    LoggingService.Instance?.LogInfo($"Search area selected: {value?.Name ?? "None"}");
+                }
+            }
         }
 
         // Properties für Validierung
@@ -335,6 +361,22 @@ namespace Einsatzueberwachung.ViewModels
             _ = InitializeMasterDataAsync();
             
             LoggingService.Instance?.LogInfo("TeamInputViewModel initialized without search areas");
+        }
+        
+        /// <summary>
+        /// Konstruktor mit SearchAreas für Suchgebiets-Zuweisung
+        /// </summary>
+        public TeamInputViewModel(ObservableCollection<SearchArea> searchAreas) : this()
+        {
+            // Lade verfügbare Suchgebiete
+            if (searchAreas != null)
+            {
+                foreach (var area in searchAreas)
+                {
+                    AvailableSearchAreas.Add(area);
+                }
+                LoggingService.Instance?.LogInfo($"TeamInputViewModel initialized with {searchAreas.Count} search areas");
+            }
         }
 
         private async Task InitializeMasterDataAsync()

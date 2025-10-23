@@ -106,7 +106,7 @@ namespace Einsatzueberwachung.Views
 
         /// <summary>
         /// Design-Einstellungen Button geklickt
-        /// Öffnet SettingsWindow mit Unified Theme System Integration
+        /// Öffnet SettingsWindow with Unified Theme System Integration
         /// </summary>
         private void ThemeSettingsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -142,6 +142,39 @@ namespace Einsatzueberwachung.Views
             }
         }
 
+        /// <summary>
+        /// Karte-Button geklickt - Öffnet MapWindow mit der eingegebenen Adresse
+        /// </summary>
+        private void OpenMapButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Erstelle temporäre EinsatzData für MapWindow
+                var tempEinsatzData = new EinsatzData
+                {
+                    Einsatzleiter = _viewModel.Einsatzleiter,
+                    Einsatzort = _viewModel.Einsatzort,
+                    IstEinsatz = _viewModel.IstEinsatz
+                };
+
+                // Im StartWindow gibt es noch keine Teams, daher übergeben wir eine leere Liste
+                var mapWindow = new MapWindow(tempEinsatzData, new List<Models.Team>(), _viewModel.MapAddress);
+                mapWindow.Owner = this;
+                
+                LoggingService.Instance.LogInfo($"🗺️ Opening MapWindow with address: {_viewModel.MapAddress}");
+                
+                mapWindow.ShowDialog();
+                
+                LoggingService.Instance.LogInfo("MapWindow closed");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error opening map window", ex);
+                MessageBox.Show($"Fehler beim Öffnen der Karte:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         #endregion
 
         #region ViewModel Event Handlers
@@ -166,16 +199,16 @@ namespace Einsatzueberwachung.Views
                     else
                     {
                         // Opened as startup window - create MainWindow
-                        var mainWindow = new MainWindow(EinsatzData, FirstWarningMinutes, SecondWarningMinutes);
+                        var newMainWindow = new MainWindow(EinsatzData, FirstWarningMinutes, SecondWarningMinutes);
                         
                         // Set as Application.MainWindow BEFORE showing it
-                        Application.Current.MainWindow = mainWindow;
+                        Application.Current.MainWindow = newMainWindow;
                         
                         // Change ShutdownMode (now safe)
                         Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                         
                         // Show MainWindow (gets automatic theme support from BaseThemeWindow)
-                        mainWindow.Show();
+                        newMainWindow.Show();
                         
                         // Close StartWindow (App won't exit because MainWindow is still open)
                         this.Close();

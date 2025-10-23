@@ -15,6 +15,7 @@ namespace Einsatzueberwachung.ViewModels
         private string _fuehrungsassistent = string.Empty;
         private string _alarmiert = string.Empty;
         private string _einsatzort = string.Empty;
+        private string _mapAddress = string.Empty;
         private bool _istEinsatz = true;
         private DateTime _einsatzDatum = DateTime.Now;
 
@@ -72,6 +73,16 @@ namespace Einsatzueberwachung.ViewModels
                 _einsatzort = value;
                 OnPropertyChanged();
                 ValidateForm();
+            }
+        }
+
+        public string MapAddress
+        {
+            get => _mapAddress;
+            set
+            {
+                _mapAddress = value;
+                OnPropertyChanged();
             }
         }
 

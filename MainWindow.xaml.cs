@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using Einsatzueberwachung.Models;
 using Einsatzueberwachung.Services;
 using Einsatzueberwachung.ViewModels;
@@ -229,8 +230,11 @@ namespace Einsatzueberwachung
                     return;
                 }
 
-                // Vereinfachtes Team-Input ohne Map-Referenzen
-                var inputWindow = new Views.TeamInputWindow();
+                // Übergebe verfügbare Suchgebiete an TeamInputWindow
+                var inputWindow = _viewModel?.EinsatzData?.SearchAreas != null
+                    ? new Views.TeamInputWindow(_viewModel.EinsatzData.SearchAreas)
+                    : new Views.TeamInputWindow();
+                    
                 inputWindow.Owner = this;
                 inputWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 
@@ -261,6 +265,8 @@ namespace Einsatzueberwachung
                     }
                     
                     _viewModel?.AddTeam(newTeam);
+                    
+                    LoggingService.Instance.LogInfo($"Team created with search area: {newTeam.Suchgebiet}");
                 }
             }
             catch (Exception ex)
@@ -753,6 +759,63 @@ namespace Einsatzueberwachung
             {
                 LoggingService.Instance.LogError("Error opening settings window via MVVM", ex);
             }
+        }
+
+        private void OpenMapWindow()
+        {
+            try
+            {
+                if (_viewModel?.EinsatzData == null)
+                {
+                    LoggingService.Instance.LogError("Cannot open MapWindow - EinsatzData is null");
+                    MessageBox.Show("Fehler: Einsatzdaten sind nicht verfügbar.\n\n" +
+                                   "Bitte starten Sie die Anwendung neu.",
+                                   "Datenintegration-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                LoggingService.Instance.LogInfo($"Opening MapWindow with {_viewModel.Teams.Count} teams");
+                
+                // Zeige Lade-Indikator
+                Mouse.OverrideCursor = Cursors.Wait;
+                
+                try
+                {
+                    var mapWindow = new Views.MapWindow(
+                        _viewModel.EinsatzData, 
+                        _viewModel.Teams.ToList(),
+                        _viewModel.Einsatzort
+                    );
+                    mapWindow.Owner = this;
+                    mapWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    
+                    // Stelle sicher dass der Cursor zurückgesetzt wird
+                    mapWindow.Loaded += (s, e) => Mouse.OverrideCursor = null;
+                    mapWindow.Show();
+                    
+                    LoggingService.Instance.LogInfo("MapWindow opened with team integration");
+                }
+                finally
+                {
+                    // Setze Cursor zurück auch bei Fehler
+                    Mouse.OverrideCursor = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Mouse.OverrideCursor = null;
+                LoggingService.Instance.LogError("Error opening map window", ex);
+                MessageBox.Show($"Fehler beim Öffnen der Karte:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Event-Handler für Karte-Button im Header
+        /// </summary>
+        private void OpenMapButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenMapWindow();
         }
 
         #endregion

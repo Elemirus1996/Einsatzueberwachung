@@ -315,6 +315,41 @@
                             </StackPanel>
                         </Button>
                         
+                        <!-- NEU: Karte öffnen Button -->
+                        <Button Click="OpenMapButton_Click" 
+                               Background="{DynamicResource Secondary}"
+                               Foreground="{DynamicResource OnSecondary}"
+                               ToolTip="Karte mit Suchgebieten öffnen" 
+                               x:Name="OpenMapButton">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                                    <Style.Triggers>
+                                        <!-- Kompakter Button für kleine Bildschirme -->
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=1400}" Value="True">
+                                            <Setter Property="Padding" Value="16,10"/>
+                                            <Setter Property="Margin" Value="4,0"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:ImageAwesome Icon="MapMarker" Width="14" Height="14" 
+                                               Foreground="{DynamicResource OnSecondary}" Margin="0,0,6,0"/>
+                                <TextBlock Text="Karte" Foreground="{DynamicResource OnSecondary}" x:Name="OpenMapButtonText">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <!-- Nur Icon bei sehr kleinen Bildschirmen -->
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=1200}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Button>
+                        
                         <Button Command="{Binding MenuCommand}" 
                                Background="{DynamicResource Primary}"
                                ToolTip="Einstellungen">

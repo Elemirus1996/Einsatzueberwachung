@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,7 @@ namespace Einsatzueberwachung.Models
         private string _alarmiert = string.Empty;
         private string _einsatzort = string.Empty;
         private string _exportPfad = string.Empty;
+        private string _mapAddress = string.Empty;
         private bool _istEinsatz = true;
         private int _anzahlTeams = 1;
         private DateTime _einsatzDatum = DateTime.Now;
@@ -21,6 +23,8 @@ namespace Einsatzueberwachung.Models
         private string _staffelName = string.Empty;
         private string _staffelLogoPfad = string.Empty;
         private DateTime? _alarmierungsZeit = null;
+        private double _elwLatitude;
+        private double _elwLongitude;
 
         public string Einsatzleiter
         {
@@ -44,6 +48,12 @@ namespace Einsatzueberwachung.Models
         {
             get => _einsatzort;
             set { _einsatzort = value; OnPropertyChanged(); }
+        }
+
+        public string MapAddress
+        {
+            get => _mapAddress;
+            set { _mapAddress = value; OnPropertyChanged(); }
         }
 
         public string ExportPfad
@@ -100,7 +110,16 @@ namespace Einsatzueberwachung.Models
         /// <summary>
         /// NEU v1.7: Globale Notizen-Collection für die Mobile Website
         /// </summary>
-        public ObservableCollection<GlobalNotesEntry> GlobalNotesEntries { get; } = new ObservableCollection<GlobalNotesEntry>();
+        public ObservableCollection<GlobalNotesEntry> GlobalNotesEntries { get; set; } = new ObservableCollection<GlobalNotesEntry>();
+        
+        // NEU v2.0.0: Map Integration - Suchgebiete
+        public ObservableCollection<SearchArea> SearchAreas { get; set; } = new ObservableCollection<SearchArea>();
+
+        /// <summary>
+        /// Optionale ELW-Position (Einsatzleitwagen) für Karten-Orientierung
+        /// Format: (Latitude, Longitude)
+        /// </summary>
+        public (double Latitude, double Longitude)? ElwPosition { get; set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

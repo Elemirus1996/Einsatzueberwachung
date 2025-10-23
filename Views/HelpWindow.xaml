@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:views="clr-namespace:Einsatzueberwachung.Views"
-        Title="Hilfe - Einsatzüberwachung Professional" 
-        Height="800" Width="1000"
+        Title="Hilfe - Einsatzüberwachung Professional v2.0.0 - Map Edition" 
+        Height="800" Width="1253"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         MinHeight="600" MinWidth="900"
@@ -149,7 +149,7 @@
                                           Foreground="{DynamicResource OnPrimary}"
                                           VerticalAlignment="Center"/>
                             </StackPanel>
-                            <TextBlock Text="Professional v1.9.2 Guide" 
+                            <TextBlock Text="Professional v2.0.0 Map Edition" 
                                       Style="{StaticResource BodyMedium}"
                                       Foreground="{DynamicResource OnPrimary}"
                                       Opacity="0.9"/>
@@ -182,10 +182,13 @@
                     <!-- Quick Actions -->
                     <TextBlock Text="Schnellzugriff" 
                               Style="{StaticResource LabelLarge}"
-                              Foreground="{DynamicResource Primary}"
+                              Foreground="{StaticResource Primary}"
                               FontWeight="Bold"
                               Margin="0,0,0,12"/>
 
+                    <Button Content="🗺️ Karten-Verwaltung"
+                           Style="{StaticResource NavButton}"
+                           Click="OpenMapManagementButton_Click"/>
                     <Button Content="🎨 Design-Einstellungen"
                            Style="{StaticResource NavButton}"
                            Click="OpenSettingsButton_Click"/>
@@ -207,6 +210,7 @@
                               Margin="0,24,0,12"/>
 
                     <Button x:Name="QuickStartBtn" Content="🚀 Schnellstart" Style="{StaticResource NavButton}" Tag="Active" Click="NavigationButton_Click"/>
+                    <Button x:Name="MapIntegrationBtn" Content="🗺️ Karten-Integration NEU!" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
                     <Button x:Name="TeamsBtn" Content="👥 Teams verwalten" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
                     <Button x:Name="ThemeBtn" Content="🎨 Design &amp; Theme" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
                     <Button x:Name="MobileBtn" Content="📱 Mobile Integration" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
@@ -253,7 +257,7 @@
 
                     <!-- Quick Start Content (Default) -->
                     <StackPanel x:Name="QuickStartContent">
-                        <TextBlock Text="🚀 Schnellstart-Anleitung" Style="{StaticResource HelpSectionHeader}"/>
+                        <TextBlock Text="🚀 Schnellstart-Anleitung v2.0.0" Style="{StaticResource HelpSectionHeader}"/>
                         
                         <!-- Welcome Hero -->
                         <Border Background="{DynamicResource TertiaryContainer}"
@@ -268,17 +272,17 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 
-                                <fa:ImageAwesome Grid.Column="0" Icon="Rocket" Width="48" Height="48" 
+                                <fa:ImageAwesome Grid.Column="0" Icon="MapMarker" Width="48" Height="48" 
                                                Foreground="{DynamicResource Primary}" 
                                                Margin="0,0,20,0"
                                                VerticalAlignment="Center"/>
                                 
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Willkommen zur Einsatzüberwachung Professional!" 
+                                    <TextBlock Text="Willkommen zur Einsatzüberwachung Professional v2.0.0 - Map Edition!" 
                                               Style="{StaticResource TitleLarge}"
                                               Foreground="{DynamicResource OnTertiaryContainer}"
                                               Margin="0,0,0,8"/>
-                                    <TextBlock Text="Diese Anleitung führt Sie durch die wichtigsten Schritte für Ihren ersten Einsatz." 
+                                    <TextBlock Text="NEU: Vollständige OpenStreetMap-Integration mit interaktiven Suchgebieten!" 
                                               Style="{StaticResource BodyMedium}"
                                               Foreground="{DynamicResource OnTertiaryContainer}"
                                               TextWrapping="Wrap"/>
@@ -419,6 +423,13 @@
                                 </StackPanel>
                             </Border>
                         </Grid>
+                    </StackPanel>
+
+                    <!-- NEW: Map Integration Content -->
+                    <StackPanel x:Name="MapIntegrationContent" Visibility="Collapsed">
+                        <TextBlock Text="🗺️ Karten-Integration v2.0.0 - VOLLSTÄNDIG!" Style="{StaticResource HelpSectionHeader}"/>
+                        
+                        <!-- Map integration help content will be added here -->
                     </StackPanel>
 
                     <!-- Other content sections will be shown/hidden based on navigation -->
