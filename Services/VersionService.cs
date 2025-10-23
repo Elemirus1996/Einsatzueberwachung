@@ -12,7 +12,7 @@ namespace Einsatzueberwachung.Services
         // ZENTRALE VERSIONSDEFINITION - NUR HIER Ã„NDERN!
         private const string MAJOR_VERSION = "1";
         private const string MINOR_VERSION = "9";
-        private const string PATCH_VERSION = "6";  // âœ… UPDATED: Neue Entwicklungsversion 1.9.2
+        private const string PATCH_VERSION = "6";  // âœ… UPDATED: Neue Entwicklungsversion 
         private const string BUILD_VERSION = "0";  // âœ… RESET: ZurÃ¼ck auf 0 fÃ¼r neue Entwicklung
         
         // Development/Release Kennzeichnung
