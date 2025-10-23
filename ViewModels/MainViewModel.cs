@@ -24,7 +24,7 @@ namespace Einsatzueberwachung.ViewModels
 
         // Core Data
         private EinsatzData? _einsatzData;
-        private ObservableCollection<Team> _teams;
+        private ObservableCollection<Team> _teams = new();
         private int _nextTeamId = 1;
         private int _firstWarningMinutes = 10;
         private int _secondWarningMinutes = 20;
@@ -40,6 +40,7 @@ namespace Einsatzueberwachung.ViewModels
         private string _lastLogText = $"Aktualisiert: {DateTime.Now:HH:mm:ss}";
         private Visibility _welcomeMessageVisibility = Visibility.Visible;
         private bool _isFullscreen = false;
+        private bool _showAddTeamButton = true; // Add this property
 
         // Global Notes System
         private ObservableCollection<GlobalNotesEntry> _globalNotesCollection = new ObservableCollection<GlobalNotesEntry>();
@@ -51,6 +52,11 @@ namespace Einsatzueberwachung.ViewModels
         // Theme Management
         private FontAwesome.WPF.FontAwesomeIcon _themeIcon = FontAwesome.WPF.FontAwesomeIcon.SunOutline;
         private string _themeTooltip = "Theme: Auto-Modus";
+
+        /// <summary>
+        /// NEU v1.9.2: Zugriff auf EinsatzData für externe Integration
+        /// </summary>
+        public EinsatzData? EinsatzData => _einsatzData;
 
         public MainViewModel()
         {
@@ -72,7 +78,7 @@ namespace Einsatzueberwachung.ViewModels
             _secondWarningMinutes = secondWarningMinutes;
 
             UpdateMissionDisplay(einsatzData);
-            AddGlobalNote($"Einsatz gestartet: {einsatzData.EinsatzTyp} - {einsatzData.Einsatzort}", 
+            AddGlobalNoteInternal($"Einsatz gestartet: {einsatzData.EinsatzTyp} - {einsatzData.Einsatzort}", 
                 GlobalNotesEntryType.EinsatzUpdate);
         }
 
@@ -177,6 +183,12 @@ namespace Einsatzueberwachung.ViewModels
             set => SetProperty(ref _selectedNoteTarget, value);
         }
 
+        public bool ShowAddTeamButton
+        {
+            get => _showAddTeamButton;
+            set => SetProperty(ref _showAddTeamButton, value);
+        }
+
         #endregion
 
         #region Commands
@@ -228,8 +240,8 @@ namespace Einsatzueberwachung.ViewModels
         {
             try
             {
-                ThemeService.Instance.ToggleTheme();
-                LoggingService.Instance.LogInfo($"Theme toggled to: {ThemeService.Instance.CurrentThemeStatus}");
+                UnifiedThemeManager.Instance.ToggleTheme();
+                LoggingService.Instance.LogInfo($"Theme toggled to: {UnifiedThemeManager.Instance.CurrentThemeStatus}");
             }
             catch (Exception ex)
             {
@@ -286,7 +298,7 @@ namespace Einsatzueberwachung.ViewModels
                 // Get selected target
                 var selectedTarget = SelectedNoteTarget?.DisplayName ?? NoteTargets.FirstOrDefault()?.DisplayName ?? "Allgemein";
                 
-                AddGlobalNote(QuickNoteText, GlobalNotesEntryType.Manual, selectedTarget);
+                AddGlobalNoteInternal(QuickNoteText, GlobalNotesEntryType.Manual, selectedTarget);
                 QuickNoteText = string.Empty;
                 
                 LoggingService.Instance.LogInfo($"Quick note added via MVVM to target: {selectedTarget}");
@@ -334,12 +346,12 @@ namespace Einsatzueberwachung.ViewModels
                     if (team.IsRunning)
                     {
                         team.StopTimer();
-                        AddGlobalNote($"Timer gestoppt (F{teamIndex + 1})", GlobalNotesEntryType.TimerStop, team.TeamName);
+                        AddGlobalNoteInternal($"Timer gestoppt (F{teamIndex + 1})", GlobalNotesEntryType.TimerStop, team.TeamName);
                     }
                     else
                     {
                         team.StartTimer();
-                        AddGlobalNote($"Timer gestartet (F{teamIndex + 1})", GlobalNotesEntryType.TimerStart, team.TeamName);
+                        AddGlobalNoteInternal($"Timer gestartet (F{teamIndex + 1})", GlobalNotesEntryType.TimerStart, team.TeamName);
                     }
                     
                     LoggingService.Instance.LogInfo($"Team timer toggled via MVVM (F{teamIndex + 1}): {team.TeamName}");
@@ -349,336 +361,6 @@ namespace Einsatzueberwachung.ViewModels
             {
                 LoggingService.Instance.LogError($"Error toggling team timer via MVVM (F{teamIndex + 1})", ex);
             }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        public void AddTeam(Team team)
-        {
-            try
-            {
-                if (team == null) return;
-
-                // Set warning times
-                team.FirstWarningMinutes = _firstWarningMinutes;
-                team.SecondWarningMinutes = _secondWarningMinutes;
-                team.TeamId = _nextTeamId++;
-
-                // Register team events
-                RegisterTeamEventsForGlobalNotes(team);
-
-                _teams.Add(team);
-                UpdateTeamCount();
-                UpdateNoteTargets();
-
-                AddGlobalNote($"Team hinzugefügt: {team.TeamName}", GlobalNotesEntryType.TeamEvent);
-                LoggingService.Instance.LogInfo($"Team added via MVVM: {team.TeamName}");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error adding team via MVVM", ex);
-            }
-        }
-
-        public void RemoveTeam(Team team)
-        {
-            try
-            {
-                if (team == null) return;
-
-                team.StopTimer();
-                _teams.Remove(team);
-                
-                UpdateTeamCount();
-                UpdateNoteTargets();
-
-                AddGlobalNote($"Team gelöscht: {team.TeamName}", GlobalNotesEntryType.TeamEvent);
-                LoggingService.Instance.LogInfo($"Team removed via MVVM: {team.TeamName}");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error removing team via MVVM", ex);
-            }
-        }
-
-        public void UpdateSelectedNoteTarget(NoteTarget target)
-        {
-            try
-            {
-                // Note target selection updated
-                LoggingService.Instance.LogInfo($"Note target selected via MVVM: {target?.DisplayName}");
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error updating note target via MVVM", ex);
-            }
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private void InitializeCollections()
-        {
-            _teams = new ObservableCollection<Team>();
-            _teams.CollectionChanged += Teams_CollectionChanged;
-        }
-
-        private void Teams_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            UpdateTeamCount();
-            UpdateWelcomeMessageVisibility();
-            ((RelayCommand)AddTeamCommand).RaiseCanExecuteChanged();
-        }
-
-        private void InitializeClock()
-        {
-            _clockTimer.Interval = TimeSpan.FromSeconds(1);
-            _clockTimer.Tick += ClockTimer_Tick;
-            _clockTimer.Start();
-        }
-
-        private void ClockTimer_Tick(object? sender, EventArgs e)
-        {
-            try
-            {
-                CurrentTime = DateTime.Now.ToString("HH:mm:ss");
-                LastLogText = $"Aktualisiert: {DateTime.Now:HH:mm:ss}";
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error in clock timer tick via MVVM", ex);
-            }
-        }
-
-        private void InitializeServices()
-        {
-            try
-            {
-                // Initialize services - LoggingService ist bereits initialisiert
-                LoggingService.Instance.Initialize("einsatzueberwachung.log", LogLevel.Info);
-                LoggingService.Instance.SetVerboseLogging(true);
-
-                // Initialize global notes service
-                GlobalNotesService.Instance.Initialize(_globalNotesCollection,
-                    (message) => AddGlobalNote(message, GlobalNotesEntryType.Info),
-                    (message) => AddGlobalNote(message, GlobalNotesEntryType.Warnung),
-                    (message) => AddGlobalNote(message, GlobalNotesEntryType.Fehler));
-
-                AddGlobalNote("Einsatzüberwachung Professional v1.9.0 gestartet", GlobalNotesEntryType.EinsatzUpdate);
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error initializing services via MVVM", ex);
-            }
-        }
-
-        private void InitializeTheme()
-        {
-            try
-            {
-                ThemeService.Instance.ThemeChanged += OnThemeChanged;
-                
-                if (!ThemeService.Instance.IsAutoMode)
-                {
-                    ThemeService.Instance.EnableAutoMode();
-                }
-                
-                UpdateThemeDisplay();
-                AddGlobalNote($"Theme: {ThemeService.Instance.CurrentThemeStatus}", GlobalNotesEntryType.SystemEvent);
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error initializing theme via MVVM", ex);
-            }
-        }
-
-        private void OnThemeChanged(bool isDarkMode)
-        {
-            try
-            {
-                UpdateThemeDisplay();
-                AddGlobalNote($"Theme geändert zu: {ThemeService.Instance.CurrentThemeStatus}", 
-                    GlobalNotesEntryType.SystemEvent);
-                
-                ThemeChanged?.Invoke(isDarkMode);
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error handling theme change via MVVM", ex);
-            }
-        }
-
-        private void UpdateThemeDisplay()
-        {
-            ThemeIcon = ThemeService.Instance.IsDarkMode 
-                ? FontAwesome.WPF.FontAwesomeIcon.MoonOutline
-                : FontAwesome.WPF.FontAwesomeIcon.SunOutline;
-
-            if (ThemeService.Instance.IsAutoMode)
-            {
-                ThemeTooltip = $"Theme: Auto-Modus (18-8 Uhr Dunkel)\nAktuell: {(ThemeService.Instance.IsDarkMode ? "Dunkel" : "Hell")}\n\nKlick → Manuell wechseln";
-            }
-            else
-            {
-                ThemeTooltip = $"Theme: Manuell\nAktuell: {(ThemeService.Instance.IsDarkMode ? "Dunkel" : "Hell")}\n\nKlick → Wechseln";
-            }
-        }
-
-        private void InitializeNoteTargets()
-        {
-            try
-            {
-                _noteTargets.Clear();
-                _noteTargets.Add(new NoteTarget { DisplayName = "Allgemein", DetailInfo = "📝", IsSpecialTarget = true });
-                _noteTargets.Add(new NoteTarget { DisplayName = "Einsatzleiter", DetailInfo = "👨‍💼", IsSpecialTarget = true });
-                _noteTargets.Add(new NoteTarget { DisplayName = "Drohnenstaffel", DetailInfo = "🚁", IsSpecialTarget = true });
-                _noteTargets.Add(new NoteTarget { DisplayName = "Funkzentrale", DetailInfo = "📻", IsSpecialTarget = true });
-                
-                // Set default selection to first item (Allgemein) - Note: SelectedNoteTarget property needed
-                if (_noteTargets.Count > 0)
-                {
-                    SelectedNoteTarget = _noteTargets.FirstOrDefault();
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error initializing note targets via MVVM", ex);
-            }
-        }
-
-        private void UpdateNoteTargets()
-        {
-            try
-            {
-                var specialTargets = _noteTargets.Where(nt => nt.IsSpecialTarget).ToList();
-                var currentSelection = SelectedNoteTarget;
-                
-                _noteTargets.Clear();
-                
-                foreach (var target in specialTargets)
-                {
-                    _noteTargets.Add(target);
-                }
-                
-                foreach (var team in _teams)
-                {
-                    _noteTargets.Add(new NoteTarget 
-                    { 
-                        DisplayName = team.TeamName, 
-                        DetailInfo = team.TeamTypeShortName,
-                        IsSpecialTarget = false 
-                    });
-                }
-                
-                // Restore selection if it still exists, otherwise select first item
-                if (currentSelection != null && _noteTargets.Any(nt => nt.DisplayName == currentSelection.DisplayName))
-                {
-                    SelectedNoteTarget = _noteTargets.First(nt => nt.DisplayName == currentSelection.DisplayName);
-                }
-                else
-                {
-                    SelectedNoteTarget = _noteTargets.FirstOrDefault();
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error updating note targets via MVVM", ex);
-            }
-        }
-
-        private void RegisterTeamEventsForGlobalNotes(Team team)
-        {
-            try
-            {
-                team.TimerStarted += (t) => AddGlobalNote($"Timer gestartet", GlobalNotesEntryType.TimerStart, t.TeamName);
-                team.TimerStopped += (t) => AddGlobalNote($"Timer gestoppt - Einsatzzeit: {t.ElapsedTimeString}", GlobalNotesEntryType.TimerStop, t.TeamName);
-                team.TimerReset += (t) => AddGlobalNote($"Timer zurückgesetzt", GlobalNotesEntryType.TimerReset, t.TeamName);
-                team.WarningTriggered += (t, isSecond) => 
-                {
-                    var warningType = isSecond ? GlobalNotesEntryType.Warning2 : GlobalNotesEntryType.Warning1;
-                    var warningText = isSecond ? "Zweite Warnung" : "Erste Warnung";
-                    AddGlobalNote($"{warningText} bei {t.ElapsedTimeString}", warningType, t.TeamName);
-                };
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error registering team events via MVVM", ex);
-            }
-        }
-
-        private void UpdateMissionDisplay(EinsatzData einsatzData)
-        {
-            try
-            {
-                EinsatzInfo = $"{einsatzData.EinsatzTyp} - {einsatzData.EinsatzDatum:dd.MM.yyyy HH:mm}";
-                Einsatzort = $"Ort: {einsatzData.Einsatzort}";
-                Einsatzleiter = $"EL: {einsatzData.Einsatzleiter}";
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error updating mission display via MVVM", ex);
-            }
-        }
-
-        private void UpdateTeamCount()
-        {
-            TeamCount = $"{_teams.Count}/50";
-        }
-
-        private void UpdateWelcomeMessageVisibility()
-        {
-            WelcomeMessageVisibility = _teams.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void AddGlobalNote(string message, GlobalNotesEntryType type, string? teamName = null)
-        {
-            try
-            {
-                var note = new GlobalNotesEntry
-                {
-                    Content = message,
-                    EntryType = type,
-                    Timestamp = DateTime.Now,
-                    TeamName = teamName ?? ""
-                };
-                
-                _globalNotesCollection.Add(note);
-                
-                if (IsEinsatzRelevantNote(type))
-                {
-                    _filteredNotesCollection.Add(note);
-                }
-                
-                ScrollToLatestNoteRequested?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error adding global note via MVVM", ex);
-            }
-        }
-
-        private bool IsEinsatzRelevantNote(GlobalNotesEntryType type)
-        {
-            return type switch
-            {
-                GlobalNotesEntryType.EinsatzUpdate => true,
-                GlobalNotesEntryType.TeamEvent => true,
-                GlobalNotesEntryType.TimerStart => false,
-                GlobalNotesEntryType.TimerStop => false,
-                GlobalNotesEntryType.TimerReset => true,
-                GlobalNotesEntryType.Warning1 => true,
-                GlobalNotesEntryType.Warning2 => true,
-                GlobalNotesEntryType.Warnung => true,
-                GlobalNotesEntryType.Fehler => true,
-                GlobalNotesEntryType.Funkspruch => true,
-                GlobalNotesEntryType.Manual => true,
-                GlobalNotesEntryType.Info => false,
-                GlobalNotesEntryType.SystemEvent => false,
-                _ => false
-            };
         }
 
         #endregion
@@ -696,7 +378,284 @@ namespace Einsatzueberwachung.ViewModels
 
         #endregion
 
-        #region IDisposable Implementation
+        #region Public Methods
+
+        /// <summary>
+        /// Adds a global note for external calls
+        /// </summary>
+        public void AddGlobalNote(string content, GlobalNotesEntryType entryType = GlobalNotesEntryType.Manual, string teamTarget = "Allgemein")
+        {
+            AddGlobalNoteInternal(content, entryType, teamTarget);
+        }
+
+        /// <summary>
+        /// Adds a team to the collection
+        /// </summary>
+        public void AddTeam(Team team)
+        {
+            try
+            {
+                if (team != null)
+                {
+                    Teams.Add(team);
+                    UpdateTeamCounter();
+                    UpdateAddTeamButtonVisibility();
+                    AddGlobalNoteInternal($"Team hinzugefügt: {team.TeamName}", GlobalNotesEntryType.TeamEvent);
+                    LoggingService.Instance.LogInfo($"Team added via MVVM: {team.TeamName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error adding team via MVVM", ex);
+            }
+        }
+
+        /// <summary>
+        /// Removes a team from the collection
+        /// </summary>
+        public void RemoveTeam(Team team)
+        {
+            try
+            {
+                if (team != null && Teams.Contains(team))
+                {
+                    Teams.Remove(team);
+                    UpdateTeamCounter();
+                    UpdateAddTeamButtonVisibility();
+                    AddGlobalNoteInternal($"Team entfernt: {team.TeamName}", GlobalNotesEntryType.TeamEvent);
+                    LoggingService.Instance.LogInfo($"Team removed via MVVM: {team.TeamName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error removing team via MVVM", ex);
+            }
+        }
+
+        /// <summary>
+        /// Adds a reply to a global note
+        /// </summary>
+        public void AddReply(string parentId, string content, string? teamName = null)
+        {
+            try
+            {
+                var reply = GlobalNotesService.Instance.CreateReply(parentId, content, teamName);
+                if (reply != null)
+                {
+                    UpdateFilteredNotes();
+                    LoggingService.Instance.LogInfo($"Reply added via MVVM to note {parentId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error adding reply via MVVM", ex);
+            }
+        }
+
+        private void UpdateTeamCounter()
+        {
+            try
+            {
+                TeamCount = $"{Teams.Count}/50";
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating team counter", ex);
+            }
+        }
+
+        private void UpdateAddTeamButtonVisibility()
+        {
+            try
+            {
+                // Show the Add Team button when there are teams (to add more) or always show it for adding the first team
+                ShowAddTeamButton = true; // Always show the button since it's useful
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating add team button visibility", ex);
+            }
+        }
+
+        #endregion
+
+        #region Initialization Methods
+
+        private void InitializeCollections()
+        {
+            try
+            {
+                _teams = new ObservableCollection<Team>();
+                LoggingService.Instance.LogInfo("Collections initialized via MVVM");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing collections via MVVM", ex);
+            }
+        }
+
+        private void InitializeClock()
+        {
+            try
+            {
+                _clockTimer.Interval = TimeSpan.FromSeconds(1);
+                _clockTimer.Tick += (s, e) => CurrentTime = DateTime.Now.ToString("HH:mm:ss");
+                _clockTimer.Start();
+                
+                LoggingService.Instance.LogInfo("Clock timer initialized via MVVM");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing clock via MVVM", ex);
+            }
+        }
+
+        private void InitializeServices()
+        {
+            try
+            {
+                // Initialize logging service if needed
+                LoggingService.Instance.LogInfo("Services initialized via MVVM");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing services via MVVM", ex);
+            }
+        }
+
+        private void InitializeTheme()
+        {
+            try
+            {
+                // Theme initialization
+                UpdateThemeIcon();
+                LoggingService.Instance.LogInfo("Theme system initialized via MVVM");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing theme via MVVM", ex);
+            }
+        }
+
+        private void InitializeNoteTargets()
+        {
+            try
+            {
+                // Initialize note targets
+                _noteTargets.Clear();
+                _noteTargets.Add(new NoteTarget { TeamId = 0, DisplayName = "Allgemein", IsSpecialTarget = true });
+                _noteTargets.Add(new NoteTarget { TeamId = 0, DisplayName = "Einsatzleiter", IsSpecialTarget = true });
+                _noteTargets.Add(new NoteTarget { TeamId = 0, DisplayName = "Drohnenstaffel", IsSpecialTarget = true });
+
+                _selectedNoteTarget = _noteTargets.FirstOrDefault();
+                
+                LoggingService.Instance.LogInfo("Note targets initialized via MVVM");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error initializing note targets via MVVM", ex);
+            }
+        }
+
+        private void UpdateMissionDisplay(EinsatzData einsatzData)
+        {
+            try
+            {
+                EinsatzInfo = $"{einsatzData.EinsatzTyp} - {einsatzData.Einsatzort}";
+                Einsatzort = einsatzData.Einsatzort;
+                Einsatzleiter = einsatzData.Einsatzleiter;
+                WelcomeMessageVisibility = Visibility.Collapsed;
+                
+                LoggingService.Instance.LogInfo("Mission display updated via MVVM");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating mission display via MVVM", ex);
+            }
+        }
+
+        private void AddGlobalNoteInternal(string content, GlobalNotesEntryType entryType, string teamTarget = "Allgemein")
+        {
+            try
+            {
+                var note = new GlobalNotesEntry
+                {
+                    Content = content,
+                    EntryType = entryType,
+                    TeamName = teamTarget == "Allgemein" ? "" : teamTarget,
+                    Timestamp = DateTime.Now
+                };
+
+                _globalNotesCollection.Add(note);
+                
+                // Keep only the last 500 notes
+                while (_globalNotesCollection.Count > 500)
+                {
+                    _globalNotesCollection.RemoveAt(0);
+                }
+                
+                UpdateFilteredNotes();
+                LastLogText = $"Aktualisiert: {DateTime.Now:HH:mm:ss}";
+                
+                LoggingService.Instance.LogInfo($"Global note added via MVVM: {entryType} - {content}");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error adding global note via MVVM", ex);
+            }
+        }
+
+        private void UpdateFilteredNotes()
+        {
+            try
+            {
+                _filteredNotesCollection.Clear();
+                
+                // Show all notes or filter by selected target
+                var notesToShow = _globalNotesCollection.AsEnumerable();
+                
+                if (_selectedNoteTarget != null && !_selectedNoteTarget.IsSpecialTarget)
+                {
+                    notesToShow = notesToShow.Where(n => n.TeamName == _selectedNoteTarget.DisplayName);
+                }
+                
+                foreach (var note in notesToShow.TakeLast(100)) // Show last 100 notes
+                {
+                    _filteredNotesCollection.Add(note);
+                }
+                
+                ScrollToLatestNoteRequested?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating filtered notes via MVVM", ex);
+            }
+        }
+
+        private void UpdateThemeIcon()
+        {
+            try
+            {
+                // This would normally check the current theme and update the icon
+                // For now, set a default
+                ThemeIcon = FontAwesome.WPF.FontAwesomeIcon.SunOutline;
+                ThemeTooltip = "Theme: Auto-Modus";
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error updating theme icon via MVVM", ex);
+            }
+        }
+
+        #endregion
+
+        #region IDisposable Support
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -704,35 +663,15 @@ namespace Einsatzueberwachung.ViewModels
             {
                 if (disposing)
                 {
-                    try
-                    {
-                        _clockTimer?.Stop();
-                        ThemeService.Instance.ThemeChanged -= OnThemeChanged;
-                        
-                        foreach (var team in _teams)
-                        {
-                            team.StopTimer();
-                            if (team is IDisposable disposableTeam)
-                            {
-                                disposableTeam.Dispose();
-                            }
-                        }
-                        
-                        LoggingService.Instance.LogInfo("MainViewModel disposed successfully");
-                    }
-                    catch (Exception ex)
-                    {
-                        LoggingService.Instance.LogError("Error disposing MainViewModel", ex);
-                    }
+                    // Dispose managed resources
+                    _clockTimer?.Stop();
+                    _clockTimer = null!;
                 }
+
+                // Dispose unmanaged resources
+
                 _disposed = true;
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         #endregion

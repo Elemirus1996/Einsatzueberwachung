@@ -1,11 +1,14 @@
-<Window x:Class="Einsatzueberwachung.Views.StatisticsWindow"
+<views:BaseThemeWindow x:Class="Einsatzueberwachung.Views.StatisticsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:views="clr-namespace:Einsatzueberwachung.Views"
         xmlns:vm="clr-namespace:Einsatzueberwachung.ViewModels"
         Title="{Binding WindowTitle}" 
         Height="850" Width="1300"
         WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        MinHeight="600" MinWidth="800"
         Icon="pack://application:,,,/Resources/app.ico"
         Background="{DynamicResource Surface}">
 
@@ -15,50 +18,27 @@
         <!-- Standard Converter -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         
-        <!-- Orange Statistics Styles -->
+        <!-- Statistics-specific styles using the new design system -->
         
-        <!-- Orange Statistics Card Style -->
-        <Style x:Key="OrangeStatisticsCard" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SurfaceContainer}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
+        <Style x:Key="StatisticsCard" TargetType="Border" BasedOn="{StaticResource Card}">
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="MinHeight" Value="140"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
-                                     ShadowDepth="0" BlurRadius="10" Opacity="0.12"/>
-                </Setter.Value>
-            </Setter>
         </Style>
         
-        <!-- Orange Metric Value Style -->
-        <Style x:Key="OrangeMetricValue" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="36"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+        <Style x:Key="MetricValue" TargetType="TextBlock" BasedOn="{StaticResource HeadlineLarge}">
             <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
-                                     ShadowDepth="0" BlurRadius="4" Opacity="0.2"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         
-        <!-- Orange Metric Label Style -->
-        <Style x:Key="OrangeMetricLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Medium"/>
+        <Style x:Key="MetricLabel" TargetType="TextBlock" BasedOn="{StaticResource LabelMedium}">
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,6,0,0"/>
         </Style>
         
-        <!-- Orange Progress Bar Style -->
-        <Style x:Key="OrangeMetricProgress" TargetType="ProgressBar">
+        <Style x:Key="MetricProgress" TargetType="ProgressBar">
             <Setter Property="Height" Value="8"/>
             <Setter Property="Margin" Value="0,8,0,0"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
@@ -66,104 +46,21 @@
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
 
-        <!-- Orange Action Button Style -->
-        <Style x:Key="OrangeStatisticsButton" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource Primary}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,10"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8" 
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource Tertiary}"/>
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
-                                             ShadowDepth="0" BlurRadius="8" Opacity="0.3"/>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="{DynamicResource OutlineVariant}"/>
-                    <Setter Property="Opacity" Value="0.6"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Orange Secondary Button Style -->
-        <Style x:Key="OrangeStatisticsSecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
-            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="16,10"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8" 
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource Primary}"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Orange Content Card Style -->
-        <Style x:Key="OrangeContentCard" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SurfaceContainer}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource Outline}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
+        <Style x:Key="ContentCard" TargetType="Border" BasedOn="{StaticResource Card}">
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="Black" 
-                                     ShadowDepth="0" BlurRadius="6" Opacity="0.08"/>
-                </Setter.Value>
-            </Setter>
         </Style>
 
-        <!-- Orange Section Title Style -->
-        <Style x:Key="OrangeSectionTitle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+        <Style x:Key="SectionTitle" TargetType="TextBlock" BasedOn="{StaticResource HeadlineMedium}">
             <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
-        <!-- Orange Card Title Style -->
-        <Style x:Key="OrangeCardTitle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+        <Style x:Key="CardTitle" TargetType="TextBlock" BasedOn="{StaticResource TitleMedium}">
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
     </Window.Resources>
 
@@ -173,12 +70,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Orange Header -->
-        <Border Grid.Row="0" CornerRadius="12" Padding="24" Margin="0,0,0,20">
+        <!-- Header with new design system -->
+        <Border Grid.Row="0" Style="{StaticResource Card}" Padding="24" Margin="0,0,0,20">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="{DynamicResource PrimaryColor}" Offset="0"/>
-                    <GradientStop Color="#FFB74D" Offset="1"/>
+                    <GradientStop Color="#F57C00" Offset="0"/>
+                    <GradientStop Color="#FF9800" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
             <Grid>
@@ -191,19 +88,19 @@
                 <!-- Header Icon & Title -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Border Width="56" Height="56" CornerRadius="28" 
-                           Background="White" Opacity="0.95" Margin="0,0,20,0"
-                           Effect="{StaticResource OrangeElevation2}">
+                           Background="{DynamicResource OnPrimary}" 
+                           Margin="0,0,20,0"
+                           Effect="{StaticResource Elevation2}">
                         <fa:ImageAwesome Icon="BarChart" Width="28" Height="28" 
                                        Foreground="{DynamicResource Primary}"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="📊 Einsatz-Statistiken" 
-                                   FontSize="28" 
-                                   FontWeight="Bold" 
-                                   Foreground="White"/>
+                                   Style="{StaticResource HeadlineLarge}"
+                                   Foreground="{DynamicResource OnPrimary}"/>
                         <TextBlock Text="{Binding LastUpdateText}" 
-                                   FontSize="14" 
-                                   Foreground="White"
+                                   Style="{StaticResource BodyMedium}"
+                                   Foreground="{DynamicResource OnPrimary}"
                                    Opacity="0.9"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
@@ -212,11 +109,11 @@
                 <!-- Action Buttons -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Command="{Binding RefreshStatsCommand}" 
-                           Style="{StaticResource OrangeStatisticsSecondaryButton}" 
+                           Style="{StaticResource OutlinedButton}" 
                            Margin="0,0,12,0"
-                           Background="White" 
+                           Background="{DynamicResource OnPrimary}" 
                            Foreground="{DynamicResource Primary}"
-                           BorderBrush="White">
+                           BorderBrush="{DynamicResource OnPrimary}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Refresh" Width="16" Height="16" 
                                            Margin="0,0,8,0"/>
@@ -224,10 +121,10 @@
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding ExportReportCommand}"
-                           Style="{StaticResource OrangeStatisticsSecondaryButton}"
-                           Background="White" 
+                           Style="{StaticResource OutlinedButton}"
+                           Background="{DynamicResource OnPrimary}" 
                            Foreground="{DynamicResource Primary}"
-                           BorderBrush="White">
+                           BorderBrush="{DynamicResource OnPrimary}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Download" Width="16" Height="16" 
                                            Margin="0,0,8,0"/>
@@ -243,70 +140,70 @@
             <StackPanel>
                 
                 <!-- Quick Metrics Row -->
-                <TextBlock Text="📈 Übersicht" Style="{StaticResource OrangeSectionTitle}"/>
+                <TextBlock Text="📈 Übersicht" Style="{StaticResource SectionTitle}"/>
                 
                 <UniformGrid Columns="4" Margin="0,0,0,24">
                     <!-- Einsatzdauer -->
-                    <Border Style="{StaticResource OrangeStatisticsCard}">
+                    <Border Style="{StaticResource StatisticsCard}">
                         <StackPanel>
                             <Border Width="48" Height="48" CornerRadius="24" 
                                    Background="{DynamicResource Primary}" 
                                    HorizontalAlignment="Center" Margin="0,0,0,12">
                                 <fa:ImageAwesome Icon="ClockOutline" Width="24" Height="24" 
-                                               Foreground="White"/>
+                                               Foreground="{DynamicResource OnPrimary}"/>
                             </Border>
-                            <TextBlock Text="{Binding EinsatzdauerValue}" Style="{StaticResource OrangeMetricValue}"/>
-                            <TextBlock Text="Einsatzdauer" Style="{StaticResource OrangeMetricLabel}"/>
+                            <TextBlock Text="{Binding EinsatzdauerValue}" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="Einsatzdauer" Style="{StaticResource MetricLabel}"/>
                         </StackPanel>
                     </Border>
                     
                     <!-- Anzahl Teams -->
-                    <Border Style="{StaticResource OrangeStatisticsCard}">
+                    <Border Style="{StaticResource StatisticsCard}">
                         <StackPanel>
                             <Border Width="48" Height="48" CornerRadius="24" 
                                    Background="{DynamicResource Secondary}" 
                                    HorizontalAlignment="Center" Margin="0,0,0,12">
                                 <fa:ImageAwesome Icon="Users" Width="24" Height="24" 
-                                               Foreground="White"/>
+                                               Foreground="{DynamicResource OnSecondary}"/>
                             </Border>
-                            <TextBlock Text="{Binding AnzahlTeamsValue}" Style="{StaticResource OrangeMetricValue}"/>
-                            <TextBlock Text="Teams Gesamt" Style="{StaticResource OrangeMetricLabel}"/>
+                            <TextBlock Text="{Binding AnzahlTeamsValue}" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="Teams Gesamt" Style="{StaticResource MetricLabel}"/>
                         </StackPanel>
                     </Border>
                     
                     <!-- Aktive Teams -->
-                    <Border Style="{StaticResource OrangeStatisticsCard}">
+                    <Border Style="{StaticResource StatisticsCard}">
                         <StackPanel>
                             <Border Width="48" Height="48" CornerRadius="24" 
                                    Background="{DynamicResource Success}" 
                                    HorizontalAlignment="Center" Margin="0,0,0,12">
                                 <fa:ImageAwesome Icon="Play" Width="24" Height="24" 
-                                               Foreground="White"/>
+                                               Foreground="{DynamicResource OnSuccess}"/>
                             </Border>
-                            <TextBlock Text="{Binding AktiveTeamsValue}" Style="{StaticResource OrangeMetricValue}"/>
-                            <TextBlock Text="Teams Aktiv" Style="{StaticResource OrangeMetricLabel}"/>
+                            <TextBlock Text="{Binding AktiveTeamsValue}" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="Teams Aktiv" Style="{StaticResource MetricLabel}"/>
                             <ProgressBar Value="{Binding TeamAuslastungProgress}" Maximum="100"
-                                        Style="{StaticResource OrangeMetricProgress}"/>
+                                        Style="{StaticResource MetricProgress}"/>
                         </StackPanel>
                     </Border>
                     
                     <!-- Durchschnittszeit -->
-                    <Border Style="{StaticResource OrangeStatisticsCard}">
+                    <Border Style="{StaticResource StatisticsCard}">
                         <StackPanel>
                             <Border Width="48" Height="48" CornerRadius="24" 
                                    Background="{DynamicResource Tertiary}" 
                                    HorizontalAlignment="Center" Margin="0,0,0,12">
                                 <fa:ImageAwesome Icon="Calculator" Width="24" Height="24" 
-                                               Foreground="White"/>
+                                               Foreground="{DynamicResource OnTertiary}"/>
                             </Border>
-                            <TextBlock Text="{Binding DurchschnittszeitValue}" Style="{StaticResource OrangeMetricValue}"/>
-                            <TextBlock Text="⌀ Einsatzzeit" Style="{StaticResource OrangeMetricLabel}"/>
+                            <TextBlock Text="{Binding DurchschnittszeitValue}" Style="{StaticResource MetricValue}"/>
+                            <TextBlock Text="⌀ Einsatzzeit" Style="{StaticResource MetricLabel}"/>
                         </StackPanel>
                     </Border>
                 </UniformGrid>
 
                 <!-- Team Performance Section -->
-                <TextBlock Text="🏆 Team-Performance" Style="{StaticResource OrangeSectionTitle}"/>
+                <TextBlock Text="🏆 Team-Performance" Style="{StaticResource SectionTitle}"/>
                 
                 <Grid Margin="0,0,0,24">
                     <Grid.ColumnDefinitions>
@@ -315,15 +212,15 @@
                     </Grid.ColumnDefinitions>
                     
                     <!-- Team Rankings -->
-                    <Border Grid.Column="0" Style="{StaticResource OrangeContentCard}" Margin="0,0,12,0">
+                    <Border Grid.Column="0" Style="{StaticResource ContentCard}" Margin="0,0,12,0">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                 <Border Width="32" Height="32" CornerRadius="16" 
                                        Background="{DynamicResource Primary}" Margin="0,0,12,0">
                                     <fa:ImageAwesome Icon="Trophy" Width="16" Height="16" 
-                                                   Foreground="White"/>
+                                                   Foreground="{DynamicResource OnPrimary}"/>
                                 </Border>
-                                <TextBlock Text="Team-Rankings" Style="{StaticResource OrangeCardTitle}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Team-Rankings" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
                             </StackPanel>
                             
                             <ListView ItemsSource="{Binding TeamRankings}" 
@@ -345,18 +242,22 @@
                                                 <Border Grid.Column="0" Background="{DynamicResource Primary}"
                                                        Width="24" Height="24" CornerRadius="12">
                                                     <TextBlock Text="{Binding Rank}" 
-                                                             Foreground="White" FontWeight="Bold" 
+                                                             Foreground="{DynamicResource OnPrimary}" FontWeight="Bold" 
                                                              HorizontalAlignment="Center" VerticalAlignment="Center"
                                                              FontSize="12"/>
                                                 </Border>
                                                 <TextBlock Grid.Column="1" Text="{Binding TeamName}" 
+                                                          Style="{StaticResource BodyMedium}"
                                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
                                                 <TextBlock Grid.Column="2" Text="{Binding Einsatzzeit}" 
+                                                          Style="{StaticResource LabelMedium}"
                                                           VerticalAlignment="Center" FontFamily="Consolas"/>
                                                 <Border Grid.Column="3" Background="{Binding StatusColor}" 
                                                        CornerRadius="12" Padding="8,4">
-                                                    <TextBlock Text="{Binding Status}" Foreground="White" 
-                                                              FontSize="10" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                                    <TextBlock Text="{Binding Status}" 
+                                                              Foreground="{DynamicResource OnPrimary}" 
+                                                              Style="{StaticResource LabelSmall}" 
+                                                              HorizontalAlignment="Center" FontWeight="Bold"/>
                                                 </Border>
                                             </Grid>
                                         </Border>
@@ -367,15 +268,15 @@
                     </Border>
                     
                     <!-- Team Type Distribution -->
-                    <Border Grid.Column="1" Style="{StaticResource OrangeContentCard}" Margin="12,0,0,0">
+                    <Border Grid.Column="1" Style="{StaticResource ContentCard}" Margin="12,0,0,0">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                 <Border Width="32" Height="32" CornerRadius="16" 
                                        Background="{DynamicResource Secondary}" Margin="0,0,12,0">
                                     <fa:ImageAwesome Icon="PieChart" Width="16" Height="16" 
-                                                   Foreground="White"/>
+                                                   Foreground="{DynamicResource OnSecondary}"/>
                                 </Border>
-                                <TextBlock Text="Team-Type Verteilung" Style="{StaticResource OrangeCardTitle}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Team-Type Verteilung" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
                             </StackPanel>
                             
                             <ItemsControl ItemsSource="{Binding TeamTypeDistribution}">
@@ -390,20 +291,22 @@
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
                                                     <TextBlock Text="{Binding TeamType}" 
+                                                             Style="{StaticResource LabelMedium}"
                                                              FontWeight="SemiBold" 
                                                              Foreground="{DynamicResource OnSurface}"/>
                                                     <ProgressBar Value="{Binding Percentage}" Maximum="100" 
                                                                Height="8" Margin="0,4,0,2" 
                                                                Background="{DynamicResource Surface}"
                                                                Foreground="{Binding Color}"/>
-                                                    <TextBlock Text="{Binding DetailText}" FontSize="11" 
+                                                    <TextBlock Text="{Binding DetailText}" 
+                                                              Style="{StaticResource BodySmall}"
                                                               Foreground="{DynamicResource OnSurfaceVariant}"/>
                                                 </StackPanel>
                                                 <Border Grid.Column="1" Background="{Binding Color}"
                                                        Width="36" Height="36" CornerRadius="18"
                                                        VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Count}" 
-                                                             Foreground="White" FontWeight="Bold" 
+                                                             Foreground="{DynamicResource OnPrimary}" FontWeight="Bold" 
                                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Border>
                                             </Grid>
@@ -416,17 +319,17 @@
                 </Grid>
 
                 <!-- Recommendations Section -->
-                <TextBlock Text="💡 Empfehlungen" Style="{StaticResource OrangeSectionTitle}"/>
+                <TextBlock Text="💡 Empfehlungen" Style="{StaticResource SectionTitle}"/>
                 
-                <Border Style="{StaticResource OrangeContentCard}">
+                <Border Style="{StaticResource ContentCard}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Width="32" Height="32" CornerRadius="16" 
                                    Background="{DynamicResource Warning}" Margin="0,0,12,0">
-                                <fa:ImageAwesome Icon="Lightbulb" Width="16" Height="16" 
-                                               Foreground="White"/>
+                                <fa:ImageAwesome Icon="LightbulbOutline" Width="16" Height="16" 
+                                               Foreground="{DynamicResource OnWarning}"/>
                             </Border>
-                            <TextBlock Text="Intelligente Empfehlungen" Style="{StaticResource OrangeCardTitle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Intelligente Empfehlungen" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
                         </StackPanel>
                         
                         <ItemsControl ItemsSource="{Binding Recommendations}">
@@ -439,9 +342,11 @@
                                                    CornerRadius="2" Margin="0,0,16,0"/>
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Title}" 
-                                                         FontWeight="SemiBold" FontSize="14"
+                                                         Style="{StaticResource LabelLarge}"
+                                                         FontWeight="SemiBold"
                                                          Foreground="{DynamicResource OnSurface}"/>
                                                 <TextBlock Text="{Binding Description}" 
+                                                         Style="{StaticResource BodyMedium}"
                                                          Foreground="{DynamicResource OnSurfaceVariant}"
                                                          TextWrapping="Wrap" Margin="0,4,0,0"/>
                                             </StackPanel>
@@ -454,17 +359,17 @@
                 </Border>
 
                 <!-- Timeline Section -->
-                <TextBlock Text="📅 Einsatz-Timeline" Style="{StaticResource OrangeSectionTitle}"/>
+                <TextBlock Text="📅 Einsatz-Timeline" Style="{StaticResource SectionTitle}"/>
                 
-                <Border Style="{StaticResource OrangeContentCard}">
+                <Border Style="{StaticResource ContentCard}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Width="32" Height="32" CornerRadius="16" 
                                    Background="{DynamicResource Tertiary}" Margin="0,0,12,0">
-                                <fa:ImageAwesome Icon="Timeline" Width="16" Height="16" 
-                                               Foreground="White"/>
+                                <fa:ImageAwesome Icon="History" Width="16" Height="16" 
+                                               Foreground="{DynamicResource OnTertiary}"/>
                             </Border>
-                            <TextBlock Text="Chronologische Ereignisse" Style="{StaticResource OrangeCardTitle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Chronologische Ereignisse" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
                         </StackPanel>
                         
                         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -480,14 +385,19 @@
                                                Margin="6" Padding="12" MinWidth="140">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Time}" FontWeight="Bold" 
-                                                          Foreground="White" HorizontalAlignment="Center"
-                                                          FontSize="16"/>
+                                                          Foreground="{DynamicResource OnPrimary}" 
+                                                          HorizontalAlignment="Center"
+                                                          Style="{StaticResource TitleMedium}"/>
                                                 <TextBlock Text="{Binding EventType}" 
-                                                          Foreground="White" HorizontalAlignment="Center" 
-                                                          FontSize="12" Opacity="0.9" Margin="0,2,0,0"/>
+                                                          Foreground="{DynamicResource OnPrimary}" 
+                                                          HorizontalAlignment="Center" 
+                                                          Style="{StaticResource LabelMedium}"
+                                                          Opacity="0.9" Margin="0,2,0,0"/>
                                                 <TextBlock Text="{Binding TeamName}" 
-                                                          Foreground="White" HorizontalAlignment="Center" 
-                                                          FontSize="11" Opacity="0.8" Margin="0,2,0,0"/>
+                                                          Foreground="{DynamicResource OnPrimary}" 
+                                                          HorizontalAlignment="Center" 
+                                                          Style="{StaticResource LabelSmall}"
+                                                          Opacity="0.8" Margin="0,2,0,0"/>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
@@ -523,7 +433,8 @@
                             </fa:ImageAwesome.Triggers>
                         </fa:ImageAwesome>
                         <TextBlock Text="Statistiken werden aktualisiert..." 
-                                  FontSize="14" FontWeight="SemiBold"
+                                  Style="{StaticResource LabelMedium}"
+                                  FontWeight="SemiBold"
                                   Foreground="{DynamicResource Primary}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
@@ -531,4 +442,4 @@
             </StackPanel>
         </ScrollViewer>
     </Grid>
-</Window>
+</views:BaseThemeWindow>

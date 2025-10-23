@@ -10,6 +10,7 @@ namespace Einsatzueberwachung.Views
     /// <summary>
     /// TeamWarningSettingsWindow - MVVM-Implementation v1.9.0
     /// Minimales Code-Behind mit ViewModel-Integration
+    /// Migrated to UnifiedThemeManager v5.0
     /// </summary>
     public partial class TeamWarningSettingsWindow : Window
     {
@@ -33,7 +34,7 @@ namespace Einsatzueberwachung.Views
 
                 ApplyCurrentTheme();
                 
-                LoggingService.Instance.LogInfo($"TeamWarningSettingsWindow initialized with MVVM pattern v1.9.0 for {teams?.Count ?? 0} teams");
+                LoggingService.Instance.LogInfo($"TeamWarningSettingsWindow initialized with MVVM pattern v1.9.0 + UnifiedThemeManager for {teams?.Count ?? 0} teams");
             }
             catch (Exception ex)
             {
@@ -94,8 +95,8 @@ namespace Einsatzueberwachung.Views
         {
             try
             {
-                // Apply current theme based on ThemeService
-                var isDarkMode = Services.ThemeService.Instance.IsDarkMode;
+                // MIGRATED: Use UnifiedThemeManager instead of ThemeService
+                var isDarkMode = UnifiedThemeManager.Instance.IsDarkMode;
                 
                 if (isDarkMode)
                 {
@@ -106,7 +107,7 @@ namespace Einsatzueberwachung.Views
                     Background = (System.Windows.Media.Brush)FindResource("SurfaceContainer");
                 }
                 
-                LoggingService.Instance.LogInfo($"Applied {(isDarkMode ? "dark" : "light")} theme to TeamWarningSettingsWindow");
+                LoggingService.Instance.LogInfo($"Applied {(isDarkMode ? "dark" : "light")} theme to TeamWarningSettingsWindow via UnifiedThemeManager");
             }
             catch (Exception ex)
             {

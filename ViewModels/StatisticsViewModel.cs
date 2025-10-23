@@ -580,26 +580,45 @@ namespace Einsatzueberwachung.ViewModels
         {
             try
             {
-                if (Application.Current?.FindResource(resourceKey) is Brush brush)
+                // Try to get color from UnifiedThemeManager first
+                var unifiedTheme = UnifiedThemeManager.Instance;
+                if (unifiedTheme.CurrentTheme.ContainsKey(resourceKey))
                 {
-                    return brush;
+                    var colorDefinition = unifiedTheme.CurrentTheme[resourceKey];
+                    return new SolidColorBrush(colorDefinition.Color);
+                }
+
+                // Fallback to Application resources
+                if (Application.Current?.FindResource(resourceKey) is Brush appBrush)
+                {
+                    return appBrush;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore and fall back
+                LoggingService.Instance.LogWarning($"Error getting theme color {resourceKey}: {ex.Message}");
             }
             
-            // Fallback colors
+            // Fallback colors with improved Orange-focused design
             return resourceKey switch
             {
-                "Primary" => Brushes.DarkOrange,
-                "Secondary" => Brushes.Orange,
-                "Success" => Brushes.Green,
-                "Error" => Brushes.Red,
-                "Warning" => Brushes.Orange,
-                "OnSurfaceVariant" => Brushes.Gray,
-                _ => Brushes.DarkOrange
+                "Primary" => new SolidColorBrush(Color.FromRgb(245, 124, 0)), // Orange 600
+                "Secondary" => new SolidColorBrush(Color.FromRgb(255, 152, 0)), // Orange 500
+                "Tertiary" => new SolidColorBrush(Color.FromRgb(255, 183, 77)), // Orange 300
+                "Success" => new SolidColorBrush(Color.FromRgb(67, 160, 71)), // Green 600
+                "Error" => new SolidColorBrush(Color.FromRgb(244, 67, 54)), // Red 500
+                "Warning" => new SolidColorBrush(Color.FromRgb(255, 152, 0)), // Orange 500
+                "OnSurfaceVariant" => new SolidColorBrush(Color.FromRgb(121, 116, 126)),
+                
+                // Team type specific colors
+                "FlächeColor" => new SolidColorBrush(Color.FromRgb(76, 175, 80)), // Green
+                "TrümmerColor" => new SolidColorBrush(Color.FromRgb(96, 125, 139)), // Blue Grey
+                "MantrailerColor" => new SolidColorBrush(Color.FromRgb(156, 39, 176)), // Purple
+                "WasserColor" => new SolidColorBrush(Color.FromRgb(33, 150, 243)), // Blue
+                "LawineColor" => new SolidColorBrush(Color.FromRgb(255, 235, 59)), // Yellow
+                "AllgemeinColor" => new SolidColorBrush(Color.FromRgb(158, 158, 158)), // Grey
+                
+                _ => new SolidColorBrush(Color.FromRgb(245, 124, 0)) // Default Orange
             };
         }
 

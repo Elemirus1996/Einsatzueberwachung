@@ -8,9 +8,10 @@ using Einsatzueberwachung.ViewModels;
 namespace Einsatzueberwachung.Views
 {
     /// <summary>
-    /// MVVM-basiertes Hunde-Bearbeitungsfenster
+    /// MVVM-basiertes Hunde-Bearbeitungsfenster - Enhanced with BaseThemeWindow Integration
+    /// Now inherits from BaseThemeWindow for automatic theme support
     /// </summary>
-    public partial class DogEditWindow : Window
+    public partial class DogEditWindow : BaseThemeWindow
     {
         private readonly DogEditViewModel _viewModel = null!;
 
@@ -19,6 +20,7 @@ namespace Einsatzueberwachung.Views
         public DogEditWindow(DogEntry? existingEntry = null)
         {
             InitializeComponent();
+            InitializeThemeSupport(); // Initialize theme after component initialization
             
             try
             {
@@ -29,13 +31,28 @@ namespace Einsatzueberwachung.Views
                 _viewModel.PropertyChanged += ViewModel_PropertyChanged;
                 _viewModel.RequestClose += ViewModel_RequestClose;
                 
-                LoggingService.Instance.LogInfo($"DogEditWindow (MVVM) initialized for {(existingEntry != null ? "editing" : "creating")} dog");
+                LoggingService.Instance.LogInfo($"DogEditWindow (MVVM) with BaseThemeWindow initialized for {(existingEntry != null ? "editing" : "creating")} dog");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error initializing DogEditWindow", ex);
                 MessageBox.Show($"Fehler beim Initialisieren des Fensters: {ex.Message}", 
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        protected override void ApplyThemeToWindow(bool isDarkMode)
+        {
+            try
+            {
+                // Apply theme-specific styling
+                base.ApplyThemeToWindow(isDarkMode);
+                
+                LoggingService.Instance.LogInfo($"Theme applied to DogEditWindow: {(isDarkMode ? "Dark" : "Light")} mode with Orange design");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error applying theme to DogEditWindow", ex);
             }
         }
 
@@ -126,7 +143,7 @@ namespace Einsatzueberwachung.Views
                     _viewModel.RequestClose -= ViewModel_RequestClose;
                 }
                 
-                LoggingService.Instance.LogInfo("DogEditWindow (MVVM) closed");
+                LoggingService.Instance.LogInfo("DogEditWindow (MVVM) with BaseThemeWindow closed");
             }
             catch (Exception ex)
             {

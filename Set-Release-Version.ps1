@@ -7,7 +7,7 @@ param(
     [switch]$Development = $false
 )
 
-Write-Host "🔧 Setting version to $Version (Development: $Development)" -ForegroundColor Green
+Write-Host "Setting version to $Version (Development: $Development)" -ForegroundColor Green
 
 # 1. Update VersionService.cs
 $versionServicePath = "Services\VersionService.cs"
@@ -30,9 +30,9 @@ if (Test-Path $versionServicePath) {
     $content = $content -replace 'private const bool IS_DEVELOPMENT_VERSION = (true|false)', "private const bool IS_DEVELOPMENT_VERSION = $developmentFlag"
     
     Set-Content $versionServicePath $content -Encoding UTF8
-    Write-Host "✅ Updated VersionService.cs" -ForegroundColor Green
+    Write-Host "Updated VersionService.cs" -ForegroundColor Green
 } else {
-    Write-Host "❌ VersionService.cs not found" -ForegroundColor Red
+    Write-Host "VersionService.cs not found" -ForegroundColor Red
 }
 
 # 2. Update .csproj file
@@ -53,9 +53,9 @@ if (Test-Path $csprojPath) {
     }
     
     $csproj.Save($csprojPath)
-    Write-Host "✅ Updated Einsatzueberwachung.csproj" -ForegroundColor Green
+    Write-Host "Updated Einsatzueberwachung.csproj" -ForegroundColor Green
 } else {
-    Write-Host "❌ Einsatzueberwachung.csproj not found" -ForegroundColor Red
+    Write-Host "Einsatzueberwachung.csproj not found" -ForegroundColor Red
 }
 
 # 3. Update Create-Release-Tag scripts
@@ -64,7 +64,7 @@ if (Test-Path $createTagBat) {
     $content = Get-Content $createTagBat -Raw
     $content = $content -replace 'set VERSION=[^\r\n]*', "set VERSION=$Version"
     Set-Content $createTagBat $content -Encoding ASCII
-    Write-Host "✅ Updated Create-Release-Tag.bat" -ForegroundColor Green
+    Write-Host "Updated Create-Release-Tag.bat" -ForegroundColor Green
 }
 
 $createTagPs1 = "Create-Release-Tag.ps1"
@@ -72,31 +72,35 @@ if (Test-Path $createTagPs1) {
     $content = Get-Content $createTagPs1 -Raw
     $content = $content -replace '\$version = "[^"]*"', "`$version = `"$Version`""
     Set-Content $createTagPs1 $content -Encoding UTF8
-    Write-Host "✅ Updated Create-Release-Tag.ps1" -ForegroundColor Green
+    Write-Host "Updated Create-Release-Tag.ps1" -ForegroundColor Green
 }
 
 # 4. Show summary
-Write-Host "`n📋 Version Update Summary:" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Version Update Summary:" -ForegroundColor Cyan
 Write-Host "   Version: $Version" -ForegroundColor White
 Write-Host "   Assembly Version: $Version.0" -ForegroundColor White
 Write-Host "   Development Mode: $Development" -ForegroundColor White
 
-Write-Host "`n🚀 Next steps for release:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Next steps for release:" -ForegroundColor Yellow
 Write-Host "   1. Build and test the application" -ForegroundColor Gray
 Write-Host "   2. Run 'Create-Release-Tag.bat' or 'Create-Release-Tag.ps1'" -ForegroundColor Gray
 Write-Host "   3. Push the tag to GitHub to trigger automatic release" -ForegroundColor Gray
 
 # 5. Validate changes
-Write-Host "`n🔍 Validating changes..." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Validating changes..." -ForegroundColor Cyan
 try {
-    dotnet build --configuration Release --verbosity quiet
+    dotnet build "Einsatzueberwachung.csproj" --configuration Release --verbosity quiet
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ Build successful with new version" -ForegroundColor Green
+        Write-Host "Build successful with new version" -ForegroundColor Green
     } else {
-        Write-Host "❌ Build failed - please check for errors" -ForegroundColor Red
+        Write-Host "Build failed - please check for errors" -ForegroundColor Red
     }
 } catch {
-    Write-Host "⚠️ Could not validate build" -ForegroundColor Yellow
+    Write-Host "Could not validate build" -ForegroundColor Yellow
 }
 
-Write-Host "`n✅ Version update completed!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Version update completed!" -ForegroundColor Green

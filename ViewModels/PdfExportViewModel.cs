@@ -33,6 +33,13 @@ namespace Einsatzueberwachung.ViewModels
         private string _alarmierungsZeit = "00:00";
         private bool _includeTimeline = true;
 
+        // NEUE Thread-Optionen
+        private bool _includeThreadStats = true;
+        private int _maxTimelineEntries = 100;
+        private bool _showThreadStructure = true;
+        private int _maxThreadDepth = 3;
+        private bool _groupByThreads = true;
+
         // UI State Properties
         private BitmapImage? _logoPreview;
         private Visibility _logoPreviewVisibility = Visibility.Collapsed;
@@ -173,12 +180,61 @@ namespace Einsatzueberwachung.ViewModels
             set => SetProperty(ref _includeTimeline, value);
         }
 
+        #region Thread-Optionen
+
+        /// <summary>
+        /// Sollen Thread-Statistiken im PDF enthalten sein?
+        /// </summary>
+        public bool IncludeThreadStats
+        {
+            get => _includeThreadStats;
+            set => SetProperty(ref _includeThreadStats, value);
+        }
+
+        /// <summary>
+        /// Maximale Anzahl von Timeline-Einträgen im PDF
+        /// </summary>
+        public int MaxTimelineEntries
+        {
+            get => _maxTimelineEntries;
+            set => SetProperty(ref _maxTimelineEntries, Math.Max(10, Math.Min(500, value))); // Zwischen 10 und 500
+        }
+
+        /// <summary>
+        /// Soll die Thread-Struktur (verschachtelte Antworten) angezeigt werden?
+        /// </summary>
+        public bool ShowThreadStructure
+        {
+            get => _showThreadStructure;
+            set => SetProperty(ref _showThreadStructure, value);
+        }
+
+        /// <summary>
+        /// Maximale Thread-Tiefe (Verschachtelungsebenen)
+        /// </summary>
+        public int MaxThreadDepth
+        {
+            get => _maxThreadDepth;
+            set => SetProperty(ref _maxThreadDepth, Math.Max(1, Math.Min(5, value))); // Zwischen 1 und 5
+        }
+
+        /// <summary>
+        /// Sollen Einträge nach Threads gruppiert werden?
+        /// </summary>
+        public bool GroupByThreads
+        {
+            get => _groupByThreads;
+            set => SetProperty(ref _groupByThreads, value);
+        }
+
+        #endregion
+
         #endregion
 
         #region UI State Properties
 
         /// <summary>
-        /// Logo-Vorschau-Bild
+        /// Logo-Vorschau als BitmapImage
         /// </summary>
         public BitmapImage? LogoPreview
         {
@@ -196,7 +252,7 @@ namespace Einsatzueberwachung.ViewModels
         }
 
         /// <summary>
-        /// Ist der Export-Vorgang aktiv?
+        /// Ist gerade ein Export aktiv?
         /// </summary>
         public bool IsExporting
         {
@@ -214,14 +270,12 @@ namespace Einsatzueberwachung.ViewModels
         }
 
         #endregion
-
-        #endregion
-
         #region Commands
 
         public ICommand SelectLogoCommand { get; private set; } = null!;
         public ICommand ExportPdfCommand { get; private set; } = null!;
         public ICommand CancelCommand { get; private set; } = null!;
+        public ICommand CancelExportCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
@@ -528,7 +582,14 @@ namespace Einsatzueberwachung.ViewModels
                 IncludeAlarmierungsZeit = IncludeAlarmierungsZeit,
                 AlarmierungsZeit = ParseAlarmierungsZeit(),
                 
-                IncludeTimeline = IncludeTimeline
+                IncludeTimeline = IncludeTimeline,
+                
+                // Thread-Optionen
+                IncludeThreadStats = IncludeThreadStats,
+                MaxTimelineEntries = MaxTimelineEntries,
+                ShowThreadStructure = ShowThreadStructure,
+                MaxThreadDepth = MaxThreadDepth,
+                GroupByThreads = GroupByThreads
             };
         }
 
@@ -630,6 +691,8 @@ namespace Einsatzueberwachung.ViewModels
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        #endregion
 
         #endregion
     }

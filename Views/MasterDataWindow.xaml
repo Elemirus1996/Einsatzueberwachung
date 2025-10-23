@@ -1,66 +1,78 @@
-<Window x:Class="Einsatzueberwachung.Views.MasterDataWindow"
+<views:BaseThemeWindow x:Class="Einsatzueberwachung.Views.MasterDataWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:vm="clr-namespace:Einsatzueberwachung.ViewModels"
+        xmlns:views="clr-namespace:Einsatzueberwachung.Views"
+        xmlns:converters="clr-namespace:Einsatzueberwachung.Converters"
         Title="Stammdaten - Personal &amp; Hunde"
-        Height="700" Width="1100"
+        Height="700" Width="1136"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource Surface}"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize"
+        MinHeight="600" MinWidth="800"
+        MaxHeight="1000" MaxWidth="1400"
+        Loaded="MasterDataWindow_Loaded">
 
-    <Window.DataContext>
-        <vm:MasterDataViewModel/>
-    </Window.DataContext>
+    <views:BaseThemeWindow.Resources>
+        <!-- Responsive Converter -->
+        <converters:WidthToBooleanConverter x:Key="WidthToBooleanConverter"/>
+        <converters:WidthToVisibilityConverter x:Key="WidthToVisibilityConverter"/>
 
-    <Window.Resources>
-        <!-- Orange Card Style -->
-        <Style x:Key="OrangeCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SurfaceContainer}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="Margin" Value="8"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource Primary}" 
-                                     ShadowDepth="0" BlurRadius="8" Opacity="0.1"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- UNIFIED DESIGN SYSTEM INTEGRATION -->
+        <!-- All base styles are now inherited from DesignSystem.xaml -->
+        <!-- Custom responsive styles only where needed -->
 
-        <!-- Orange Button Style -->
-        <Style x:Key="OrangeButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource Primary}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8" 
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <!-- Responsive Card Style - extends the unified Card style -->
+        <Style x:Key="ResponsiveCard" TargetType="Border" BasedOn="{StaticResource Card}">
             <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryVariant}"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="{DynamicResource OutlineVariant}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
-                </Trigger>
+                <!-- Compact layout for smaller windows -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                    <Setter Property="Padding" Value="12"/>
+                    <Setter Property="Margin" Value="6"/>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Orange DataGrid Style -->
+        <!-- Responsive Orange Card - extends the unified OrangeCard style -->
+        <Style x:Key="ResponsiveOrangeCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Style.Triggers>
+                <!-- Compact layout for smaller windows -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                    <Setter Property="Padding" Value="12"/>
+                    <Setter Property="Margin" Value="6"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Responsive Button Style - FIXED: Better text fitting -->
+        <Style x:Key="ResponsiveButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Style.Triggers>
+                <!-- Compact buttons for smaller windows -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                    <Setter Property="Padding" Value="12,8"/>
+                    <Setter Property="FontSize" Value="13"/>
+                    <Setter Property="MinWidth" Value="70"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Responsive Tab Item Style -->
+        <Style x:Key="ResponsiveTabItem" TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+            <Style.Triggers>
+                <!-- Compact tabs for smaller windows -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                    <Setter Property="Padding" Value="12,6"/>
+                    <Setter Property="FontSize" Value="13"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- DataGrid styling - using unified theme colors -->
         <Style TargetType="DataGrid">
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -71,7 +83,7 @@
 
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="{DynamicResource Primary}"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -107,7 +119,7 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Orange Tab Style -->
+        <!-- Tab Control styling -->
         <Style TargetType="TabItem">
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -118,18 +130,42 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-    </Window.Resources>
+    </views:BaseThemeWindow.Resources>
 
-    <Grid Margin="16">
+    <Grid x:Name="MainGrid">
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Setter Property="Margin" Value="16"/>
+                <Style.Triggers>
+                    <!-- Compact margin for smaller windows -->
+                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                        <Setter Property="Margin" Value="12"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Orange Header mit Gradient -->
-        <Border Grid.Row="0" Margin="0,0,0,8" Padding="20" CornerRadius="12"
-                Background="{DynamicResource PrimaryGradient}">
+        <!-- Unified Header with proper gradient -->
+        <Border Grid.Row="0" Margin="0,0,0,8" CornerRadius="12"
+                Background="{DynamicResource PrimaryGradient}" x:Name="HeaderBorder">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Padding" Value="20"/>
+                    <Style.Triggers>
+                        <!-- Compact header for smaller windows -->
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                            <Setter Property="Padding" Value="16"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -138,47 +174,174 @@
                 </Grid.ColumnDefinitions>
 
                 <fa:ImageAwesome Grid.Column="0" Icon="Database" Width="32" Height="32" 
-                                Foreground="White" VerticalAlignment="Center"
-                                Effect="{DynamicResource OrangeGlow}"/>
+                                Foreground="{DynamicResource OnPrimary}" VerticalAlignment="Center"
+                                Effect="{DynamicResource OrangeGlow}" x:Name="HeaderIcon">
+                    <fa:ImageAwesome.Style>
+                        <Style TargetType="fa:ImageAwesome">
+                            <Style.Triggers>
+                                <!-- Smaller icon for compact view -->
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                    <Setter Property="Width" Value="24"/>
+                                    <Setter Property="Height" Value="24"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </fa:ImageAwesome.Style>
+                </fa:ImageAwesome>
 
-                <StackPanel Grid.Column="1" Margin="16,0" VerticalAlignment="Center">
-                    <TextBlock Text="Stammdatenverwaltung" FontSize="24" FontWeight="Bold" 
-                              Foreground="White"/>
+                <StackPanel Grid.Column="1" Margin="16,0" VerticalAlignment="Center" x:Name="HeaderTextPanel">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <!-- Compact margin for smaller windows -->
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                    <Setter Property="Margin" Value="12,0"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    
+                    <TextBlock Text="Stammdatenverwaltung" FontWeight="Bold"
+                              Foreground="{DynamicResource OnPrimary}" x:Name="HeaderTitle">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource HeadlineMedium}">
+                                <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+                                <Style.Triggers>
+                                    <!-- Smaller headline for compact view -->
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                        <Setter Property="FontSize" Value="20"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    
                     <TextBlock Text="Verwalten Sie Personal und Hunde für schnellere Einsatzerfassung" 
-                              FontSize="12" Foreground="White" Opacity="0.9" Margin="0,4,0,0"/>
+                              Margin="0,4,0,0" x:Name="HeaderSubtitle">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource BodyMedium}">
+                                <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+                                <Setter Property="Opacity" Value="0.9"/>
+                                <Style.Triggers>
+                                    <!-- Hide subtitle on very small windows -->
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=800}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
 
                 <Button Grid.Column="2" Content="Schließen" 
                        Command="{Binding CloseCommand}"
                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                       Style="{StaticResource OrangeAccentButton}" Padding="20,8"/>
+                       x:Name="CloseButton">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource OrangeAccentButton}">
+                            <Setter Property="Padding" Value="20,8"/>
+                            <Style.Triggers>
+                                <!-- Compact button for smaller windows -->
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                    <Setter Property="Padding" Value="16,6"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </Grid>
         </Border>
 
-        <!-- Main Content - TabControl -->
-        <TabControl Grid.Row="1" BorderThickness="0" Background="Transparent">
+        <!-- Main Content - TabControl using unified styles -->
+        <TabControl Grid.Row="1" BorderThickness="0" Background="Transparent" x:Name="MainTabControl">
             <!-- Personal Tab -->
-            <TabItem Header="👤 Personal">
-                <Grid Margin="8">
+            <TabItem Header="👤 Personal" Style="{StaticResource ResponsiveTabItem}">
+                <Grid x:Name="PersonalTabGrid">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Margin" Value="8"/>
+                            <Style.Triggers>
+                                <!-- Compact margin for smaller windows -->
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                    <Setter Property="Margin" Value="6"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Personal Toolbar -->
-                    <Border Grid.Row="0" Style="{StaticResource OrangeCard}" Margin="0,0,0,8">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="➕ Neu" Command="{Binding AddPersonalCommand}"
-                                   Style="{StaticResource OrangeButtonStyle}" Margin="0,0,8,0"/>
-                            <Button Content="✏️ Bearbeiten" Command="{Binding EditPersonalCommand}"
-                                   Style="{StaticResource OrangeButtonStyle}" Margin="0,0,8,0"/>
-                            <Button Content="🗑️ Löschen" Command="{Binding DeletePersonalCommand}"
-                                   Style="{StaticResource OrangeButtonStyle}"/>
+                    <!-- Personal Toolbar using unified card style -->
+                    <Border Grid.Row="0" Style="{StaticResource ResponsiveOrangeCard}" Margin="0,0,0,8">
+                        <StackPanel x:Name="PersonalToolbarPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Orientation" Value="Horizontal"/>
+                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    <Style.Triggers>
+                                        <!-- Vertical layout for very small windows -->
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=800}" Value="True">
+                                            <Setter Property="Orientation" Value="Vertical"/>
+                                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <Button Content="➕ Neu" Command="{Binding AddPersonalCommand}" 
+                                   Margin="0,0,8,0" x:Name="AddPersonalButton">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ResponsiveButton}">
+                                        <Setter Property="Margin" Value="0,0,8,0"/>
+                                        <Style.Triggers>
+                                            <!-- Full width buttons in vertical layout -->
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=StackPanel}, Path=Orientation}" Value="Vertical">
+                                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            
+                            <Button Content="✏️ Bearbeiten" Command="{Binding EditPersonalCommand}" 
+                                   Margin="0,0,8,0" x:Name="EditPersonalButton">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ResponsiveButton}">
+                                        <Setter Property="Margin" Value="0,0,8,0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=StackPanel}, Path=Orientation}" Value="Vertical">
+                                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            
+                            <Button Content="🗑️ Löschen" Command="{Binding DeletePersonalCommand}" 
+                                   x:Name="DeletePersonalButton">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ResponsiveButton}">
+                                        <Style.Triggers>
+                                            <!-- Full width button in vertical layout -->
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=StackPanel}, Path=Orientation}" Value="Vertical">
+                                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </StackPanel>
                     </Border>
 
-                    <!-- Personal List -->
-                    <Border Grid.Row="1" Style="{StaticResource OrangeCard}">
+                    <!-- Personal List using unified card style -->
+                    <Border Grid.Row="1" Style="{StaticResource ResponsiveCard}">
                         <DataGrid ItemsSource="{Binding PersonalList}"
                                  SelectedItem="{Binding SelectedPersonal}"
                                  AutoGenerateColumns="False" 
@@ -189,41 +352,112 @@
                                  BorderThickness="0"
                                  GridLinesVisibility="Horizontal"
                                  RowBackground="{DynamicResource SurfaceContainer}"
-                                 AlternatingRowBackground="{DynamicResource SurfaceVariant}">
+                                 AlternatingRowBackground="{DynamicResource SurfaceVariant}" 
+                                 x:Name="PersonalDataGrid">
+                            <DataGrid.Style>
+                                <Style TargetType="DataGrid">
+                                    <Style.Triggers>
+                                        <!-- Responsive column width for smaller windows -->
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                            <Setter Property="FontSize" Value="13"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.Style>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="150"/>
-                                <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="150"/>
+                                <DataGridTextColumn Header="Vorname" Binding="{Binding Vorname}" Width="130"/>
+                                <DataGridTextColumn Header="Nachname" Binding="{Binding Nachname}" Width="130"/>
                                 <DataGridTextColumn Header="Fähigkeiten" Binding="{Binding SkillsDisplay}" Width="*"/>
-                                <DataGridTextColumn Header="Kürzel" Binding="{Binding SkillsShortDisplay}" Width="100"/>
-                                <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding IsActive}" Width="60"/>
+                                <DataGridTextColumn Header="Kürzel" Binding="{Binding SkillsShortDisplay}" Width="80"/>
+                                <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding IsActive}" Width="50"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
                 </Grid>
             </TabItem>
 
-            <!-- Hunde Tab -->
-            <TabItem Header="🐕 Hunde">
-                <Grid Margin="8">
+            <!-- Dogs Tab -->
+            <TabItem Header="🐕 Hunde" Style="{StaticResource ResponsiveTabItem}">
+                <Grid x:Name="DogsTabGrid">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Margin" Value="8"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                    <Setter Property="Margin" Value="6"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Dogs Toolbar -->
-                    <Border Grid.Row="0" Style="{StaticResource OrangeCard}" Margin="0,0,0,8">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="➕ Neu" Command="{Binding AddDogCommand}"
-                                   Style="{StaticResource OrangeButtonStyle}" Margin="0,0,8,0"/>
-                            <Button Content="✏️ Bearbeiten" Command="{Binding EditDogCommand}"
-                                   Style="{StaticResource OrangeButtonStyle}" Margin="0,0,8,0"/>
-                            <Button Content="🗑️ Löschen" Command="{Binding DeleteDogCommand}"
-                                   Style="{StaticResource OrangeButtonStyle}"/>
+                    <!-- Dogs Toolbar using unified card style -->
+                    <Border Grid.Row="0" Style="{StaticResource ResponsiveOrangeCard}" Margin="0,0,0,8">
+                        <StackPanel x:Name="DogsToolbarPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Orientation" Value="Horizontal"/>
+                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=800}" Value="True">
+                                            <Setter Property="Orientation" Value="Vertical"/>
+                                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <Button Content="➕ Neu" Command="{Binding AddDogCommand}" 
+                                   Margin="0,0,8,0" x:Name="AddDogButton">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ResponsiveButton}">
+                                        <Setter Property="Margin" Value="0,0,8,0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=StackPanel}, Path=Orientation}" Value="Vertical">
+                                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            
+                            <Button Content="✏️ Bearbeiten" Command="{Binding EditDogCommand}" 
+                                   Margin="0,0,8,0" x:Name="EditDogButton">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ResponsiveButton}">
+                                        <Setter Property="Margin" Value="0,0,8,0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=StackPanel}, Path=Orientation}" Value="Vertical">
+                                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            
+                            <Button Content="🗑️ Löschen" Command="{Binding DeleteDogCommand}" 
+                                   x:Name="DeleteDogButton">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ResponsiveButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=StackPanel}, Path=Orientation}" Value="Vertical">
+                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </StackPanel>
                     </Border>
 
-                    <!-- Dogs List -->
-                    <Border Grid.Row="1" Style="{StaticResource OrangeCard}">
+                    <!-- Dogs List using unified card style -->
+                    <Border Grid.Row="1" Style="{StaticResource ResponsiveCard}">
                         <DataGrid ItemsSource="{Binding DogList}"
                                  SelectedItem="{Binding SelectedDog}"
                                  AutoGenerateColumns="False" 
@@ -234,51 +468,147 @@
                                  BorderThickness="0"
                                  GridLinesVisibility="Horizontal"
                                  RowBackground="{DynamicResource SurfaceContainer}"
-                                 AlternatingRowBackground="{DynamicResource SurfaceVariant}">
+                                 AlternatingRowBackground="{DynamicResource SurfaceVariant}" 
+                                 x:Name="DogsDataGrid">
+                            <DataGrid.Style>
+                                <Style TargetType="DataGrid">
+                                    <Style.Triggers>
+                                        <!-- Responsive column width for smaller windows -->
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                            <Setter Property="FontSize" Value="13"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.Style>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150"/>
-                                <DataGridTextColumn Header="Rasse" Binding="{Binding Rasse}" Width="120"/>
-                                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="60"/>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="130"/>
+                                <DataGridTextColumn Header="Rasse" Binding="{Binding Rasse}" Width="100"/>
+                                <DataGridTextColumn Header="Alter" Binding="{Binding Alter}" Width="50"/>
                                 <DataGridTextColumn Header="Spezialisierungen" Binding="{Binding SpecializationsDisplay}" Width="*"/>
-                                <DataGridTextColumn Header="Kürzel" Binding="{Binding SpecializationsShortDisplay}" Width="100"/>
-                                <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding IsActive}" Width="60"/>
+                                <DataGridTextColumn Header="Kürzel" Binding="{Binding SpecializationsShortDisplay}" Width="80"/>
+                                <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding IsActive}" Width="50"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
                 </Grid>
             </TabItem>
 
-            <!-- Statistik Tab -->
-            <TabItem Header="📊 Übersicht">
-                <Border Style="{StaticResource OrangeCard}">
+            <!-- Statistics Tab -->
+            <TabItem Header="📊 Übersicht" Style="{StaticResource ResponsiveTabItem}">
+                <Border Style="{StaticResource ResponsiveCard}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="16">
-                            <TextBlock Text="Stammdaten-Statistik" FontSize="20" FontWeight="Bold" 
-                                      Foreground="{DynamicResource OnSurface}" Margin="0,0,0,16"/>
+                        <StackPanel x:Name="StatisticsPanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Margin" Value="16"/>
+                                    <Style.Triggers>
+                                        <!-- Compact margin for smaller windows -->
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                            <Setter Property="Margin" Value="12"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
 
-                            <!-- Personal Statistics -->
+                            <TextBlock Text="Stammdaten-Statistik" Margin="0,0,0,16" x:Name="StatisticsTitle">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource HeadlineSmall}">
+                                        <Style.Triggers>
+                                            <!-- Smaller headline for compact view -->
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                                <Setter Property="FontSize" Value="18"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <!-- Personal Statistics using unified container -->
                             <Border Background="{DynamicResource PrimaryContainer}" 
-                                   CornerRadius="8" Padding="16" Margin="0,0,0,16"
-                                   Effect="{DynamicResource OrangeElevation2}">
+                                   CornerRadius="8" Margin="0,0,0,16"
+                                   Effect="{DynamicResource OrangeElevation2}" x:Name="PersonalStatsCard">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Padding" Value="16"/>
+                                        <Style.Triggers>
+                                            <!-- Compact padding for smaller windows -->
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                                <Setter Property="Padding" Value="12"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <StackPanel>
-                                    <TextBlock Text="👤 Personal" FontSize="16" FontWeight="SemiBold" 
-                                              Foreground="{DynamicResource OnPrimaryContainer}"/>
-                                    <TextBlock Text="{Binding PersonalStatsText}" FontSize="14" 
-                                              Foreground="{DynamicResource OnPrimaryContainer}" 
-                                              Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock Text="👤 Personal" x:Name="PersonalStatsHeader">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource TitleMedium}">
+                                                <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
+                                                <Style.Triggers>
+                                                    <!-- Smaller subtitle for compact view -->
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                                        <Setter Property="FontSize" Value="15"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding PersonalStatsText}" 
+                                              Margin="0,8,0,0" TextWrapping="Wrap" x:Name="PersonalStatsText">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource BodyMedium}">
+                                                <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
+                                                <Style.Triggers>
+                                                    <!-- Smaller text for compact view -->
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                                        <Setter Property="FontSize" Value="13"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
                             </Border>
 
-                            <!-- Dog Statistics -->
+                            <!-- Dog Statistics using unified container -->
                             <Border Background="{DynamicResource SuccessContainer}" 
-                                   CornerRadius="8" Padding="16"
-                                   Effect="{DynamicResource OrangeElevation2}">
+                                   CornerRadius="8"
+                                   Effect="{DynamicResource OrangeElevation2}" x:Name="DogStatsCard">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Padding" Value="16"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                                <Setter Property="Padding" Value="12"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <StackPanel>
-                                    <TextBlock Text="🐕 Hunde" FontSize="16" FontWeight="SemiBold" 
-                                              Foreground="{DynamicResource OnSuccessContainer}"/>
-                                    <TextBlock Text="{Binding DogStatsText}" FontSize="14" 
-                                              Foreground="{DynamicResource OnSuccessContainer}" 
-                                              Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock Text="🐕 Hunde" x:Name="DogStatsHeader">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource TitleMedium}">
+                                                <Setter Property="Foreground" Value="{DynamicResource OnSuccessContainer}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                                        <Setter Property="FontSize" Value="15"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding DogStatsText}" 
+                                              Margin="0,8,0,0" TextWrapping="Wrap" x:Name="DogStatsText">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource BodyMedium}">
+                                                <Setter Property="Foreground" Value="{DynamicResource OnSuccessContainer}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=ActualWidth, Converter={StaticResource WidthToBooleanConverter}, ConverterParameter=900}" Value="True">
+                                                        <Setter Property="FontSize" Value="13"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -287,20 +617,25 @@
             </TabItem>
         </TabControl>
 
-        <!-- Footer -->
-        <Border Grid.Row="2" Style="{StaticResource OrangeCard}" Margin="0,8,0,0">
+        <!-- Unified Footer -->
+        <Border Grid.Row="2" Style="{StaticResource ResponsiveCard}" Margin="0,8,0,0">
             <Grid>
                 <TextBlock Text="{Binding StatusText}" 
                           Foreground="{DynamicResource OnSurfaceVariant}" 
-                          VerticalAlignment="Center"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                          VerticalAlignment="Center" x:Name="FooterStatusText"
+                          Style="{DynamicResource BodyMedium}"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" x:Name="FooterStatsPanel">
                     <TextBlock Text="{Binding PersonalCountText}" 
-                              Foreground="{DynamicResource Primary}" FontWeight="SemiBold" Margin="0,0,8,0"/>
-                    <TextBlock Text=" | " Foreground="{DynamicResource OnSurfaceVariant}"/>
+                              Foreground="{DynamicResource Primary}" FontWeight="SemiBold" Margin="0,0,8,0"
+                              Style="{DynamicResource LabelMedium}"/>
+                    <TextBlock Text=" | " Foreground="{DynamicResource OnSurfaceVariant}"
+                              Style="{DynamicResource LabelMedium}"/>
                     <TextBlock Text="{Binding DogCountText}" 
-                              Foreground="{DynamicResource Primary}" FontWeight="SemiBold" Margin="8,0,0,0"/>
+                              Foreground="{DynamicResource Primary}" FontWeight="SemiBold" Margin="8,0,0,0"
+                              Style="{DynamicResource LabelMedium}"/>
                 </StackPanel>
             </Grid>
         </Border>
     </Grid>
-</Window>
+
+</views:BaseThemeWindow>

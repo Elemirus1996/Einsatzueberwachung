@@ -8,11 +8,11 @@ using Einsatzueberwachung.ViewModels;
 namespace Einsatzueberwachung.Views
 {
     /// <summary>
-    /// Interaction logic for TeamDetailWindow.xaml
-    /// Vollständig auf MVVM-Pattern umgestellt - minimales Code-Behind
-    /// v1.9.0 mit Orange-Design-System und verbesserter Team-Löschung
+    /// TeamDetailWindow - Enhanced with Full Theme Integration v1.9.0
+    /// Now inherits from BaseThemeWindow for automatic theme support
+    /// Fully integrated with design system and theme service
     /// </summary>
-    public partial class TeamDetailWindow : Window
+    public partial class TeamDetailWindow : BaseThemeWindow
     {
         private readonly TeamDetailViewModel _viewModel;
         private TeamControl? _teamControl;
@@ -20,6 +20,7 @@ namespace Einsatzueberwachung.Views
         public TeamDetailWindow()
         {
             InitializeComponent();
+            InitializeThemeSupport(); // Initialize theme after component initialization
             
             _viewModel = new TeamDetailViewModel();
             _viewModel.TeamDeleteRequested += OnTeamDeleteRequested;
@@ -28,7 +29,7 @@ namespace Einsatzueberwachung.Views
             
             DataContext = _viewModel;
             
-            LoggingService.Instance.LogInfo("TeamDetailWindow v1.9.0 initialized with MVVM pattern and Orange design");
+            LoggingService.Instance.LogInfo("TeamDetailWindow v1.9.0 initialized with enhanced theme integration");
         }
 
         public TeamDetailWindow(Team team) : this()
@@ -51,6 +52,24 @@ namespace Einsatzueberwachung.Views
             }
         }
 
+        protected override void ApplyThemeToWindow(bool isDarkMode)
+        {
+            try
+            {
+                // Apply theme to window
+                base.ApplyThemeToWindow(isDarkMode);
+                
+                // Apply theme to embedded TeamControl
+                _teamControl?.ApplyTheme(isDarkMode);
+                
+                LoggingService.Instance.LogInfo($"Theme applied to TeamDetailWindow and embedded controls: {(isDarkMode ? "Dark" : "Light")} mode");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error applying theme to TeamDetailWindow", ex);
+            }
+        }
+
         private void InitializeTeamControl(Team team)
         {
             try
@@ -62,7 +81,7 @@ namespace Einsatzueberwachung.Views
                 _teamControl.Margin = new Thickness(0);
                 
                 // Theme auf TeamControl anwenden
-                _teamControl.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                _teamControl.ApplyTheme(UnifiedThemeManager.Instance.IsDarkMode);
                 
                 // TeamControl-Events abonnieren (für Datenänderungen)
                 if (_teamControl.DataContext is TeamControlViewModel teamControlViewModel)
@@ -98,9 +117,6 @@ namespace Einsatzueberwachung.Views
                         LoggingService.Instance.LogError("Error optimizing TeamControl for DetailWindow", ex);
                     }
                 };
-                
-                // Theme-Änderungen für TeamControl abonnieren
-                ThemeService.Instance.ThemeChanged += OnThemeChanged;
                 
                 LoggingService.Instance.LogInfo($"TeamControl embedded in DetailWindow for team {team.TeamName} with optimized layout");
             }
@@ -198,24 +214,6 @@ namespace Einsatzueberwachung.Views
             }
         }
 
-        private void OnThemeChanged(bool isDarkMode)
-        {
-            try
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    // Theme auf eingebettete TeamControl anwenden
-                    _teamControl?.ApplyTheme(isDarkMode);
-                    
-                    LoggingService.Instance.LogInfo($"Theme applied to TeamDetailWindow: {(isDarkMode ? "Dark" : "Light")} mode with Orange design");
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error applying theme to TeamDetailWindow", ex);
-            }
-        }
-
         #endregion
 
         #region Public Properties
@@ -232,7 +230,6 @@ namespace Einsatzueberwachung.Views
             try
             {
                 // Events abmelden
-                ThemeService.Instance.ThemeChanged -= OnThemeChanged;
                 _viewModel.TeamDeleteRequested -= OnTeamDeleteRequested;
                 _viewModel.TeamRefreshed -= OnTeamRefreshed;
                 _viewModel.TeamTimerChanged -= OnTeamTimerChanged;

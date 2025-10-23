@@ -8,19 +8,21 @@ using Einsatzueberwachung.Services;
 namespace Einsatzueberwachung.Views
 {
     /// <summary>
-    /// Interaction logic for PdfExportWindow.xaml - MVVM Implementation v1.9.0
-    /// PDF-Export mit vollständiger Orange-Design-Integration
+    /// PdfExportWindow - Enhanced with Theme Integration v1.9.0
+    /// Now inherits from BaseThemeWindow for automatic theme support
+    /// PDF-Export mit vollständiger Orange-Design-Integration und Unified Theme System
     /// </summary>
-    public partial class PdfExportWindow : Window
+    public partial class PdfExportWindow : BaseThemeWindow
     {
         private PdfExportViewModel? _viewModel;
 
         public PdfExportWindow(EinsatzData einsatzData, List<Team> teams)
         {
             InitializeComponent();
+            InitializeThemeSupport(); // Initialize theme after component initialization
             InitializeViewModel(einsatzData, teams);
             
-            LoggingService.Instance.LogInfo("PdfExportWindow initialized with MVVM + Orange Design v1.9.0");
+            LoggingService.Instance.LogInfo("PdfExportWindow initialized with Unified Theme System v1.9.0");
         }
 
         private void InitializeViewModel(EinsatzData einsatzData, List<Team> teams)
@@ -46,6 +48,21 @@ namespace Einsatzueberwachung.Views
                                MessageBoxButton.OK, MessageBoxImage.Error);
                 DialogResult = false;
                 Close();
+            }
+        }
+
+        protected override void ApplyThemeToWindow(bool isDarkMode)
+        {
+            try
+            {
+                // Apply theme-specific styling
+                base.ApplyThemeToWindow(isDarkMode);
+                
+                LoggingService.Instance.LogInfo($"Theme applied to PdfExportWindow: {(isDarkMode ? "Dark" : "Light")} mode with Orange design");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error applying theme to PdfExportWindow", ex);
             }
         }
 
@@ -96,13 +113,47 @@ namespace Einsatzueberwachung.Views
                     _viewModel = null;
                 }
                 
-                base.OnClosed(e);
                 LoggingService.Instance.LogInfo("PdfExportWindow closed and cleaned up via MVVM");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error during PdfExportWindow cleanup", ex);
+            }
+            finally
+            {
                 base.OnClosed(e);
+            }
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                // Check if export is in progress
+                if (_viewModel?.IsExporting == true)
+                {
+                    var result = MessageBox.Show(
+                        "Ein PDF-Export ist noch aktiv. Möchten Sie den Vorgang abbrechen und das Fenster schließen?",
+                        "Export aktiv",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                    
+                    // Cancel the export
+                    _viewModel?.CancelExportCommand?.Execute(null);
+                }
+                
+                base.OnClosing(e);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error during PdfExportWindow closing", ex);
+                base.OnClosing(e);
             }
         }
 

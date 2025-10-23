@@ -1,8 +1,9 @@
-<Window x:Class="Einsatzueberwachung.Views.MobileConnectionWindow"
+<views:BaseThemeWindow x:Class="Einsatzueberwachung.Views.MobileConnectionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:Einsatzueberwachung.Views"
+        xmlns:views="clr-namespace:Einsatzueberwachung.Views"
         Title="{Binding WindowTitle}" 
         Height="680" Width="820"
         WindowStartupLocation="CenterOwner"
@@ -269,6 +270,14 @@
                           Foreground="{DynamicResource OnSurface}" Margin="0,0,0,8" FontWeight="Bold"/>
                 
                 <StackPanel>
+                    <Button Command="{Binding RepairServiceCommand}" Style="{StaticResource OrangeMobileActionButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="Wrench" Width="16" Height="16" 
+                                           Foreground="White" Margin="0,0,8,0"/>
+                            <TextBlock Text="Service reparieren" Foreground="White" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+                    
                     <Button Command="{Binding TestConnectionCommand}" Style="{StaticResource OrangeMobileSecondaryButton}">
                         <StackPanel Orientation="Horizontal">
                             <fa:ImageAwesome Icon="Wifi" Width="16" Height="16" 
@@ -320,4 +329,4 @@
             </StackPanel>
         </Border>
     </Grid>
-</Window>
+</views:BaseThemeWindow>

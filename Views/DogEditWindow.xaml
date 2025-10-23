@@ -1,7 +1,8 @@
-<Window x:Class="Einsatzueberwachung.Views.DogEditWindow"
+<views:BaseThemeWindow x:Class="Einsatzueberwachung.Views.DogEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:views="clr-namespace:Einsatzueberwachung.Views"
         Title="{Binding WindowTitle}"
         Height="650" Width="500"
         WindowStartupLocation="CenterOwner"
@@ -9,6 +10,9 @@
         ResizeMode="NoResize">
 
     <Window.Resources>
+        <!-- Import the converter -->
+        <views:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        
         <!-- Orange Design System for Dog Edit -->
         <Style x:Key="DogEditCard" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource SurfaceContainer}"/>
@@ -31,8 +35,16 @@
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource Outline}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="12,12"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="TextWrapping" Value="NoWrap"/>
+            <Setter Property="AcceptsReturn" Value="False"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
             <!-- Orange focus border -->
             <Style.Triggers>
                 <Trigger Property="IsFocused" Value="True">
@@ -73,6 +85,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -158,6 +171,8 @@
                                  Style="{StaticResource DogEditCheckBox}"/>
                         <CheckBox IsChecked="{Binding Leichensuche}" Content="🟤 Leichenspürhund" 
                                  Style="{StaticResource DogEditCheckBox}"/>
+                        <CheckBox IsChecked="{Binding InAusbildung}" Content="🟡 In Ausbildung" 
+                                 Style="{StaticResource DogEditCheckBox}"/>
                     </StackPanel>
                 </Border>
 
@@ -199,8 +214,22 @@
             </StackPanel>
         </ScrollViewer>
 
+        <!-- Validation Message -->
+        <Border Grid.Row="2" Background="{DynamicResource ErrorContainer}" 
+                CornerRadius="8" Padding="12" Margin="8,8,8,0"
+                Visibility="{Binding HasValidationError, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel Orientation="Horizontal">
+                <fa:ImageAwesome Icon="ExclamationTriangle" Width="16" Height="16" 
+                               Foreground="{DynamicResource OnErrorContainer}" Margin="0,0,8,0"/>
+                <TextBlock Text="{Binding ValidationMessage}" 
+                          Foreground="{DynamicResource OnErrorContainer}" 
+                          Style="{StaticResource BodyMedium}" 
+                          TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
         <!-- Action Buttons with Orange Styling -->
-        <Border Grid.Row="2" Style="{StaticResource DogEditCard}">
+        <Border Grid.Row="3" Style="{StaticResource DogEditCard}">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Command="{Binding SaveCommand}" 
                        Width="140" Height="40" Margin="0,0,12,0"
@@ -222,4 +251,4 @@
             </StackPanel>
         </Border>
     </Grid>
-</Window>
+</views:BaseThemeWindow>

@@ -46,7 +46,7 @@ namespace Einsatzueberwachung.ViewModels
             
             WindowTitle = _isEditMode ? "Personal bearbeiten" : "Neues Personal";
             
-            LoggingService.Instance.LogInfo($"PersonalEditViewModel initialized - Mode: {(_isEditMode ? "Edit" : "New")}");
+            LoggingService.Instance.LogInfo($"PersonalEditViewModel initialized - Mode: {(_isEditMode ? "Edit" : "New")}, Entry ID: {_personalEntry.Id}");
         }
 
         #region Properties
@@ -118,43 +118,85 @@ namespace Einsatzueberwachung.ViewModels
         public bool IsHundefuehrer
         {
             get => _isHundefuehrer;
-            set => SetProperty(ref _isHundefuehrer, value);
+            set 
+            { 
+                if (SetProperty(ref _isHundefuehrer, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool IsHelfer
         {
             get => _isHelfer;
-            set => SetProperty(ref _isHelfer, value);
+            set 
+            { 
+                if (SetProperty(ref _isHelfer, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool IsFuehrungsassistent
         {
             get => _isFuehrungsassistent;
-            set => SetProperty(ref _isFuehrungsassistent, value);
+            set 
+            { 
+                if (SetProperty(ref _isFuehrungsassistent, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool IsGruppenfuehrer
         {
             get => _isGruppenfuehrer;
-            set => SetProperty(ref _isGruppenfuehrer, value);
+            set 
+            { 
+                if (SetProperty(ref _isGruppenfuehrer, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool IsZugfuehrer
         {
             get => _isZugfuehrer;
-            set => SetProperty(ref _isZugfuehrer, value);
+            set 
+            { 
+                if (SetProperty(ref _isZugfuehrer, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool IsVerbandsfuehrer
         {
             get => _isVerbandsfuehrer;
-            set => SetProperty(ref _isVerbandsfuehrer, value);
+            set 
+            { 
+                if (SetProperty(ref _isVerbandsfuehrer, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool IsDrohnenpilot
         {
             get => _isDrohnenpilot;
-            set => SetProperty(ref _isDrohnenpilot, value);
+            set 
+            { 
+                if (SetProperty(ref _isDrohnenpilot, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         #endregion
@@ -171,7 +213,8 @@ namespace Einsatzueberwachung.ViewModels
             {
                 if (SetProperty(ref _isFormValid, value))
                 {
-                    ((RelayCommand)SaveCommand).RaiseCanExecuteChanged();
+                    // Fix: Correct cast to RelayCommand<Window>
+                    ((RelayCommand<Window>)SaveCommand).RaiseCanExecuteChanged();
                 }
             }
         }
@@ -184,6 +227,11 @@ namespace Einsatzueberwachung.ViewModels
             get => _validationMessage;
             set => SetProperty(ref _validationMessage, value);
         }
+
+        /// <summary>
+        /// Gibt es Validierungsfehler?
+        /// </summary>
+        public bool HasValidationError => !string.IsNullOrEmpty(ValidationMessage);
 
         #endregion
 
@@ -212,9 +260,14 @@ namespace Einsatzueberwachung.ViewModels
         {
             try
             {
+                LoggingService.Instance.LogInfo($"=== EXECUTE SAVE CALLED ===");
+                LoggingService.Instance.LogInfo($"Window parameter: {window?.GetType().Name ?? "NULL"}");
+                LoggingService.Instance.LogInfo($"Starting save process - IsEditMode: {_isEditMode}, PersonalEntry ID: {_personalEntry.Id}");
+
                 // Letzte Validierung
                 if (!ValidateForm())
                 {
+                    LoggingService.Instance.LogWarning("Save cancelled due to validation errors");
                     return;
                 }
 
@@ -240,15 +293,27 @@ namespace Einsatzueberwachung.ViewModels
                 if (!_isEditMode && string.IsNullOrEmpty(_personalEntry.Id))
                 {
                     _personalEntry.Id = Guid.NewGuid().ToString();
+                    LoggingService.Instance.LogInfo($"Generated new ID for PersonalEntry: {_personalEntry.Id}");
                 }
 
-                LoggingService.Instance.LogInfo($"Personal saved via MVVM: {_personalEntry.FullName} - Mode: {(_isEditMode ? "Edit" : "New")}");
+                LoggingService.Instance.LogInfo($"PersonalEntry prepared for save: ID={_personalEntry.Id}, Name={_personalEntry.FullName}, Skills={skills}");
+
+                // WICHTIG: Das PersonalEntry-Objekt ist jetzt fertig und wird an das aufrufende Fenster zurückgegeben
+                // Die tatsächliche Speicherung in der MasterData erfolgt durch das aufrufende ViewModel
+                
+                LoggingService.Instance.LogInfo($"Personal data ready for return to caller - Mode: {(_isEditMode ? "Edit" : "New")}");
 
                 // Dialog erfolgreich schließen
                 if (window != null)
                 {
+                    LoggingService.Instance.LogInfo("Setting DialogResult to true and closing window");
                     window.DialogResult = true;
                     window.Close();
+                    LoggingService.Instance.LogInfo("Window closed successfully");
+                }
+                else
+                {
+                    LoggingService.Instance.LogError("Window parameter is NULL - cannot close window!");
                 }
             }
             catch (Exception ex)
@@ -333,6 +398,8 @@ namespace Einsatzueberwachung.ViewModels
                 IsZugfuehrer = _personalEntry.Skills.HasFlag(PersonalSkills.Zugfuehrer);
                 IsVerbandsfuehrer = _personalEntry.Skills.HasFlag(PersonalSkills.Verbandsfuehrer);
                 IsDrohnenpilot = _personalEntry.Skills.HasFlag(PersonalSkills.Drohnenpilot);
+
+                LoggingService.Instance.LogInfo($"Loaded existing PersonalEntry data: {_personalEntry.FullName}, Skills: {_personalEntry.Skills}");
             }
             else
             {
@@ -373,7 +440,10 @@ namespace Einsatzueberwachung.ViewModels
                 errors.Add("Nachname ist erforderlich");
             }
 
-            if (!HasAnySkillSelected())
+            var hasSkills = HasAnySkillSelected();
+            LoggingService.Instance.LogInfo($"Validation: HasAnySkillSelected = {hasSkills}, Skills: HF={IsHundefuehrer}, H={IsHelfer}, FA={IsFuehrungsassistent}, GF={IsGruppenfuehrer}, ZF={IsZugfuehrer}, VF={IsVerbandsfuehrer}, DP={IsDrohnenpilot}");
+
+            if (!hasSkills)
             {
                 errors.Add("Mindestens eine Fähigkeit muss ausgewählt werden");
             }
@@ -381,13 +451,19 @@ namespace Einsatzueberwachung.ViewModels
             ValidationMessage = errors.Count > 0 ? string.Join(", ", errors) : string.Empty;
             IsFormValid = errors.Count == 0;
 
+            LoggingService.Instance.LogInfo($"Validation result: IsFormValid={IsFormValid}, ValidationMessage='{ValidationMessage}'");
+
             return IsFormValid;
         }
 
         private bool HasAnySkillSelected()
         {
-            return IsHundefuehrer || IsHelfer || IsFuehrungsassistent || 
+            var result = IsHundefuehrer || IsHelfer || IsFuehrungsassistent || 
                    IsGruppenfuehrer || IsZugfuehrer || IsVerbandsfuehrer || IsDrohnenpilot;
+            
+            LoggingService.Instance.LogInfo($"HasAnySkillSelected: result={result}, individual skills: HF={IsHundefuehrer}, H={IsHelfer}, FA={IsFuehrungsassistent}, GF={IsGruppenfuehrer}, ZF={IsZugfuehrer}, VF={IsVerbandsfuehrer}, DP={IsDrohnenpilot}");
+            
+            return result;
         }
 
         #endregion

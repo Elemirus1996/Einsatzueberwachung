@@ -8,10 +8,10 @@ using Einsatzueberwachung.Services;
 namespace Einsatzueberwachung.Views
 {
     /// <summary>
-    /// Interaction logic for StatisticsWindow.xaml - MVVM Implementation v1.9.0
-    /// Einsatz-Statistiken mit vollständiger Orange-Design-Integration
+    /// Interaction logic for StatisticsWindow.xaml - MVVM Implementation v2.0
+    /// Updated for Unified Theme System and BaseThemeWindow integration
     /// </summary>
-    public partial class StatisticsWindow : Window
+    public partial class StatisticsWindow : BaseThemeWindow
     {
         private StatisticsViewModel? _viewModel;
 
@@ -20,7 +20,7 @@ namespace Einsatzueberwachung.Views
             InitializeComponent();
             InitializeViewModel(teams, einsatzData);
             
-            LoggingService.Instance.LogInfo("StatisticsWindow initialized with MVVM + Orange Design v1.9.0");
+            LoggingService.Instance.LogInfo("StatisticsWindow initialized with Unified Theme System v2.0");
         }
 
         private void InitializeViewModel(List<Team> teams, EinsatzData einsatzData)
@@ -30,7 +30,7 @@ namespace Einsatzueberwachung.Views
                 _viewModel = new StatisticsViewModel(teams, einsatzData);
                 DataContext = _viewModel;
                 
-                LoggingService.Instance.LogInfo("StatisticsViewModel initialized and connected");
+                LoggingService.Instance.LogInfo("StatisticsViewModel initialized and connected with Unified Theme System");
             }
             catch (Exception ex)
             {
@@ -44,6 +44,30 @@ namespace Einsatzueberwachung.Views
                 Close();
             }
         }
+
+        #region BaseThemeWindow Override
+
+        /// <summary>
+        /// Applies theme to StatisticsWindow - now handled automatically by BaseThemeWindow
+        /// Optional customizations can be added here
+        /// </summary>
+        protected override void ApplyThemeToWindow(bool isDarkMode)
+        {
+            try
+            {
+                // Call base implementation first (handles standard theme application)
+                base.ApplyThemeToWindow(isDarkMode);
+                
+                // Optional: StatisticsWindow-specific theme customizations
+                LoggingService.Instance.LogInfo($"StatisticsWindow theme applied: {(isDarkMode ? "Dark" : "Light")} mode via Unified Theme System");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error applying theme to StatisticsWindow", ex);
+            }
+        }
+
+        #endregion
 
         #region Public Methods
 
@@ -106,12 +130,15 @@ namespace Einsatzueberwachung.Views
                     _viewModel = null;
                 }
                 
-                base.OnClosed(e);
-                LoggingService.Instance.LogInfo("StatisticsWindow closed and cleaned up via MVVM");
+                LoggingService.Instance.LogInfo("StatisticsWindow closed and cleaned up via Unified Theme System");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error during StatisticsWindow cleanup", ex);
+            }
+            finally
+            {
+                // BaseThemeWindow handles theme cleanup automatically
                 base.OnClosed(e);
             }
         }

@@ -7,14 +7,16 @@ using System.Windows.Controls.Primitives;
 using Einsatzueberwachung.Models;
 using Einsatzueberwachung.Services;
 using Einsatzueberwachung.ViewModels;
+using Einsatzueberwachung.Views;
 
 namespace Einsatzueberwachung
 {
     /// <summary>
-    /// MainWindow - MVVM-Implementation v1.9.0
-    /// Minimales Code-Behind mit ViewModel-Integration für globale Anwendungssteuerung
+    /// MainWindow - Enhanced with Full Theme Integration v1.9.0
+    /// Now inherits from BaseThemeWindow for automatic theme support
+    /// MVVM-Implementation with comprehensive theme integration
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : BaseThemeWindow
     {
         private MainViewModel? _viewModel;
         private bool _isFullscreen = false;
@@ -27,9 +29,10 @@ namespace Einsatzueberwachung
         public MainWindow()
         {
             InitializeComponent();
-            InitializeViewModel();
+            InitializeThemeSupport(); // Initialize theme after component initialization
+            // Don't initialize ViewModel here - this is called during StartWindow transition
             
-            LoggingService.Instance.LogInfo("MainWindow initialized with MVVM pattern v1.9.0");
+            LoggingService.Instance.LogInfo("MainWindow initialized with enhanced theme integration v1.9.2");
         }
 
         public MainWindow(EinsatzData einsatzData, int firstWarningMinutes, int secondWarningMinutes) : this()
@@ -44,13 +47,134 @@ namespace Einsatzueberwachung
                 // MainViewModel für globalen Zugriff registrieren
                 MainViewModelService.Instance.RegisterMainViewModel(_viewModel);
                 
-                LoggingService.Instance.LogInfo($"MainWindow initialized with mission data via MVVM: {einsatzData.EinsatzTyp}");
+                // WICHTIG: GlobalNotesService mit den Collections des ViewModels initialisieren
+                InitializeGlobalNotesService();
+                
+                LoggingService.Instance.LogInfo($"MainWindow initialized with mission data, theme support and Reply system - {einsatzData.EinsatzTyp}");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error initializing MainWindow with mission data", ex);
             }
         }
+
+        /// <summary>
+        /// Constructor for MainWindow when started without mission data (for recovery scenarios)
+        /// </summary>
+        public static MainWindow CreateForRecovery()
+        {
+            var mainWindow = new MainWindow();
+            mainWindow.InitializeViewModel();
+            return mainWindow;
+        }
+
+        /// <summary>
+        /// Initialisiert den GlobalNotesService mit den MainViewModel Collections
+        /// KRITISCH für das Reply-System!
+        /// </summary>
+        private void InitializeGlobalNotesService()
+        {
+            try
+            {
+                if (_viewModel == null)
+                {
+                    LoggingService.Instance.LogError("Cannot initialize GlobalNotesService - MainViewModel is null");
+                    return;
+                }
+
+                // GlobalNotesService mit ViewModel-Collections initialisieren
+                // REPARIERT: Verwende die richtige öffentliche Methode
+                GlobalNotesService.Instance.Initialize(
+                    _viewModel.FilteredNotesCollection,
+                    (message) => _viewModel.AddGlobalNote(message, GlobalNotesEntryType.Info),
+                    (message) => _viewModel.AddGlobalNote(message, GlobalNotesEntryType.Warnung),
+                    (message) => _viewModel.AddGlobalNote(message, GlobalNotesEntryType.Fehler)
+                );
+
+                LoggingService.Instance.LogInfo("GlobalNotesService successfully initialized with MainViewModel collections for Reply system");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Critical error initializing GlobalNotesService for Reply system", ex);
+            }
+        }
+
+        #region Reply-System Event Handlers - VOLLSTÄNDIG REPARIERT
+
+        /// <summary>
+        /// Event-Handler für Reply-Button Klicks - REPARIERT!
+        /// </summary>
+        private void ReplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is Button button && button.Tag is GlobalNotesEntry originalNote)
+                {
+                    LoggingService.Instance.LogInfo($"Reply button clicked for note: {originalNote.Id}");
+                    ShowReplyDialog(originalNote);
+                }
+                else
+                {
+                    LoggingService.Instance.LogWarning("Reply button clicked but no valid note found in Tag");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error handling reply button click", ex);
+                MessageBox.Show($"Fehler beim Öffnen des Antwort-Dialogs:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Zeigt den Thread-Entry-Dialog für eine bestimmte Notiz - VOLLSTÄNDIG REPARIERT!
+        /// </summary>
+        private void ShowReplyDialog(GlobalNotesEntry originalNote)
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo($"Opening reply dialog for note {originalNote.Id}: {originalNote.Content.Substring(0, Math.Min(50, originalNote.Content.Length))}...");
+                
+                // Sammle verfügbare Ziele für den Thread-Eintrag
+                var availableTargets = _viewModel?.NoteTargets?.ToList() ?? new System.Collections.Generic.List<NoteTarget>();
+
+                // Zeige Thread-Entry-Dialog mit VOLLSTÄNDIGER Integration
+                var reply = ReplyDialogWindow.ShowThreadEntryDialog(this, originalNote, availableTargets);
+                
+                if (reply != null)
+                {
+                    LoggingService.Instance.LogInfo($"Reply created successfully: {reply.Content.Substring(0, Math.Min(50, reply.Content.Length))}...");
+                    LoggingService.Instance.LogInfo($"Reply properties - ID: {reply.Id}, ReplyToEntryId: {reply.ReplyToEntryId}, ThreadDepth: {reply.ThreadDepth}");
+                    
+                    // KRITISCH: Reply über GlobalNotesService hinzufügen, damit alle Verknüpfungen korrekt erstellt werden
+                    GlobalNotesService.Instance.AddNote(reply);
+                    
+                    // ZUSÄTZLICH: Auch über ViewModel hinzufügen für UI-Updates
+                    // ABER: Verwende eine Spezial-Methode um Duplikate zu vermeiden
+                    _viewModel?.AddReply(reply.ReplyToEntryId ?? "", reply.Content, reply.TeamName);
+                    
+                    LoggingService.Instance.LogInfo($"Reply added to both GlobalNotesService and MainViewModel - Thread depth: {reply.ThreadDepth}");
+                    
+                    // Scroll zur neuesten Notiz
+                    Dispatcher.BeginInvoke(() =>
+                    {
+                        GlobalNotesScrollViewer?.ScrollToEnd();
+                    });
+                }
+                else
+                {
+                    LoggingService.Instance.LogInfo("Reply dialog was cancelled or returned null");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error showing thread entry dialog", ex);
+                MessageBox.Show($"Fehler beim Erstellen des Thread-Eintrags:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
 
         private void InitializeViewModel()
         {
@@ -63,8 +187,12 @@ namespace Einsatzueberwachung
                 // MainViewModel für globalen Zugriff registrieren
                 MainViewModelService.Instance.RegisterMainViewModel(_viewModel);
                 
-                // Check for recovery
-                CheckForRecoveryAsync();
+                // WICHTIG: Auch hier GlobalNotesService initialisieren
+                InitializeGlobalNotesService();
+                
+                // Don't check for recovery here - this is only called from CreateForRecovery
+                // Recovery is already handled in App.xaml.cs
+                LoggingService.Instance.LogInfo("MainWindow ViewModel initialized for recovery scenario with Reply system");
             }
             catch (Exception ex)
             {
@@ -101,21 +229,36 @@ namespace Einsatzueberwachung
                     return;
                 }
 
+                // Vereinfachtes Team-Input ohne Map-Referenzen
                 var inputWindow = new Views.TeamInputWindow();
                 inputWindow.Owner = this;
                 inputWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 
                 if (inputWindow.ShowDialog() == true)
                 {
+                    // Verwende die Standard-Team-Erstellung
                     var newTeam = new Team
                     {
                         TeamName = inputWindow.TeamName,
                         HundName = inputWindow.HundName,
                         Hundefuehrer = inputWindow.Hundefuehrer,
                         Helfer = inputWindow.Helfer,
-                        Suchgebiet = inputWindow.Suchgebiet,
-                        MultipleTeamTypes = inputWindow.PreselectedTeamTypes ?? new MultipleTeamTypes(TeamType.Allgemein)
+                        Suchgebiet = inputWindow.Suchgebiet
                     };
+                    
+                    // Setze MultipleTeamTypes falls verfügbar
+                    if (inputWindow.PreselectedTeamTypes != null)
+                    {
+                        newTeam.MultipleTeamTypes = inputWindow.PreselectedTeamTypes;
+                        LoggingService.Instance.LogInfo($"Team created with preselected types: {inputWindow.PreselectedTeamTypes.DisplayName}");
+                    }
+                    else
+                    {
+                        // Erstelle leere MultipleTeamTypes ohne automatisches Allgemein
+                        newTeam.MultipleTeamTypes = new MultipleTeamTypes();
+                        newTeam.MultipleTeamTypes.SelectedTypes.Clear(); // Explizit leeren um sicherzugehen
+                        LoggingService.Instance.LogWarning("Team created without any team types - this should not happen in normal flow");
+                    }
                     
                     _viewModel?.AddTeam(newTeam);
                 }
@@ -252,7 +395,7 @@ namespace Einsatzueberwachung
             {
                 var teamCompactCard = new Views.TeamCompactCard { Team = team };
                 teamCompactCard.TeamClicked += OnTeamCompactCardClicked;
-                teamCompactCard.ApplyTheme(ThemeService.Instance.IsDarkMode);
+                teamCompactCard.ApplyTheme(UnifiedThemeManager.Instance.IsDarkMode);
                 
                 _teamCompactCards[team.TeamId] = teamCompactCard;
                 DashboardGrid?.Children.Add(teamCompactCard);
@@ -478,33 +621,69 @@ namespace Einsatzueberwachung
         {
             try
             {
+                // Stelle sicher, dass MainViewModel verfügbar ist
+                if (_viewModel == null)
+                {
+                    LoggingService.Instance.LogError("Cannot open MobileConnectionWindow - MainViewModel is null");
+                    MessageBox.Show("Fehler: Hauptdaten sind nicht verfügbar.\n\n" +
+                                   "Bitte starten Sie die Anwendung neu.",
+                                   "Datenintegration-Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                
+                LoggingService.Instance.LogInfo($"Opening MobileConnectionWindow with data integration. Teams: {_viewModel.Teams.Count}, Notes: {_viewModel.FilteredNotesCollection.Count}");
+                
                 // Verwende die neue Factory-Methode mit Daten-Integration
-                var window = Views.MobileConnectionWindow.CreateWithDataIntegration(_viewModel!);
+                var window = Views.MobileConnectionWindow.CreateWithDataIntegration(_viewModel);
                 window.Owner = this;
                 window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 window.Show();
                 
-                LoggingService.Instance.LogInfo("MobileConnectionWindow opened with data integration");
+                LoggingService.Instance.LogInfo("MobileConnectionWindow opened with full data integration");
             }
             catch (Exception ex)
             {
                 LoggingService.Instance.LogError("Error opening mobile connection window with data integration", ex);
                 
-                // Fallback: Normale MobileConnectionWindow ohne Daten-Integration
-                try
+                // Erweiterte Fehlerdiagnose
+                var errorDetails = $"Error: {ex.Message}";
+                if (_viewModel != null)
                 {
-                    var fallbackWindow = new Views.MobileConnectionWindow();
-                    fallbackWindow.Owner = this;
-                    fallbackWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    fallbackWindow.Show();
-                    
-                    LoggingService.Instance.LogWarning("MobileConnectionWindow opened without data integration (fallback)");
+                    errorDetails += $"\nTeams verfügbar: {_viewModel.Teams?.Count ?? -1}";
+                    errorDetails += $"\nNotizen verfügbar: {_viewModel.FilteredNotesCollection?.Count ?? -1}";
                 }
-                catch (Exception fallbackEx)
+                
+                var result = MessageBox.Show($"Fehler beim Öffnen der Mobile-Verbindung mit Datenintegration:\n\n" +
+                                           $"{errorDetails}\n\n" +
+                                           $"Möchten Sie das Mobile-Fenster ohne Datenintegration öffnen?\n\n" +
+                                           $"JA: Mobile-Fenster mit Demo-Daten\n" +
+                                           $"NEIN: Abbrechen und Problem beheben",
+                    "Mobile-Verbindung Fehler", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                
+                if (result == MessageBoxResult.Yes)
                 {
-                    LoggingService.Instance.LogError("Error opening fallback mobile connection window", fallbackEx);
-                    MessageBox.Show($"Fehler beim Öffnen der Mobile-Verbindung:\n{ex.Message}", 
-                        "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // Fallback: Normale MobileConnectionWindow ohne Daten-Integration
+                    try
+                    {
+                        var fallbackWindow = new Views.MobileConnectionWindow();
+                        fallbackWindow.Owner = this;
+                        fallbackWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                        fallbackWindow.Show();
+                        
+                        LoggingService.Instance.LogWarning("MobileConnectionWindow opened without data integration (fallback mode)");
+                        
+                        MessageBox.Show("Mobile-Fenster wurde im Notfall-Modus geöffnet.\n\n" +
+                                       "Demo-Daten werden angezeigt statt echter Einsatzdaten.\n\n" +
+                                       "Für vollständige Funktionalität bitte die Anwendung neu starten.",
+                                       "Notfall-Modus aktiv", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception fallbackEx)
+                    {
+                        LoggingService.Instance.LogError("Error opening fallback mobile connection window", fallbackEx);
+                        MessageBox.Show($"Kritischer Fehler: Auch der Notfall-Modus ist fehlgeschlagen:\n\n{fallbackEx.Message}\n\n" +
+                                       "Bitte starten Sie die Anwendung neu oder kontaktieren Sie den Support.",
+                            "Kritischer Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
         }
@@ -580,71 +759,8 @@ namespace Einsatzueberwachung
 
         #region Recovery and Startup
 
-        private async void CheckForRecoveryAsync()
-        {
-            try
-            {
-                if (PersistenceService.Instance.HasCrashRecovery())
-                {
-                    var result = MessageBox.Show(
-                        "Es wurde eine unterbrochene Sitzung gefunden. Möchten Sie diese wiederherstellen?",
-                        "Wiederherstellung", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        var sessionData = await PersistenceService.Instance.LoadCrashRecoveryAsync().ConfigureAwait(false);
-                        if (sessionData != null)
-                        {
-                            PersistenceService.Instance.ClearCrashRecovery();
-                            LoggingService.Instance.LogInfo("Session restored from crash recovery via MVVM");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        PersistenceService.Instance.ClearCrashRecovery();
-                    }
-                }
-
-                ShowStartWindow();
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error during recovery check via MVVM", ex);
-                ShowStartWindow();
-            }
-        }
-
-        private void ShowStartWindow()
-        {
-            try
-            {
-                var startWindow = new Views.StartWindow();
-                startWindow.Owner = this;
-                
-                var result = startWindow.ShowDialog();
-                
-                if (result == true && startWindow.EinsatzData != null)
-                {
-                    _viewModel?.Dispose();
-                    _viewModel = new MainViewModel(startWindow.EinsatzData, 
-                        startWindow.FirstWarningMinutes, startWindow.SecondWarningMinutes);
-                    DataContext = _viewModel;
-                    SubscribeToViewModelEvents();
-                    
-                    // Neues MainViewModel registrieren
-                    MainViewModelService.Instance.RegisterMainViewModel(_viewModel);
-                }
-                else
-                {
-                    Application.Current.Shutdown();
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Instance.LogError("Error showing StartWindow via MVVM", ex);
-            }
-        }
+        // Recovery is now handled in App.xaml.cs during application startup
+        // This region is kept for potential future recovery-related functionality
 
         #endregion
 
@@ -691,7 +807,7 @@ namespace Einsatzueberwachung
                 _viewModel?.Dispose();
                 _teamCompactCards.Clear();
                 
-                LoggingService.Instance.LogInfo("MainWindow closed via MVVM - cleanup completed");
+                LoggingService.Instance.LogInfo("MainWindow closed via MVVM with theme support - cleanup completed");
                 Application.Current.Shutdown();
             }
             catch (Exception ex)

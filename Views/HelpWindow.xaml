@@ -1,209 +1,563 @@
-<Window x:Class="Einsatzueberwachung.Views.HelpWindow"
+<views:BaseThemeWindow x:Class="Einsatzueberwachung.Views.HelpWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
-        xmlns:local="clr-namespace:Einsatzueberwachung.Views"
-        Title="Hilfe - Einsatzüberwachung Professional v1.9.0 Orange Edition" 
-        Height="800" Width="1100"
+        xmlns:views="clr-namespace:Einsatzueberwachung.Views"
+        Title="Hilfe - Einsatzüberwachung Professional" 
+        Height="800" Width="1000"
         WindowStartupLocation="CenterOwner"
-        Icon="pack://application:,,,/Resources/app.ico"
-        Background="{DynamicResource SurfaceContainer}">
+        ResizeMode="CanResize"
+        MinHeight="600" MinWidth="900"
+        Background="{DynamicResource Surface}"
+        Icon="pack://application:,,,/Resources/app.ico">
 
-    <Window.Resources>
-        <!-- Orange Help Navigation Button -->
-        <Style x:Key="OrangeHelpNavButton" TargetType="Button" BasedOn="{StaticResource TextButton}">
+    <views:BaseThemeWindow.Resources>
+        <!-- Enhanced help window styles -->
+        <Style x:Key="HelpSidebar" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceContainer}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource OutlineVariant}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <Style x:Key="HelpContent" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="Padding" Value="32,24"/>
+        </Style>
+
+        <Style x:Key="NavButton" TargetType="Button" BasedOn="{StaticResource TextButton}">
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="Padding" Value="16,12"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8" 
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource OnPrimaryContainer}"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="Active">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource Primary}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation2}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource TertiaryContainer}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        
-        <!-- Orange Feature Button Style -->
-        <Style x:Key="OrangeNewFeatureButton" TargetType="Button" BasedOn="{StaticResource OrangeHelpNavButton}">
-            <Setter Property="Background" Value="{DynamicResource TertiaryContainer}"/>
-            <Setter Property="Foreground" Value="{DynamicResource OnTertiaryContainer}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Effect" Value="{StaticResource OrangeElevation1}"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Effect" Value="{StaticResource OrangeElevation2}"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <!-- Content Style for Help Text -->
-        <Style x:Key="HelpContentStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="LineHeight" Value="22"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
+        <Style x:Key="QuickActionCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource PrimaryContainer}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+            <Setter Property="Effect" Value="{StaticResource Elevation2}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style x:Key="FeatureCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Margin" Value="0,12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect" Value="{StaticResource Elevation1}"/>
+        </Style>
+
+        <Style x:Key="HelpSectionHeader" TargetType="TextBlock" BasedOn="{StaticResource HeadlineMedium}">
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+        </Style>
+
+        <Style x:Key="HelpSubHeader" TargetType="TextBlock" BasedOn="{StaticResource TitleMedium}">
             <Setter Property="Foreground" Value="{DynamicResource OnSurface}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,20,0,12"/>
+        </Style>
+
+        <Style x:Key="HelpText" TargetType="TextBlock" BasedOn="{StaticResource BodyMedium}">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="LineHeight" Value="22"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
         </Style>
-    </Window.Resources>
 
-    <Grid Margin="20">
+        <Style x:Key="KeyboardShortcut" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Outline}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <Style x:Key="KeyBadge" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Primary}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="StepNumber" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Primary}"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,0,16,0"/>
+        </Style>
+    </views:BaseThemeWindow.Resources>
+
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="280"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Orange Navigation Sidebar -->
-        <Border Grid.Column="0" Style="{StaticResource Card}" 
-               Margin="0,0,16,0" Padding="16">
+        <!-- Enhanced Navigation Sidebar -->
+        <Border Grid.Column="0" Style="{StaticResource HelpSidebar}">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <!-- Orange Header -->
-                    <Border Style="{StaticResource OrangeCard}" Margin="0,0,0,20">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <!-- Orange Icon with Glow -->
-                            <Border Width="48" Height="48" CornerRadius="24" 
-                                   Background="{DynamicResource Primary}" Margin="0,0,12,0"
-                                   Effect="{StaticResource OrangeElevation2}">
+                    <!-- Header -->
+                    <Border Background="{DynamicResource PrimaryGradient}" 
+                           CornerRadius="12" 
+                           Padding="16" 
+                           Margin="0,0,0,24"
+                           Effect="{StaticResource OrangeElevation2}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <fa:ImageAwesome Icon="QuestionCircle" Width="24" Height="24" 
-                                               Foreground="White"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Hilfe-Center" Style="{StaticResource TitleLarge}"
-                                          Foreground="{DynamicResource OnTertiaryContainer}"/>
-                                <TextBlock Text="v1.9.0 Orange Edition" Style="{StaticResource BodySmall}"
-                                          Foreground="{DynamicResource OnTertiaryContainer}" FontWeight="Medium"/>
+                                               Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                                <TextBlock Text="Hilfe Center" 
+                                          Style="{StaticResource TitleLarge}"
+                                          Foreground="{DynamicResource OnPrimary}"
+                                          VerticalAlignment="Center"/>
                             </StackPanel>
+                            <TextBlock Text="Professional v1.9.2 Guide" 
+                                      Style="{StaticResource BodyMedium}"
+                                      Foreground="{DynamicResource OnPrimary}"
+                                      Opacity="0.9"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Quick Start -->
-                    <Button Command="{Binding SelectSectionCommand}" 
-                           CommandParameter="QuickStart"
-                           Style="{StaticResource OrangeAccentButton}" Margin="0,0,0,16">
+                    <!-- Search Box -->
+                    <Border Background="{DynamicResource SurfaceVariant}"
+                           BorderBrush="{DynamicResource Outline}"
+                           BorderThickness="1"
+                           CornerRadius="8"
+                           Margin="0,0,0,20">
+                        <Grid>
+                            <TextBox x:Name="SearchTextBox"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="12,10"
+                                    FontSize="14"
+                                    Foreground="{DynamicResource OnSurface}"
+                                    TextChanged="SearchTextBox_TextChanged"/>
+                            <TextBlock Text="🔍 Suchen..."
+                                      Style="{StaticResource BodyMedium}"
+                                      Foreground="{DynamicResource OnSurfaceVariant}"
+                                      Margin="16,10"
+                                      IsHitTestVisible="False"
+                                      Visibility="{Binding ElementName=SearchTextBox, Path=Text, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Empty}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Quick Actions -->
+                    <TextBlock Text="Schnellzugriff" 
+                              Style="{StaticResource LabelLarge}"
+                              Foreground="{DynamicResource Primary}"
+                              FontWeight="Bold"
+                              Margin="0,0,0,12"/>
+
+                    <Button Content="🎨 Design-Einstellungen"
+                           Style="{StaticResource NavButton}"
+                           Click="OpenSettingsButton_Click"/>
+                    <Button Content="📱 Mobile-Verbindung"
+                           Style="{StaticResource NavButton}"
+                           Click="OpenMobileConnectionButton_Click"/>
+                    <Button Content="📊 Statistiken anzeigen"
+                           Style="{StaticResource NavButton}"
+                           Click="OpenStatisticsButton_Click"/>
+                    <Button Content="ℹ️ Über die App"
+                           Style="{StaticResource NavButton}"
+                           Click="OpenAboutButton_Click"/>
+
+                    <!-- Navigation Categories -->
+                    <TextBlock Text="Hilfe-Themen" 
+                              Style="{StaticResource LabelLarge}"
+                              Foreground="{DynamicResource Primary}"
+                              FontWeight="Bold"
+                              Margin="0,24,0,12"/>
+
+                    <Button x:Name="QuickStartBtn" Content="🚀 Schnellstart" Style="{StaticResource NavButton}" Tag="Active" Click="NavigationButton_Click"/>
+                    <Button x:Name="TeamsBtn" Content="👥 Teams verwalten" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
+                    <Button x:Name="ThemeBtn" Content="🎨 Design &amp; Theme" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
+                    <Button x:Name="MobileBtn" Content="📱 Mobile Integration" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
+                    <Button x:Name="ShortcutsBtn" Content="⌨️ Tastaturkürzel" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
+                    <Button x:Name="TipsBtn" Content="💡 Tipps &amp; Tricks" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
+                    <Button x:Name="TroubleshootBtn" Content="🔧 Fehlerbehebung" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
+
+                    <!-- Support Section -->
+                    <TextBlock Text="Support" 
+                              Style="{StaticResource LabelLarge}"
+                              Foreground="{DynamicResource Primary}"
+                              FontWeight="Bold"
+                              Margin="0,24,0,12"/>
+
+                    <Border Style="{StaticResource QuickActionCard}" MouseLeftButtonUp="ContactSupport_Click">
                         <StackPanel Orientation="Horizontal">
-                            <fa:ImageAwesome Icon="Rocket" Width="16" Height="16" 
-                                           Foreground="White" Margin="0,0,8,0"/>
-                            <TextBlock Text="Schnellstart v1.9.0" Foreground="White" FontWeight="Medium"/>
+                            <fa:ImageAwesome Icon="Envelope" Width="16" Height="16" 
+                                           Foreground="{DynamicResource OnPrimaryContainer}" 
+                                           Margin="0,0,8,0"/>
+                            <TextBlock Text="Support kontaktieren" 
+                                      Style="{StaticResource BodyMedium}"
+                                      Foreground="{DynamicResource OnPrimaryContainer}"/>
                         </StackPanel>
-                    </Button>
+                    </Border>
 
-                    <!-- Neue Features v1.9.0 -->
-                    <TextBlock Text="Neue Features v1.9.0" Style="{StaticResource BodySmall}" 
-                              Foreground="{DynamicResource Primary}" FontWeight="Bold" 
-                              Margin="8,0,8,8"/>
-
-                    <!-- MVVM Team Input -->
-                    <Button Command="{Binding SelectSectionCommand}" 
-                           CommandParameter="TeamInputMVVM"
-                           Style="{StaticResource OrangeNewFeatureButton}">
+                    <Border Style="{StaticResource QuickActionCard}" MouseLeftButtonUp="ShowSystemInfo_Click">
                         <StackPanel Orientation="Horizontal">
-                            <fa:ImageAwesome Icon="UserPlus" Width="16" Height="16" 
-                                           Foreground="{DynamicResource OnTertiaryContainer}" Margin="0,0,8,0"/>
-                            <TextBlock Text="Team-Input MVVM (NEU)" 
-                                      Foreground="{DynamicResource OnTertiaryContainer}" FontWeight="Medium"/>
+                            <fa:ImageAwesome Icon="InfoCircle" Width="16" Height="16" 
+                                           Foreground="{DynamicResource OnPrimaryContainer}" 
+                                           Margin="0,0,8,0"/>
+                            <TextBlock Text="System-Diagnose" 
+                                      Style="{StaticResource BodyMedium}"
+                                      Foreground="{DynamicResource OnPrimaryContainer}"/>
                         </StackPanel>
-                    </Button>
-
-                    <!-- Orange Design System -->
-                    <Button Command="{Binding SelectSectionCommand}" 
-                           CommandParameter="OrangeDesign"
-                           Style="{StaticResource OrangeNewFeatureButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Orange-Design-System (NEU)" 
-                                      Foreground="{DynamicResource OnTertiaryContainer}" FontWeight="Medium"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Standard Features -->
-                    <Separator Margin="0,16" Background="{DynamicResource OutlineVariant}"/>
-                    <TextBlock Text="Standard-Features" Style="{StaticResource BodySmall}" 
-                              Foreground="{DynamicResource OnSurfaceVariant}" FontWeight="Medium" 
-                              Margin="8,0,8,8"/>
-
-                    <!-- Tastenkürzel -->
-                    <Button Command="{Binding SelectSectionCommand}" 
-                           CommandParameter="Shortcuts"
-                           Style="{StaticResource OrangeHelpNavButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:ImageAwesome Icon="KeyboardOutline" Width="16" Height="16" 
-                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
-                            <TextBlock Text="Tastenkürzel" Foreground="{DynamicResource OnSurface}"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Team-Verwaltung -->
-                    <Button Command="{Binding SelectSectionCommand}" 
-                           CommandParameter="TeamManagement"
-                           Style="{StaticResource OrangeHelpNavButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:ImageAwesome Icon="Users" Width="16" Height="16" 
-                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
-                            <TextBlock Text="Team-Verwaltung" Foreground="{DynamicResource OnSurface}"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Setup und Installation -->
-                    <Button Command="{Binding SelectSectionCommand}" 
-                           CommandParameter="SetupGuide"
-                           Style="{StaticResource OrangeHelpNavButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:ImageAwesome Icon="Cog" Width="16" Height="16" 
-                                           Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
-                            <TextBlock Text="Setup und Installation" Foreground="{DynamicResource OnSurface}"/>
-                        </StackPanel>
-                    </Button>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </Border>
 
-        <!-- Content Area with Orange Design -->
-        <Border Grid.Column="1" Style="{StaticResource Card}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        <!-- Enhanced Content Area -->
+        <Border Grid.Column="1" Style="{StaticResource HelpContent}">
+            <ScrollViewer x:Name="ContentScrollViewer" VerticalScrollBarVisibility="Auto" PanningMode="VerticalOnly">
+                <StackPanel x:Name="ContentPanel">
 
-                <!-- Orange Search Bar -->
-                <Border Grid.Row="0" Style="{StaticResource OrangeCard}" Margin="24,24,24,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <!-- Quick Start Content (Default) -->
+                    <StackPanel x:Name="QuickStartContent">
+                        <TextBlock Text="🚀 Schnellstart-Anleitung" Style="{StaticResource HelpSectionHeader}"/>
+                        
+                        <!-- Welcome Hero -->
+                        <Border Background="{DynamicResource TertiaryContainer}"
+                               CornerRadius="16"
+                               Padding="24"
+                               Margin="0,0,0,24"
+                               BorderThickness="1"
+                               BorderBrush="{DynamicResource Tertiary}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <fa:ImageAwesome Grid.Column="0" Icon="Rocket" Width="48" Height="48" 
+                                               Foreground="{DynamicResource Primary}" 
+                                               Margin="0,0,20,0"
+                                               VerticalAlignment="Center"/>
+                                
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Willkommen zur Einsatzüberwachung Professional!" 
+                                              Style="{StaticResource TitleLarge}"
+                                              Foreground="{DynamicResource OnTertiaryContainer}"
+                                              Margin="0,0,0,8"/>
+                                    <TextBlock Text="Diese Anleitung führt Sie durch die wichtigsten Schritte für Ihren ersten Einsatz." 
+                                              Style="{StaticResource BodyMedium}"
+                                              Foreground="{DynamicResource OnTertiaryContainer}"
+                                              TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
 
-                        <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                Style="{StaticResource TextField}" 
-                                FontSize="16" Height="40"
-                                Background="{DynamicResource Surface}"
-                                BorderBrush="{DynamicResource Primary}"/>
+                        <!-- Step by Step Guide -->
+                        <Border Style="{StaticResource FeatureCard}">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border Grid.Column="0" Style="{StaticResource StepNumber}">
+                                        <TextBlock Text="1" 
+                                                  Style="{StaticResource LabelLarge}"
+                                                  Foreground="{DynamicResource OnPrimary}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  FontWeight="Bold"/>
+                                    </Border>
+                                    
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Einsatz erstellen" Style="{StaticResource HelpSubHeader}" Margin="0,0,0,8"/>
+                                        <TextBlock Style="{StaticResource HelpText}">
+                                            Beim Start der Anwendung öffnet sich automatisch das StartWindow:
+                                            <LineBreak/>• Wählen Sie einen Einsatzleiter aus der Dropdown-Liste
+                                            <LineBreak/>• Geben Sie den Einsatzort und Alarmierungsgrund ein
+                                            <LineBreak/>• Bestimmen Sie den Einsatztyp (Einsatz oder Übung)
+                                            <LineBreak/>• Optional: Führungsassistent hinzufügen
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <Grid Margin="0,16,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border Grid.Column="0" Style="{StaticResource StepNumber}">
+                                        <TextBlock Text="2" 
+                                                  Style="{StaticResource LabelLarge}"
+                                                  Foreground="{DynamicResource OnPrimary}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  FontWeight="Bold"/>
+                                    </Border>
+                                    
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Teams hinzufügen" Style="{StaticResource HelpSubHeader}" Margin="0,0,0,8"/>
+                                        <TextBlock Style="{StaticResource HelpText}">
+                                            Im Hauptfenster können Sie Rettungshunde-Teams anlegen:
+                                            <LineBreak/>• Klicken Sie auf den "+ Team" Button oder drücken Sie Strg+N
+                                            <LineBreak/>• Füllen Sie die Team-Informationen aus (Name, Hundeführer, etc.)
+                                            <LineBreak/>• Wählen Sie den passenden Team-Typ (Fläche, Trümmer, Mantrailer, etc.)
+                                            <LineBreak/>• Definieren Sie das Suchgebiet
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <Grid Margin="0,16,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border Grid.Column="0" Style="{StaticResource StepNumber}">
+                                        <TextBlock Text="3" 
+                                                  Style="{StaticResource LabelLarge}"
+                                                  Foreground="{DynamicResource OnPrimary}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  FontWeight="Bold"/>
+                                    </Border>
+                                    
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Timer starten und überwachen" Style="{StaticResource HelpSubHeader}" Margin="0,0,0,8"/>
+                                        <TextBlock Style="{StaticResource HelpText}">
+                                            Verwaltung der Einsatzzeiten:
+                                            <LineBreak/>• Grüner "Start" Button: Team-Timer starten wenn das Team zum Einsatz geht
+                                            <LineBreak/>• Roter "Stop" Button: Timer beenden bei Rückkehr des Teams
+                                            <LineBreak/>• Automatische Warnungen bei konfigurierten Zeiten (Standard: 20 und 45 Minuten)
+                                            <LineBreak/>• Timer laufen auch bei minimierter Anwendung weiter
+                                            <LineBreak/>• Notizen und Funksprüche können rechts dokumentiert werden
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
 
-                        <Button Grid.Column="1" Command="{Binding SearchCommand}"
-                               Style="{StaticResource OrangeAccentButton}" 
-                               Width="40" Height="40" Margin="8,0,0,0">
-                            <fa:ImageAwesome Icon="Search" Width="16" Height="16" Foreground="White"/>
-                        </Button>
-                    </Grid>
-                </Border>
+                        <!-- Quick Action Cards -->
+                        <TextBlock Text="Sofort loslegen:" Style="{StaticResource HelpSubHeader}"/>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Border Grid.Column="0" Style="{StaticResource QuickActionCard}" Margin="0,0,8,0" MouseLeftButtonUp="OpenMobileConnectionButton_Click">
+                                <StackPanel>
+                                    <fa:ImageAwesome Icon="Mobile" Width="32" Height="32" 
+                                                   Foreground="{DynamicResource Primary}" 
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                                    <TextBlock Text="Mobile-Zugriff einrichten" 
+                                              Style="{StaticResource LabelMedium}"
+                                              Foreground="{DynamicResource OnPrimaryContainer}"
+                                              TextAlignment="Center"
+                                              FontWeight="Bold"/>
+                                    <TextBlock Text="Smartphone-Zugriff konfigurieren" 
+                                              Style="{StaticResource BodySmall}"
+                                              Foreground="{DynamicResource OnPrimaryContainer}"
+                                              TextAlignment="Center"
+                                              Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <Border Grid.Column="1" Style="{StaticResource QuickActionCard}" Margin="8,0,0,0" MouseLeftButtonUp="OpenSettingsButton_Click">
+                                <StackPanel>
+                                    <fa:ImageAwesome Icon="Cogs" Width="32" Height="32" 
+                                                   Foreground="{DynamicResource Primary}" 
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                                    <TextBlock Text="Design anpassen" 
+                                              Style="{StaticResource LabelMedium}"
+                                              Foreground="{DynamicResource OnPrimaryContainer}"
+                                              TextAlignment="Center"
+                                              FontWeight="Bold"/>
+                                    <TextBlock Text="Theme und Einstellungen" 
+                                              Style="{StaticResource BodySmall}"
+                                              Foreground="{DynamicResource OnPrimaryContainer}"
+                                              TextAlignment="Center"
+                                              Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
 
-                <!-- Content Display -->
-                <ScrollViewer Grid.Row="1" Padding="24,0,24,24" VerticalScrollBarVisibility="Auto">
-                    <TextBlock Text="{Binding CurrentContent}" 
-                              Style="{StaticResource HelpContentStyle}"
-                              FontFamily="Segoe UI, Consolas, monospace"/>
-                </ScrollViewer>
-            </Grid>
+                    <!-- Other content sections will be shown/hidden based on navigation -->
+                    <StackPanel x:Name="TeamsContent" Visibility="Collapsed">
+                        <TextBlock Text="👥 Teams verwalten" Style="{StaticResource HelpSectionHeader}"/>
+                        <!-- Team management content will be here -->
+                    </StackPanel>
+
+                    <StackPanel x:Name="ThemeContent" Visibility="Collapsed">
+                        <TextBlock Text="🎨 Design &amp; Theme" Style="{StaticResource HelpSectionHeader}"/>
+                        <!-- Theme content will be here -->
+                    </StackPanel>
+
+                    <StackPanel x:Name="MobileContent" Visibility="Collapsed">
+                        <TextBlock Text="📱 Mobile Integration" Style="{StaticResource HelpSectionHeader}"/>
+                        <!-- Mobile content will be here -->
+                    </StackPanel>
+
+                    <StackPanel x:Name="ShortcutsContent" Visibility="Collapsed">
+                        <TextBlock Text="⌨️ Tastaturkürzel" Style="{StaticResource HelpSectionHeader}"/>
+                        
+                        <!-- Keyboard shortcuts content -->
+                        <Border Style="{StaticResource FeatureCard}">
+                            <StackPanel>
+                                <TextBlock Text="Allgemeine Shortcuts" Style="{StaticResource HelpSubHeader}"/>
+                                
+                                <Border Style="{StaticResource KeyboardShortcut}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource KeyBadge}">
+                                            <TextBlock Text="Strg + N" 
+                                                      Style="{StaticResource LabelMedium}"
+                                                      Foreground="{DynamicResource OnPrimary}"
+                                                      FontFamily="Consolas"/>
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="Neues Team hinzufügen" 
+                                                  Style="{StaticResource BodyMedium}" 
+                                                  Margin="16,0,0,0"
+                                                  VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+
+                                <Border Style="{StaticResource KeyboardShortcut}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource KeyBadge}">
+                                            <TextBlock Text="F11" 
+                                                      Style="{StaticResource LabelMedium}"
+                                                      Foreground="{DynamicResource OnPrimary}"
+                                                      FontFamily="Consolas"/>
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="Vollbild umschalten" 
+                                                  Style="{StaticResource BodyMedium}" 
+                                                  Margin="16,0,0,0"
+                                                  VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+
+                                <Border Style="{StaticResource KeyboardShortcut}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource KeyBadge}">
+                                            <TextBlock Text="Strg + T" 
+                                                      Style="{StaticResource LabelMedium}"
+                                                      Foreground="{DynamicResource OnPrimary}"
+                                                      FontFamily="Consolas"/>
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="Theme umschalten" 
+                                                  Style="{StaticResource BodyMedium}" 
+                                                  Margin="16,0,0,0"
+                                                  VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel x:Name="TipsContent" Visibility="Collapsed">
+                        <TextBlock Text="💡 Tipps &amp; Tricks" Style="{StaticResource HelpSectionHeader}"/>
+                        <!-- Tips content will be here -->
+                    </StackPanel>
+
+                    <StackPanel x:Name="TroubleshootContent" Visibility="Collapsed">
+                        <TextBlock Text="🔧 Fehlerbehebung" Style="{StaticResource HelpSectionHeader}"/>
+                        <!-- Troubleshooting content will be here -->
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
         </Border>
+        
+        <!-- Enhanced Close Button -->
+        <Button Grid.Column="1"
+               Content="Schließen" 
+               Style="{StaticResource FilledButton}"
+               Click="CloseButton_Click"
+               HorizontalAlignment="Right" 
+               VerticalAlignment="Bottom"
+               Margin="0,0,32,24" 
+               Padding="24,12">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            Background="{DynamicResource Primary}" 
+                            CornerRadius="20"
+                            Effect="{StaticResource Elevation2}"
+                            Padding="{TemplateBinding Padding}">
+                        <StackPanel Orientation="Horizontal" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center">
+                            <fa:ImageAwesome Icon="Check" Width="16" Height="16" 
+                                           Foreground="{DynamicResource OnPrimary}" 
+                                           Margin="0,0,8,0"/>
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                            TextElement.Foreground="{DynamicResource OnPrimary}"
+                                            TextElement.FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource OrangeElevation3}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Tertiary}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation1}"/>
+                            <Setter Property="Opacity" Value="0.88"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
     </Grid>
-</Window>
+</views:BaseThemeWindow>

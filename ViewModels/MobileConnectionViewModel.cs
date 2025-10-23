@@ -169,6 +169,7 @@ namespace Einsatzueberwachung.ViewModels
         public ICommand NonAdminHelpCommand { get; private set; } = null!;
         public ICommand CleanupNetworkCommand { get; private set; } = null!;
         public ICommand MinimizeWindowCommand { get; private set; } = null!;
+        public ICommand RepairServiceCommand { get; private set; } = null!;  // NEU
 
         private void InitializeCommands()
         {
@@ -183,6 +184,7 @@ namespace Einsatzueberwachung.ViewModels
             NonAdminHelpCommand = new RelayCommand(ExecuteNonAdminHelp);
             CleanupNetworkCommand = new RelayCommand(ExecuteCleanupNetwork, CanExecuteCleanupNetwork);
             MinimizeWindowCommand = new RelayCommand(ExecuteMinimizeWindow);
+            RepairServiceCommand = new RelayCommand(ExecuteRepairService); // NEU
         }
 
         #endregion
@@ -639,6 +641,150 @@ Dies ist nur für Fälle gedacht, wo Admin-Rechte nicht verfügbar sind.";
             }
         }
 
+        private void ExecuteRepairService()
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo("Manual service repair requested");
+                
+                var result = Application.Current.Dispatcher.Invoke(() =>
+                {
+                    return MessageBox.Show(
+                        "🔧 SERVICE-REPARATUR\n\n" +
+                        "Dies führt eine vollständige Diagnose und Reparatur des Mobile Services durch:\n\n" +
+                        "• Stoppe aktuellen Service\n" +
+                        "• Bereinige alle Verbindungen\n" +
+                        "• Neuinitialisierung mit Health-Check\n" +
+                        "• Automatische Problembehebung\n\n" +
+                        "⚠️ Aktive Server werden gestoppt!\n\n" +
+                        "Fortfahren?",
+                        "Service-Reparatur",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+                });
+                
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+                
+                // Status-Update für Benutzer
+                StatusText = "🔧 Führe Service-Reparatur durch...";
+                IsStartButtonEnabled = false;
+                IsStopButtonEnabled = false;
+                
+                // Führe Diagnose und Reparatur durch
+                var repairSuccess = Services.MobileService.Instance.DiagnoseAndRepair();
+                
+                if (repairSuccess)
+                {
+                    StatusText = "✅ Service-Reparatur erfolgreich abgeschlossen";
+                    StatusIndicatorBackground = GetThemeColor("Success");
+                    
+                    // Service neu verknüpfen
+                    var repairedService = Services.MobileService.Instance.GetMobileIntegrationService();
+                    if (repairedService != null)
+                    {
+                        MobileService = repairedService;
+                        StatusText = "✅ Service repariert und einsatzbereit";
+                        
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(
+                                "✅ SERVICE-REPARATUR ERFOLGREICH!\n\n" +
+                                "Der Mobile Service wurde erfolgreich repariert und ist nun einsatzbereit.\n\n" +
+                                "Sie können jetzt:\n" +
+                                "• 'Server starten' verwenden\n" +
+                                "• QR-Code für iPhone-Zugriff nutzen\n" +
+                                "• API-Tests durchführen\n\n" +
+                                "Status: Service vollständig funktionsfähig",
+                                "Reparatur erfolgreich",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                        });
+                    }
+                    else
+                    {
+                        StatusText = "⚠️ Service repariert, aber nicht verfügbar";
+                        StatusIndicatorBackground = GetThemeColor("Warning");
+                        
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(
+                                "⚠️ TEILWEISE REPARIERT\n\n" +
+                                "Die Reparatur wurde durchgeführt, aber der Service ist noch nicht vollständig verfügbar.\n\n" +
+                                "Versuchen Sie:\n" +
+                                "• Das Mobile-Fenster schließen und neu öffnen\n" +
+                                "• Die Anwendung als Administrator neu starten\n" +
+                                "• 'System-Diagnose' für weitere Details\n\n" +
+                                "Status: Weitere Schritte erforderlich",
+                                "Reparatur teilweise erfolgreich",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        });
+                    }
+                }
+                else
+                {
+                    StatusText = "❌ Service-Reparatur fehlgeschlagen";
+                    StatusIndicatorBackground = GetThemeColor("Error");
+                    
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show(
+                            "❌ SERVICE-REPARATUR FEHLGESCHLAGENO\n\n" +
+                            "Die automatische Reparatur konnte das Problem nicht lösen.\n\n" +
+                            "Empfohlene Schritte:\n\n" +
+                            "1️⃣ SOFORTMASSNAHMEN:\n" +
+                            "• Anwendung als Administrator neu starten\n" +
+                            "• Computer neu starten\n" +
+                            "• Andere Apps schließen (Port 8080 Konflikte)\n\n" +
+                            "2️⃣ DIAGNOSE:\n" +
+                            "• 'System-Diagnose' für detaillierte Analyse\n" +
+                            "• Windows-Updates prüfen\n" +
+                            "• Firewall-Einstellungen überprüfen\n\n" +
+                            "3️⃣ ALTERNATIVE:\n" +
+                            "• 'Ohne Admin-Rechte' Hilfe verwenden\n" +
+                            "• Localhost-Modus für Desktop-Tests",
+                            "Reparatur fehlgeschlagen",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    });
+                }
+                
+                LoggingService.Instance.LogInfo($"Manual service repair completed: {repairSuccess}");
+                
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error during manual service repair", ex);
+                StatusText = $"❌ Reparatur-Fehler: {ex.Message}";
+                StatusIndicatorBackground = GetThemeColor("Error");
+                
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show(
+                        $"🚨 KRITISCHER REPARATUR-FEHLER\n\n" +
+                        $"Fehler: {ex.Message}\n\n" +
+                        $"NOTFALL-MASSNAHMEN:\n\n" +
+                        $"1. Computer neu starten\n" +
+                        $"2. Anwendung als Administrator starten\n" +
+                        $"3. Windows-Firewall temporär deaktivieren (Test)\n" +
+                        $"4. Antivirus-Software überprüfen\n\n" +
+                        $"Bei anhaltenden Problemen: System-Diagnose verwenden",
+                        "Kritischer Fehler",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                });
+            }
+            finally
+            {
+                // UI-State zurücksetzen
+                UpdateUI();
+                UpdateCommandStates();
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -1035,7 +1181,7 @@ Dies ist nur für Fälle gedacht, wo Admin-Rechte nicht verfügbar sind.";
 
         private void ShowFailureHelp()
         {
-            var failureMessage = @"❌ SERVER-START FEHLGESCHLAGEN
+            var failureMessage = @"❌ SERVER-START FEHLGESCHLAGENO
 
 🔧 SOFORTMASSNAHMEN:
 
@@ -1055,6 +1201,7 @@ Dies ist nur für Fälle gedacht, wo Admin-Rechte nicht verfügbar sind.";
    • App durch Firewall zulassen
 
 4️⃣ ALTERNATIVE METHODEN:
+   • 'Service reparieren' Button verwenden
    • 'Ohne Admin-Rechte' Button verwenden
    • Windows Mobile Hotspot aktivieren
    • iPhone als Hotspot nutzen
@@ -1092,19 +1239,19 @@ Computer neu starten und als Administrator erneut versuchen.
    • Rechtsklick auf .exe → 'Als Administrator ausführen'
    • Dies löst die meisten Berechtigungsprobleme
 
-3️⃣ SICHERHEITS-SOFTWARE:
+3️⃣ SERVICE-REPARATUR:
+   • 'Service reparieren' Button verwenden
+   • Automatische Problembehebung
+
+4️⃣ SICHERHEITS-SOFTWARE:
    • Antivirus temporär deaktivieren (Test)
    • Windows Defender Echtzeit-Schutz pausieren
    • Firewall temporär deaktivieren (Test)
 
-4️⃣ WINDOWS-REPARATUR:
+5️⃣ WINDOWS-REPARATUR:
    • Windows-Einstellungen → Update & Sicherheit
    • Problembehandlung → Windows Update
    • System-Datei-Überprüfung: sfc /scannow
-
-5️⃣ .NET RUNTIME:
-   • .NET 8 Runtime neu installieren
-   • Von Microsoft.com herunterladen
 
 📞 SUPPORT-SAMMLUNG:
 • Screenshot dieser Meldung

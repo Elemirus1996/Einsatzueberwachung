@@ -89,9 +89,10 @@ namespace Einsatzueberwachung.ViewModels
             {
                 TeamTypeItems.Clear();
 
-                // Get all types EXCEPT Allgemein - exclude it completely (as per original logic)
+                // Get all types EXCEPT Allgemein - exclude it completely
+                // So that only specific specializations from master data are shown
                 var teamTypes = TeamTypeInfo.GetAllTypes()
-                    .Where(t => t.Type != TeamType.Allgemein)  // Filter out Allgemein
+                    .Where(t => t.Type != TeamType.Allgemein)  // Filter out Allgemein completely
                     .OrderBy(t => t.DisplayName);  // Sort alphabetically
 
                 foreach (var typeInfo in teamTypes)
@@ -113,7 +114,7 @@ namespace Einsatzueberwachung.ViewModels
                 UpdateSelectedTypesDisplay();
                 UpdateOkButtonState();
 
-                LoggingService.Instance.LogInfo($"TeamTypeSelection v1.9.0 - Created {TeamTypeItems.Count} type options (excluding Allgemein)");
+                LoggingService.Instance.LogInfo($"TeamTypeSelection v1.9.0 - Created {TeamTypeItems.Count} type options (excluding Allgemein - only specific specializations shown)");
             }
             catch (Exception ex)
             {

@@ -17,32 +17,17 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
-                                    BlurRadius="6" ShadowDepth="0" Opacity="0.08"/>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Effect" Value="{StaticResource Elevation1}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                     <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
                     <Setter Property="BorderThickness" Value="3"/>
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
-                                            BlurRadius="12" ShadowDepth="0" Opacity="0.2"/>
-                        </Setter.Value>
-                    </Setter>
+                    <Setter Property="Effect" Value="{StaticResource Elevation3}"/>
                 </DataTrigger>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
                     <Setter Property="BorderThickness" Value="2"/>
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect Color="{DynamicResource PrimaryColor}" 
-                                            BlurRadius="8" ShadowDepth="0" Opacity="0.15"/>
-                        </Setter.Value>
-                    </Setter>
+                    <Setter Property="Effect" Value="{StaticResource Elevation2}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>

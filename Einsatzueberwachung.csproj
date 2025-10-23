@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -7,53 +6,46 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    
     <!-- Fix namespace issue -->
     <RootNamespace>Einsatzueberwachung</RootNamespace>
     <AssemblyName>Einsatzueberwachung</AssemblyName>
-    
     <!-- 
     ZENTRALE VERSIONSVERWALTUNG via VersionService.cs
     WICHTIG: Diese Werte müssen manuell mit VersionService.cs synchronisiert werden!
     
-    Aktuelle Version aus VersionService: 1.9.0.1 (Bug-Fix Release)
+    Aktuelle Version aus VersionService: 1.9.6.0 (Development Version)
     Beim Release-Update diese Werte entsprechend VersionService.GetProjectVersions() anpassen
     -->
-    <AssemblyTitle>Einsatzüberwachung Professional v1.9.1</AssemblyTitle>
+    <AssemblyTitle>Einsatzüberwachung Professional v1.9.6</AssemblyTitle>
     <AssemblyDescription>Professionelle Einsatzüberwachung für Rettungshunde-Teams mit Dashboard-Übersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
-    <AssemblyProduct>Einsatzüberwachung Professional v1.9.1</AssemblyProduct>
+    <AssemblyProduct>Einsatzüberwachung Professional v1.9.6</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2024 RescueDog_SW</AssemblyCopyright>
-    <AssemblyVersion>1.9.1.1</AssemblyVersion>
-    <FileVersion>1.9.1.1</FileVersion>
-    <Version>1.9.1</Version>
-    
+    <AssemblyVersion>1.9.6.0</AssemblyVersion>
+    <FileVersion>1.9.6.0</FileVersion>
+    <Version>1.9.6</Version>
     <!-- Release Configuration -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>false</SelfContained>
     <PublishReadyToRun>true</PublishReadyToRun>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    
     <!-- Application Icon -->
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
-    
     <!-- Code Analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <WarningsAsErrors />
     <WarningsNotAsErrors />
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    
     <!-- Suppress specific warnings globally -->
     <NoWarn>$(NoWarn);CA1303;CA1305;CA1304;CA1822;CA2007;CA1062;CA1031;CA1416;CA2254;CA1848;CA1851;CA1001;CA2000;CA1308;CA1309;IL2026;IL3050;IDE0028;IDE0290;IDE0300</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="QuestPDF" Version="2024.12.3" />
   </ItemGroup>
-
   <!-- Include Resources -->
   <ItemGroup>
     <Resource Include="Resources\**\*" />
@@ -64,33 +56,26 @@
     <None Remove=".github\workflows\**" />
     <Page Remove=".github\workflows\**" />
   </ItemGroup>
-
   <!-- Clean up problematic files -->
   <ItemGroup>
     <None Remove="app.manifest" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="MainWindowComplete.xaml.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Page Remove="Resources\DesignSystem.xaml" />
   </ItemGroup>
-
   <ItemGroup>
     <Resource Update="Resources\DesignSystem.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
   </ItemGroup>
-
   <ItemGroup>
     <None Include=".github\workflows\release.yml" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Controls\" />
     <Folder Include="Setup\Output\" />
   </ItemGroup>
-
 </Project>

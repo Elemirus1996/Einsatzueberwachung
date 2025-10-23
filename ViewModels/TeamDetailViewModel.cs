@@ -23,9 +23,9 @@ namespace Einsatzueberwachung.ViewModels
         {
             InitializeCommands();
             
-            // Theme-Service abonnieren
-            ThemeService.Instance.ThemeChanged += OnThemeChanged;
-            IsDarkMode = ThemeService.Instance.IsDarkMode;
+            // UnifiedThemeManager abonnieren
+            UnifiedThemeManager.Instance.ThemeChanged += OnThemeChanged;
+            IsDarkMode = UnifiedThemeManager.Instance.IsDarkMode;
 
             LoggingService.Instance.LogInfo("TeamDetailViewModel initialized with MVVM pattern");
         }
@@ -386,8 +386,8 @@ namespace Einsatzueberwachung.ViewModels
             {
                 if (disposing)
                 {
-                    // Theme-Service Event abmelden
-                    ThemeService.Instance.ThemeChanged -= OnThemeChanged;
+                    // UnifiedThemeManager Event abmelden
+                    UnifiedThemeManager.Instance.ThemeChanged -= OnThemeChanged;
                 }
                 _disposed = true;
             }

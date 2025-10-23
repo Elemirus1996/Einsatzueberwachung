@@ -91,8 +91,8 @@ namespace Einsatzueberwachung.Models
 
         public MultipleTeamTypes()
         {
-            // Default to Allgemein
-            SelectedTypes.Add(TeamType.Allgemein);
+            // NICHT mehr automatisch Allgemein setzen!
+            // Lasse SelectedTypes leer - das System soll nur spezifische Spezialisierungen verwenden
         }
 
         public MultipleTeamTypes(TeamType singleType)
@@ -103,10 +103,8 @@ namespace Einsatzueberwachung.Models
         public MultipleTeamTypes(IEnumerable<TeamType> types)
         {
             SelectedTypes = new HashSet<TeamType>(types);
-            if (!SelectedTypes.Any())
-            {
-                SelectedTypes.Add(TeamType.Allgemein);
-            }
+            // ENTFERNT: Automatisches Hinzufügen von Allgemein wenn leer
+            // Wenn keine Types gewählt wurden, bleibt es leer
         }
 
         public bool HasType(TeamType type)
@@ -116,7 +114,8 @@ namespace Einsatzueberwachung.Models
 
         public void AddType(TeamType type)
         {
-            // Remove Allgemein if we're adding a specific type
+            // Entferne Allgemein nur wenn wir einen anderen spezifischen Typ hinzufügen
+            // UND falls Allgemein bereits vorhanden ist
             if (type != TeamType.Allgemein && SelectedTypes.Contains(TeamType.Allgemein))
             {
                 SelectedTypes.Remove(TeamType.Allgemein);
@@ -134,11 +133,12 @@ namespace Einsatzueberwachung.Models
         {
             SelectedTypes.Remove(type);
 
-            // If no types left, add Allgemein as default
-            if (!SelectedTypes.Any())
-            {
-                SelectedTypes.Add(TeamType.Allgemein);
-            }
+            // ENTFERNT: Automatisches Hinzufügen von Allgemein wenn leer
+            // Lasse die SelectedTypes leer - das ist jetzt der gewünschte Zustand
+            // if (!SelectedTypes.Any())
+            // {
+            //     SelectedTypes.Add(TeamType.Allgemein);
+            // }
 
             OnPropertyChanged(nameof(SelectedTypes));
             OnPropertyChanged(nameof(DisplayName));

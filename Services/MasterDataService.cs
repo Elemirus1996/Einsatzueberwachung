@@ -18,19 +18,20 @@ namespace Einsatzueberwachung.Services
         private readonly string _personalFileName = "personal.json";
         private readonly string _dogsFileName = "dogs.json";
 
-        public ObservableCollection<PersonalEntry> PersonalList { get; private set; }
-        public ObservableCollection<DogEntry> DogList { get; private set; }
+        // Collections für UI-Bindings (öffentlich für ObservableCollection-Binding)
+        public ObservableCollection<PersonalEntry> PersonalList { get; } = new ObservableCollection<PersonalEntry>();
+        public ObservableCollection<DogEntry> DogList { get; } = new ObservableCollection<DogEntry>();
 
+        /// <summary>
+        /// Private Konstruktor für Singleton-Pattern
+        /// </summary>
         private MasterDataService()
         {
-            _dataDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Einsatzueberwachung", "MasterData");
-
+            // Initialisiere Data Directory
+            _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Einsatzueberwachung", "MasterData");
             Directory.CreateDirectory(_dataDirectory);
-
-            PersonalList = new ObservableCollection<PersonalEntry>();
-            DogList = new ObservableCollection<DogEntry>();
+            
+            LoggingService.Instance.LogInfo("MasterDataService initialized as singleton");
         }
 
         public async Task LoadDataAsync()
@@ -290,58 +291,218 @@ namespace Einsatzueberwachung.Services
             return DogList.Where(d => d.IsActive && d.Specializations.HasFlag(spec)).ToList();
         }
 
+        public async Task AddPersonalAsync(PersonalEntry person)
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo($"MasterDataService.AddPersonalAsync called for: ID={person.Id}, Name={person.FullName}");
+                LoggingService.Instance.LogInfo($"Current PersonalList count before add: {PersonalList.Count}");
+                
+                PersonalList.Add(person);
+                LoggingService.Instance.LogInfo($"PersonalEntry added to PersonalList. New count: {PersonalList.Count}");
+                
+                LoggingService.Instance.LogInfo("Starting SaveDataAsync (await)...");
+                await SaveDataAsync();
+                LoggingService.Instance.LogInfo("SaveDataAsync completed successfully");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.AddPersonalAsync for {person.FullName}", ex);
+                throw;
+            }
+        }
+
         public void AddPersonal(PersonalEntry person)
         {
-            PersonalList.Add(person);
-            _ = SaveDataAsync(); // Fire and forget
+            try
+            {
+                LoggingService.Instance.LogInfo($"MasterDataService.AddPersonal called for: ID={person.Id}, Name={person.FullName}");
+                LoggingService.Instance.LogInfo($"Current PersonalList count before add: {PersonalList.Count}");
+                
+                PersonalList.Add(person);
+                LoggingService.Instance.LogInfo($"PersonalEntry added to PersonalList. New count: {PersonalList.Count}");
+                
+                LoggingService.Instance.LogInfo("Starting synchronous SaveDataAsync...");
+                // Make sure save completes before returning
+                Task.Run(async () => await SaveDataAsync()).Wait(5000); // Wait max 5 seconds
+                LoggingService.Instance.LogInfo("SaveDataAsync completed");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.AddPersonal for {person.FullName}", ex);
+                throw;
+            }
         }
 
         public void UpdatePersonal(PersonalEntry person)
         {
-            var existing = GetPersonalById(person.Id);
-            if (existing != null)
+            try
             {
-                var index = PersonalList.IndexOf(existing);
-                PersonalList[index] = person;
-                _ = SaveDataAsync();
+                LoggingService.Instance.LogInfo($"MasterDataService.UpdatePersonal called for: ID={person.Id}, Name={person.FullName}");
+                
+                var existing = GetPersonalById(person.Id);
+                if (existing != null)
+                {
+                    var index = PersonalList.IndexOf(existing);
+                    LoggingService.Instance.LogInfo($"Found existing PersonalEntry at index {index}, updating...");
+                    
+                    PersonalList[index] = person;
+                    LoggingService.Instance.LogInfo("PersonalEntry updated in PersonalList");
+                    
+                    LoggingService.Instance.LogInfo("Starting synchronous SaveDataAsync...");
+                    Task.Run(async () => await SaveDataAsync()).Wait(5000); // Wait max 5 seconds
+                    LoggingService.Instance.LogInfo("SaveDataAsync completed");
+                }
+                else
+                {
+                    LoggingService.Instance.LogWarning($"PersonalEntry with ID {person.Id} not found for update");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.UpdatePersonal for {person.FullName}", ex);
+                throw;
             }
         }
 
         public void RemovePersonal(string id)
         {
-            var person = GetPersonalById(id);
-            if (person != null)
+            try
             {
-                PersonalList.Remove(person);
-                _ = SaveDataAsync();
+                LoggingService.Instance.LogInfo($"MasterDataService.RemovePersonal called for ID: {id}");
+                
+                var person = GetPersonalById(id);
+                if (person != null)
+                {
+                    LoggingService.Instance.LogInfo($"Found PersonalEntry to remove: {person.FullName}");
+                    PersonalList.Remove(person);
+                    LoggingService.Instance.LogInfo($"PersonalEntry removed. New count: {PersonalList.Count}");
+                    
+                    LoggingService.Instance.LogInfo("Starting synchronous SaveDataAsync...");
+                    Task.Run(async () => await SaveDataAsync()).Wait(5000); // Wait max 5 seconds
+                    LoggingService.Instance.LogInfo("SaveDataAsync completed");
+                }
+                else
+                {
+                    LoggingService.Instance.LogWarning($"PersonalEntry with ID {id} not found for removal");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.RemovePersonal for ID {id}", ex);
+                throw;
+            }
+        }
+
+        public async Task AddDogAsync(DogEntry dog)
+        {
+            try
+            {
+                LoggingService.Instance.LogInfo($"MasterDataService.AddDogAsync called for: ID={dog.Id}, Name={dog.Name}");
+                LoggingService.Instance.LogInfo($"Current DogList count before add: {DogList.Count}");
+                
+                DogList.Add(dog);
+                LoggingService.Instance.LogInfo($"DogEntry added to DogList. New count: {DogList.Count}");
+                
+                LoggingService.Instance.LogInfo("Starting SaveDataAsync (await)...");
+                await SaveDataAsync();
+                LoggingService.Instance.LogInfo("SaveDataAsync completed successfully");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.AddDogAsync for {dog.Name}", ex);
+                throw;
             }
         }
 
         public void AddDog(DogEntry dog)
         {
-            DogList.Add(dog);
-            _ = SaveDataAsync();
+            try
+            {
+                LoggingService.Instance.LogInfo($"MasterDataService.AddDog called for: ID={dog.Id}, Name={dog.Name}");
+                LoggingService.Instance.LogInfo($"Current DogList count before add: {DogList.Count}");
+                
+                DogList.Add(dog);
+                LoggingService.Instance.LogInfo($"DogEntry added to DogList. New count: {DogList.Count}");
+                
+                LoggingService.Instance.LogInfo("Starting synchronous SaveDataAsync...");
+                // Make sure save completes before returning
+                Task.Run(async () => await SaveDataAsync()).Wait(5000); // Wait max 5 seconds
+                LoggingService.Instance.LogInfo("SaveDataAsync completed");
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.AddDog for {dog.Name}", ex);
+                throw;
+            }
         }
 
         public void UpdateDog(DogEntry dog)
         {
-            var existing = GetDogById(dog.Id);
-            if (existing != null)
+            try
             {
-                var index = DogList.IndexOf(existing);
-                DogList[index] = dog;
-                _ = SaveDataAsync();
+                LoggingService.Instance.LogInfo($"MasterDataService.UpdateDog called for: ID={dog.Id}, Name={dog.Name}");
+                
+                var existing = GetDogById(dog.Id);
+                if (existing != null)
+                {
+                    var index = DogList.IndexOf(existing);
+                    LoggingService.Instance.LogInfo($"Found existing DogEntry at index {index}, updating...");
+                    
+                    DogList[index] = dog;
+                    LoggingService.Instance.LogInfo("DogEntry updated in DogList");
+                    
+                    LoggingService.Instance.LogInfo("Starting synchronous SaveDataAsync...");
+                    Task.Run(async () => await SaveDataAsync()).Wait(5000); // Wait max 5 seconds
+                    LoggingService.Instance.LogInfo("SaveDataAsync completed");
+                }
+                else
+                {
+                    LoggingService.Instance.LogWarning($"DogEntry with ID {dog.Id} not found for update");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.UpdateDog for {dog.Name}", ex);
+                throw;
             }
         }
 
         public void RemoveDog(string id)
         {
-            var dog = GetDogById(id);
-            if (dog != null)
+            try
             {
-                DogList.Remove(dog);
-                _ = SaveDataAsync();
+                LoggingService.Instance.LogInfo($"MasterDataService.RemoveDog called for ID: {id}");
+                
+                var dog = GetDogById(id);
+                if (dog != null)
+                {
+                    LoggingService.Instance.LogInfo($"Found DogEntry to remove: {dog.Name}");
+                    DogList.Remove(dog);
+                    LoggingService.Instance.LogInfo($"DogEntry removed. New count: {DogList.Count}");
+                    
+                    LoggingService.Instance.LogInfo("Starting synchronous SaveDataAsync...");
+                    Task.Run(async () => await SaveDataAsync()).Wait(5000); // Wait max 5 seconds
+                    LoggingService.Instance.LogInfo("SaveDataAsync completed");
+                }
+                else
+                {
+                    LoggingService.Instance.LogWarning($"DogEntry with ID {id} not found for removal");
+                }
             }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError($"Error in MasterDataService.RemoveDog for ID {id}", ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Returns all dogs with their complete information
+        /// </summary>
+        public List<DogEntry> GetAllDogs()
+        {
+            return DogList.ToList();
         }
     }
 }

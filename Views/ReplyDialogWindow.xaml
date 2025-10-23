@@ -1,0 +1,169 @@
+<views:BaseThemeWindow x:Class="Einsatzueberwachung.Views.ReplyDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:views="clr-namespace:Einsatzueberwachung.Views"
+        Title="Antwort erstellen" 
+        Height="500" Width="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        MinHeight="400" MinWidth="500"
+        Background="{DynamicResource Surface}"
+        Icon="pack://application:,,,/Resources/app.ico">
+
+    <Window.Resources>
+        <!-- Local styles that use the design system -->
+        <Style x:Key="DialogCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Margin" Value="20"/>
+        </Style>
+
+        <Style x:Key="DialogHeader" TargetType="TextBlock" BasedOn="{StaticResource TitleLarge}">
+            <Setter Property="Margin" Value="0,0,0,20"/>
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+        </Style>
+
+        <Style x:Key="DialogTextArea" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height" Value="200"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style x:Key="PlaceholderText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariant}"/>
+            <Setter Property="Margin" Value="12,4,0,0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Text, ElementName=ReplyTextBox}" Value="">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border Style="{StaticResource DialogCard}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                <fa:ImageAwesome Icon="Reply" Width="24" Height="24" 
+                               Foreground="{DynamicResource Primary}" Margin="0,0,12,0"/>
+                <TextBlock Text="Thread-Eintrag erstellen" Style="{StaticResource DialogHeader}"/>
+            </StackPanel>
+
+            <!-- Original Note Reference (if applicable) - MIT DATENBINDUNG -->
+            <Border Grid.Row="1" Style="{StaticResource Card}"
+                    Background="{DynamicResource SurfaceVariant}"
+                    Margin="0,0,0,16"
+                    x:Name="OriginalNoteContainer"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <fa:ImageAwesome Icon="QuoteLeft" Width="16" Height="16" 
+                                       Foreground="{DynamicResource Primary}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Antwort auf:" 
+                                  Style="{StaticResource LabelMedium}"
+                                  Foreground="{DynamicResource OnSurfaceVariant}"/>
+                    </StackPanel>
+                    <TextBlock x:Name="OriginalNoteText" 
+                              Text="{Binding OriginalNotePreview, FallbackValue='Ursprüngliche Nachricht'}"
+                              Style="{StaticResource BodyMedium}"
+                              TextWrapping="Wrap"
+                              Foreground="{DynamicResource OnSurface}"
+                              FontStyle="Italic"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Reply Content - MIT DATENBINDUNG -->
+            <StackPanel Grid.Row="2">
+                <Label Content="Ihre Antwort:" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="ReplyTextBox" 
+                        Style="{StaticResource DialogTextArea}"
+                        Text="{Binding ReplyText, UpdateSourceTrigger=PropertyChanged}"/>
+                
+                <!-- Placeholder hint -->
+                <TextBlock Text="Geben Sie hier Ihre Antwort ein..."
+                          Style="{StaticResource PlaceholderText}"/>
+            </StackPanel>
+
+            <!-- Target Selection (for complex replies) - FALLS VERFÜGBAR -->
+            <StackPanel Grid.Row="3" Margin="0,16,0,0"
+                       x:Name="TargetSelectionPanel"
+                       Visibility="Collapsed">
+                <Label Content="Ziel:" Style="{StaticResource FormLabel}"/>
+                <ComboBox x:Name="TargetComboBox" 
+                         Style="{StaticResource {x:Type ComboBox}}"
+                         Height="40"
+                         SelectedItem="{Binding SelectedTarget}"
+                         DisplayMemberPath="DisplayName"/>
+            </StackPanel>
+
+            <!-- Action Buttons - MIT COMMAND-BINDUNG -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal" 
+                       HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Abbrechen" 
+                       Style="{StaticResource OutlinedButton}"
+                       Click="CancelButton_Click"
+                       Command="{Binding CancelCommand, FallbackValue={x:Null}}"
+                       Padding="20,10" 
+                       Margin="0,0,12,0" 
+                       MinWidth="100"/>
+                
+                <Button Content="Senden" 
+                       Style="{StaticResource FilledButton}"
+                       Click="OkButton_Click"
+                       IsEnabled="{Binding CanSend, FallbackValue=True}"
+                       Padding="20,10" 
+                       MinWidth="100">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" 
+                                    Background="{DynamicResource Primary}" 
+                                    CornerRadius="20"
+                                    Effect="{StaticResource Elevation1}">
+                                <StackPanel Orientation="Horizontal" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           Margin="{TemplateBinding Padding}">
+                                    <fa:ImageAwesome Icon="Send" Width="14" Height="14" 
+                                                   Foreground="{DynamicResource OnPrimary}" 
+                                                   Margin="0,0,8,0"/>
+                                    <ContentPresenter Content="{TemplateBinding Content}"
+                                                    TextElement.Foreground="{DynamicResource OnPrimary}"
+                                                    TextElement.FontWeight="Medium"/>
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation2}"/>
+                                    <Setter Property="Opacity" Value="0.92"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Effect" Value="{StaticResource Elevation1}"/>
+                                    <Setter Property="Opacity" Value="0.88"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.38"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource OutlineVariant}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</views:BaseThemeWindow>

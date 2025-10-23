@@ -38,11 +38,29 @@ namespace Einsatzueberwachung.Services
 
         public MobileIntegrationService()
         {
-            _localIPAddress = GetLocalIPAddress();
-            _baseUrl = $"http://{_localIPAddress}:{_port}";
-            
-            // Führe Netzwerk- und Firewall-Checks durch
-            CheckFirewallAndNetwork();
+            try
+            {
+                StatusChanged?.Invoke("🔧 Initialisiere Mobile Integration Service...");
+                
+                _localIPAddress = GetLocalIPAddress();
+                _baseUrl = $"http://{_localIPAddress}:{_port}";
+                
+                StatusChanged?.Invoke($"✅ Service initialisiert - IP: {_localIPAddress}");
+                
+                // Führe Netzwerk- und Firewall-Checks durch
+                CheckFirewallAndNetwork();
+                
+                StatusChanged?.Invoke("🎯 Mobile Integration Service bereit");
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"❌ Service-Initialisierung fehlgeschlagen: {ex.Message}");
+                LoggingService.Instance.LogError("Failed to initialize MobileIntegrationService", ex);
+                
+                // Fallback-Werte setzen
+                _localIPAddress = "localhost";
+                _baseUrl = $"http://{_localIPAddress}:{_port}";
+            }
         }
         
         private void CheckFirewallAndNetwork()
@@ -62,6 +80,20 @@ namespace Einsatzueberwachung.Services
                 if (!HttpListener.IsSupported)
                 {
                     StatusChanged?.Invoke("⚠️ WARNUNG: HttpListener wird auf diesem System nicht unterstützt!");
+                    throw new NotSupportedException("HttpListener ist auf diesem System nicht verfügbar");
+                }
+                
+                // Prüfe Port-Verfügbarkeit
+                var tcpConnections = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners();
+                var portInUse = tcpConnections.Any(endpoint => endpoint.Port == _port);
+                
+                if (portInUse)
+                {
+                    StatusChanged?.Invoke($"⚠️ Port {_port} wird bereits verwendet - Server-Start könnte fehlschlagen");
+                }
+                else
+                {
+                    StatusChanged?.Invoke($"✅ Port {_port} ist verfügbar");
                 }
                 
                 StatusChanged?.Invoke("✅ Initiale System-Checks abgeschlossen");
@@ -69,6 +101,7 @@ namespace Einsatzueberwachung.Services
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"⚠️ Netzwerk-Check Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Network check failed", ex);
             }
         }
 
@@ -132,6 +165,7 @@ namespace Einsatzueberwachung.Services
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"❌ IP-Adress-Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Failed to get local IP address", ex);
                 return "localhost";
             }
         }
@@ -140,6 +174,8 @@ namespace Einsatzueberwachung.Services
         {
             try
             {
+                StatusChanged?.Invoke("🎯 Generiere QR-Code...");
+                
                 var qrGenerator = new QRCodeGenerator();
                 var qrCodeData = qrGenerator.CreateQrCode(QRCodeUrl, QRCodeGenerator.ECCLevel.Q);
                 var qrCode = new QRCode(qrCodeData);
@@ -147,11 +183,14 @@ namespace Einsatzueberwachung.Services
                 using var qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, true);
                 using var stream = new MemoryStream();
                 qrCodeImage.Save(stream, ImageFormat.Png);
+                
+                StatusChanged?.Invoke("✅ QR-Code erfolgreich generiert");
                 return stream.ToArray();
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke($"QR-Code Fehler: {ex.Message}");
+                StatusChanged?.Invoke($"❌ QR-Code Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("QR-Code generation failed", ex);
                 return Array.Empty<byte>();
             }
         }
@@ -167,37 +206,73 @@ namespace Einsatzueberwachung.Services
                 bool isAdmin = IsRunningAsAdministrator();
                 StatusChanged?.Invoke($"🔐 Administrator-Rechte: {(isAdmin ? "✅ Verfügbar" : "❌ Nicht verfügbar")}");
                 
+                if (!isAdmin)
+                {
+                    StatusChanged?.Invoke("💡 FÜR NETZWERK-ZUGRIFF: Starten Sie die App als Administrator");
+                    StatusChanged?.Invoke("🔄 Verwende Localhost-Modus für lokalen Test...");
+                }
+
+                // Prüfe HttpListener Support
+                if (!HttpListener.IsSupported)
+                {
+                    StatusChanged?.Invoke("❌ KRITISCH: HttpListener wird auf diesem System nicht unterstützt!");
+                    LoggingService.Instance.LogError("HttpListener is not supported on this system");
+                    return false;
+                }
+
+                // Bereinige vorherige Listener
+                await SafeStopExistingListener();
+                
+                // Neue HttpListener-Instanz
+                _httpListener = new HttpListener();
+                
                 // Netzwerk-Konfiguration
                 if (isAdmin)
                 {
                     StatusChanged?.Invoke("🔧 Führe automatische Admin-Konfiguration durch...");
                     await ConfigureNetworkAccess();
                 }
-                else
-                {
-                    StatusChanged?.Invoke("🔄 Verwende Nicht-Admin-Strategien für Netzwerk-Zugriff...");
-                }
                 
-                // HttpListener Setup
-                _httpListener?.Close();
-                _httpListener = new HttpListener();
-                
-                // Prefixes konfigurieren
-                bool networkAccessConfigured = await ConfigurePrefixes();
+                // Prefixes konfigurieren - mit verbesserter Logik
+                bool networkAccessConfigured = await ConfigurePrefixesWithValidation();
                 StatusChanged?.Invoke($"📋 Konfigurierte Prefixes: {_httpListener.Prefixes.Count}");
                 
                 if (_httpListener.Prefixes.Count == 0)
                 {
-                    StatusChanged?.Invoke("❌ Keine gültigen Prefixes konfiguriert");
+                    StatusChanged?.Invoke("❌ Keine gültigen Prefixes konfiguriert - Server-Start nicht möglich");
+                    LoggingService.Instance.LogError("No valid prefixes configured for HttpListener");
                     return false;
                 }
+
+                // Teste jeden Prefix vor dem Start
+                await ValidateConfiguredPrefixes();
                 
-                // HttpListener starten
+                // HttpListener starten mit verbessertem Error-Handling
                 StatusChanged?.Invoke("🚀 Starte HttpListener...");
-                _httpListener.Start();
-                _isRunning = true;
                 
-                StatusChanged?.Invoke("✅ HttpListener erfolgreich gestartet");
+                try
+                {
+                    _httpListener.Start();
+                    _isRunning = true;
+                    StatusChanged?.Invoke("✅ HttpListener erfolgreich gestartet");
+                }
+                catch (HttpListenerException httpEx)
+                {
+                    string detailedError = GetDetailedHttpListenerError(httpEx);
+                    StatusChanged?.Invoke($"❌ HttpListener-Start fehlgeschlagen: {detailedError}");
+                    LoggingService.Instance.LogError($"HttpListener start failed: {detailedError}", httpEx);
+                    
+                    // Versuche Fallback-Strategien
+                    if (await TryFallbackStrategies())
+                    {
+                        StatusChanged?.Invoke("✅ Fallback-Strategie erfolgreich");
+                        _isRunning = true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
                 
                 // Erfolgreiche Konfiguration melden
                 if (networkAccessConfigured && _localIPAddress != "localhost")
@@ -209,8 +284,9 @@ namespace Einsatzueberwachung.Services
                 }
                 else
                 {
-                    StatusChanged?.Invoke($"⚠️ Mobile Server gestartet (EINGESCHRÄNKT - NUR LOCALHOST)");
+                    StatusChanged?.Invoke($"⚠️ Mobile Server gestartet (NUR LOCALHOST)");
                     StatusChanged?.Invoke($"💻 Desktop URL: http://localhost:{_port}/mobile");
+                    StatusChanged?.Invoke($"🔧 Debug URL: http://localhost:{_port}/debug");
                     StatusChanged?.Invoke("💡 FÜR IPHONE-ZUGRIFF: Als Administrator starten");
                 }
                 
@@ -218,14 +294,213 @@ namespace Einsatzueberwachung.Services
                 StatusChanged?.Invoke("🔄 Starte Request-Handler...");
                 _ = Task.Run(HandleRequestsAsync);
                 
-                StatusChanged?.Invoke("🎉 Mobile Server vollständig einsatzbereit!");
-                return true;
+                // Finale Validierung
+                await Task.Delay(500); // Kurz warten
+                if (_httpListener?.IsListening == true)
+                {
+                    StatusChanged?.Invoke("🎉 Mobile Server vollständig einsatzbereit!");
+                    LoggingService.Instance.LogInfo("Mobile server started successfully");
+                    return true;
+                }
+                else
+                {
+                    StatusChanged?.Invoke("❌ Server-Validierung fehlgeschlagen");
+                    return false;
+                }
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke($"❌ Server-Start-Fehler: {ex.Message}");
+                StatusChanged?.Invoke($"❌ Kritischer Server-Start-Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Critical server start error", ex);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Stoppt sicher einen existierenden Listener
+        /// </summary>
+        private async Task SafeStopExistingListener()
+        {
+            if (_httpListener != null)
+            {
+                try
+                {
+                    StatusChanged?.Invoke("🔄 Bereinige vorherigen Listener...");
+                    
+                    if (_httpListener.IsListening)
+                    {
+                        _httpListener.Stop();
+                    }
+                    _httpListener.Close();
+                    
+                    // Kurz warten für cleanup
+                    await Task.Delay(200);
+                    
+                    StatusChanged?.Invoke("✅ Vorheriger Listener bereinigt");
+                }
+                catch (Exception ex)
+                {
+                    StatusChanged?.Invoke($"⚠️ Listener-Cleanup Warning: {ex.Message}");
+                    LoggingService.Instance.LogWarning($"Listener cleanup warning: {ex.Message}");
+                }
+                finally
+                {
+                    _httpListener = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Konfiguriert Prefixes mit Validierung
+        /// </summary>
+        private async Task<bool> ConfigurePrefixesWithValidation()
+        {
+            bool networkAccessConfigured = false;
+            var configuredPrefixes = new List<string>();
+            
+            StatusChanged?.Invoke("🔧 Konfiguriere HTTP-Prefixes...");
+            
+            // Strategie 1: Localhost (immer möglich)
+            var localhostPrefixes = new[] 
+            {
+                $"http://localhost:{_port}/",
+                $"http://127.0.0.1:{_port}/"
+            };
+            
+            foreach (var prefix in localhostPrefixes)
+            {
+                if (await TryAddPrefix(prefix))
+                {
+                    configuredPrefixes.Add(prefix);
+                    StatusChanged?.Invoke($"✅ Localhost-Prefix hinzugefügt: {prefix}");
+                }
+            }
+            
+            // Strategie 2: Spezifische IP-Adresse (wenn verfügbar und Admin-Rechte)
+            if (_localIPAddress != "localhost" && !string.IsNullOrEmpty(_localIPAddress) && IsRunningAsAdministrator())
+            {
+                var ipPrefix = $"http://{_localIPAddress}:{_port}/";
+                if (await TryAddPrefix(ipPrefix))
+                {
+                    configuredPrefixes.Add(ipPrefix);
+                    networkAccessConfigured = true;
+                    StatusChanged?.Invoke($"✅ IP-Prefix hinzugefügt: {ipPrefix}");
+                }
+            }
+            
+            // Strategie 3: Wildcard (nur mit Admin-Rechten)
+            if (IsRunningAsAdministrator())
+            {
+                var wildcardPrefix = $"http://+:{_port}/";
+                if (await TryAddPrefix(wildcardPrefix))
+                {
+                    configuredPrefixes.Add(wildcardPrefix);
+                    networkAccessConfigured = true;
+                    StatusChanged?.Invoke($"✅ Wildcard-Prefix hinzugefügt: {wildcardPrefix}");
+                }
+            }
+            
+            // Ergebnis-Zusammenfassung
+            StatusChanged?.Invoke($"📋 Prefix-Konfiguration abgeschlossen:");
+            StatusChanged?.Invoke($"   • Konfigurierte Prefixes: {_httpListener!.Prefixes.Count}");
+            StatusChanged?.Invoke($"   • Netzwerk-Zugriff: {(networkAccessConfigured ? "✅ Aktiviert" : "❌ Nur Localhost")}");
+            
+            return networkAccessConfigured;
+        }
+
+        /// <summary>
+        /// Versucht einen Prefix hinzuzufügen mit Fehlerbehandlung
+        /// </summary>
+        private async Task<bool> TryAddPrefix(string prefix)
+        {
+            try
+            {
+                _httpListener!.Prefixes.Add(prefix);
+                return true;
+            }
+            catch (HttpListenerException httpEx)
+            {
+                StatusChanged?.Invoke($"⚠️ Prefix-Fehler {prefix}: {GetDetailedHttpListenerError(httpEx)}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"⚠️ Prefix-Fehler {prefix}: {ex.Message}");
+                LoggingService.Instance.LogError($"Error adding prefix {prefix}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Validiert konfigurierte Prefixes
+        /// </summary>
+        private async Task ValidateConfiguredPrefixes()
+        {
+            StatusChanged?.Invoke("🔍 Validiere konfigurierte Prefixes...");
+            
+            foreach (var prefix in _httpListener!.Prefixes)
+            {
+                StatusChanged?.Invoke($"   • {prefix} - bereit");
+            }
+            
+            StatusChanged?.Invoke("✅ Prefix-Validierung abgeschlossen");
+        }
+
+        /// <summary>
+        /// Liefert detaillierte HttpListener-Fehlermeldungen
+        /// </summary>
+        private string GetDetailedHttpListenerError(HttpListenerException httpEx)
+        {
+            return httpEx.ErrorCode switch
+            {
+                5 => "Zugriff verweigert - Administrator-Rechte erforderlich oder Port bereits belegt",
+                183 => "Port bereits in Verwendung - andere Anwendung beenden oder alternativen Port verwenden",
+                87 => "Ungültiger Parameter - Netzwerk-Konfiguration prüfen oder URL-Format korrigieren",
+                995 => "Operation abgebrochen - Server wird gestoppt",
+                10048 => "Adresse bereits in Verwendung - Port-Konflikt mit anderer Anwendung",
+                10013 => "Berechtigung verweigert - Firewall oder Sicherheitsrichtlinie blockiert Zugriff",
+                _ => $"HTTP-Listener Fehler (Code {httpEx.ErrorCode}): {httpEx.Message}"
+            };
+        }
+
+        /// <summary>
+        /// Versucht Fallback-Strategien wenn der normale Start fehlschlägt
+        /// </summary>
+        private async Task<bool> TryFallbackStrategies()
+        {
+            StatusChanged?.Invoke("🔄 Versuche Fallback-Strategien...");
+            
+            // Strategie 1: Alternative Ports
+            var alternativePorts = new[] { 8081, 8082, 8083, 9080, 9081 };
+            
+            foreach (var altPort in alternativePorts)
+            {
+                try
+                {
+                    StatusChanged?.Invoke($"🔄 Teste alternativen Port {altPort}...");
+                    
+                    // Neuen Listener für alternativen Port erstellen
+                    var testListener = new HttpListener();
+                    testListener.Prefixes.Add($"http://localhost:{altPort}/");
+                    
+                    testListener.Start();
+                    
+                    // Wenn erfolgreich, übernehmen
+                    _httpListener?.Close();
+                    _httpListener = testListener;
+                    
+                    StatusChanged?.Invoke($"✅ Alternative Port {altPort} erfolgreich konfiguriert");
+                    LoggingService.Instance.LogInfo($"Successfully configured alternative port {altPort}");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    StatusChanged?.Invoke($"⚠️ Alternative Port {altPort} fehlgeschlagen: {ex.Message}");
+                }
+            }
+            
+            StatusChanged?.Invoke("❌ Alle Fallback-Strategien fehlgeschlagen");
+            return false;
         }
         
         public async Task StopServer()
@@ -250,6 +525,7 @@ namespace Einsatzueberwachung.Services
                     catch (Exception ex)
                     {
                         StatusChanged?.Invoke($"⚠️ HttpListener-Stop Warnung: {ex.Message}");
+                        LoggingService.Instance.LogWarning($"HttpListener stop warning: {ex.Message}");
                     }
                 }
                 
@@ -257,10 +533,12 @@ namespace Einsatzueberwachung.Services
                 await Task.Delay(500);
                 
                 StatusChanged?.Invoke("✅ Mobile Server gestoppt");
+                LoggingService.Instance.LogInfo("Mobile server stopped successfully");
             }
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"⚠️ Server-Stop Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Error stopping server", ex);
             }
         }
         
@@ -272,8 +550,10 @@ namespace Einsatzueberwachung.Services
                 var principal = new System.Security.Principal.WindowsPrincipal(identity);
                 return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
             }
-            catch
+            catch (Exception ex)
             {
+                StatusChanged?.Invoke($"⚠️ Administrator-Check Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Administrator check failed", ex);
                 return false;
             }
         }
@@ -292,6 +572,7 @@ namespace Einsatzueberwachung.Services
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"⚠️ Netzwerk-Konfiguration Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Network access configuration failed", ex);
             }
         }
         
@@ -310,18 +591,40 @@ namespace Einsatzueberwachung.Services
                     return;
                 }
                 
-                var userName = Environment.UserName;
-                var addCmd = $"netsh http add urlacl url=http://+:{_port}/ user={userName}";
-                var addResult = await RunCommand(addCmd);
-                
-                if (addResult.Contains("erfolgreich") || addResult.Contains("successfully"))
+                // Versuche verschiedene Benutzer-Konfigurationen
+                var userConfigs = new[]
                 {
-                    StatusChanged?.Invoke("✅ URL-Reservierung erfolgreich hinzugefügt");
+                    "Everyone",
+                    Environment.UserName,
+                    $"{Environment.UserDomainName}\\{Environment.UserName}",
+                    "Users"
+                };
+
+                foreach (var user in userConfigs)
+                {
+                    try
+                    {
+                        var addCmd = $"netsh http add urlacl url=http://+:{_port}/ user={user}";
+                        var addResult = await RunCommand(addCmd);
+                        
+                        if (addResult.Contains("erfolgreich") || addResult.Contains("successfully") || addResult.Contains("OK"))
+                        {
+                            StatusChanged?.Invoke($"✅ URL-Reservierung erfolgreich für Benutzer: {user}");
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusChanged?.Invoke($"⚠️ URL-Reservierung für {user} fehlgeschlagen: {ex.Message}");
+                    }
                 }
+                
+                StatusChanged?.Invoke("⚠️ URL-Reservierung konnte nicht erstellt werden");
             }
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"⚠️ URL-Reservierung Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("URL reservation failed", ex);
             }
         }
         
@@ -331,6 +634,7 @@ namespace Einsatzueberwachung.Services
             {
                 StatusChanged?.Invoke("🛡️ Konfiguriere Windows Firewall...");
                 
+                // Prüfe ob Regel bereits existiert
                 var checkCmd = "netsh advfirewall firewall show rule name=\"Einsatzüberwachung Mobile\"";
                 var checkResult = await RunCommand(checkCmd);
                 
@@ -340,17 +644,38 @@ namespace Einsatzueberwachung.Services
                     return;
                 }
                 
+                // Erstelle Firewall-Regel
                 var addCmd = $"netsh advfirewall firewall add rule name=\"Einsatzüberwachung Mobile\" dir=in action=allow protocol=TCP localport={_port}";
                 var addResult = await RunCommand(addCmd);
                 
-                if (addResult.Contains("Ok") || addResult.Contains("erfolgreich"))
+                if (addResult.Contains("Ok") || addResult.Contains("erfolgreich") || addResult.Contains("OK"))
                 {
                     StatusChanged?.Invoke("✅ Firewall-Regel erfolgreich hinzugefügt");
+                }
+                else
+                {
+                    StatusChanged?.Invoke($"⚠️ Firewall-Regel Ergebnis: {addResult}");
+                    
+                    // Fallback: Versuche PowerShell-Befehl
+                    StatusChanged?.Invoke("🔄 Versuche PowerShell-Fallback...");
+                    var psCmd = $"powershell -Command \"New-NetFirewallRule -DisplayName 'Einsatzüberwachung Mobile' -Direction Inbound -Protocol TCP -LocalPort {_port} -Action Allow\"";
+                    var psResult = await RunCommand(psCmd);
+                    
+                    if (!string.IsNullOrEmpty(psResult) && !psResult.Contains("Fehler") && !psResult.Contains("Error"))
+                    {
+                        StatusChanged?.Invoke("✅ Firewall-Regel über PowerShell erfolgreich");
+                    }
+                    else
+                    {
+                        StatusChanged?.Invoke("⚠️ Firewall-Regel konnte nicht erstellt werden");
+                        StatusChanged?.Invoke("💡 Öffnen Sie manuell die Windows Firewall und geben Port 8080 frei");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"⚠️ Firewall-Konfiguration Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Firewall configuration failed", ex);
             }
         }
         
@@ -365,99 +690,270 @@ namespace Einsatzueberwachung.Services
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    Verb = "runas" // Run with elevated privileges if available
                 };
                 
                 using var process = System.Diagnostics.Process.Start(processInfo);
                 if (process != null)
                 {
-                    await process.WaitForExitAsync();
+                    // Set timeout to prevent hanging
+                    var timeoutTask = Task.Delay(10000); // 10 seconds timeout
+                    var processTask = process.WaitForExitAsync();
+                    
+                    var completedTask = await Task.WhenAny(processTask, timeoutTask);
+                    
+                    if (completedTask == timeoutTask)
+                    {
+                        StatusChanged?.Invoke("⚠️ Befehl-Timeout - Prozess wird beendet");
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch { }
+                        return "Timeout";
+                    }
+                    
                     var output = await process.StandardOutput.ReadToEndAsync();
                     var error = await process.StandardError.ReadToEndAsync();
                     
-                    return !string.IsNullOrEmpty(output) ? output : error;
+                    var result = !string.IsNullOrEmpty(output) ? output : error;
+                    var logResult = result?.Length > 200 ? result.Substring(0, 200) : result ?? "";
+                    LoggingService.Instance.LogInfo($"Command result: {command} -> {logResult}");
+                    return result ?? string.Empty;
                 }
                 
                 return "Prozess konnte nicht gestartet werden";
             }
             catch (Exception ex)
             {
-                return $"Fehler: {ex.Message}";
-            }
-        }
-        
-        public async Task CleanupNetworkConfiguration()
-        {
-            try
-            {
-                if (!IsRunningAsAdministrator())
-                {
-                    StatusChanged?.Invoke("⚠️ Cleanup erfordert Admin-Rechte - überspringe");
-                    return;
-                }
-                
-                StatusChanged?.Invoke("🧹 Räume Netzwerk-Konfiguration auf...");
-                
-                var urlCmd = $"netsh http delete urlacl url=http://+:{_port}/";
-                await RunCommand(urlCmd);
-                
-                StatusChanged?.Invoke("✅ Cleanup abgeschlossen");
-            }
-            catch (Exception ex)
-            {
-                StatusChanged?.Invoke($"⚠️ Cleanup Fehler: {ex.Message}");
+                var errorMsg = $"Command execution failed: {ex.Message}";
+                StatusChanged?.Invoke($"⚠️ Befehl-Fehler: {ex.Message}");
+                LoggingService.Instance.LogError(errorMsg, ex);
+                return errorMsg;
             }
         }
         
         private async Task<bool> ConfigurePrefixes()
         {
             bool networkAccessConfigured = false;
+            var configuredPrefixes = new List<string>();
             
-            // Strategie 1: Spezifische IP-Adresse
+            StatusChanged?.Invoke("🔧 Konfiguriere HTTP-Prefixes...");
+            
+            // Strategie 1: Localhost (immer möglich)
+            try
+            {
+                var localhostPrefixes = new[] 
+                {
+                    $"http://localhost:{_port}/",
+                    $"http://127.0.0.1:{_port}/"
+                };
+                
+                foreach (var prefix in localhostPrefixes)
+                {
+                    try
+                    {
+                        _httpListener!.Prefixes.Add(prefix);
+                        configuredPrefixes.Add(prefix);
+                        StatusChanged?.Invoke($"✅ Localhost-Prefix hinzugefügt: {prefix}");
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusChanged?.Invoke($"⚠️ Localhost-Prefix Fehler {prefix}: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"❌ Kritischer Localhost-Prefix Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Critical localhost prefix error", ex);
+            }
+            
+            // Strategie 2: Spezifische IP-Adresse (wenn verfügbar)
             if (_localIPAddress != "localhost" && !string.IsNullOrEmpty(_localIPAddress))
             {
                 try
                 {
-                    _httpListener!.Prefixes.Add($"http://{_localIPAddress}:{_port}/");
-                    StatusChanged?.Invoke($"✅ Spezifische IP hinzugefügt: {_localIPAddress}:{_port}");
+                    var ipPrefix = $"http://{_localIPAddress}:{_port}/";
+                    _httpListener!.Prefixes.Add(ipPrefix);
+                    configuredPrefixes.Add(ipPrefix);
                     networkAccessConfigured = true;
+                    StatusChanged?.Invoke($"✅ IP-Prefix hinzugefügt: {ipPrefix}");
+                }
+                catch (HttpListenerException httpEx) when (httpEx.ErrorCode == 5)
+                {
+                    StatusChanged?.Invoke($"⚠️ IP-Prefix benötigt Administrator-Rechte: {_localIPAddress}:{_port}");
+                    StatusChanged?.Invoke("💡 Starten Sie als Administrator für Netzwerk-Zugriff");
                 }
                 catch (Exception ex)
                 {
-                    StatusChanged?.Invoke($"⚠️ Spezifische IP Fehler: {ex.Message}");
+                    StatusChanged?.Invoke($"⚠️ IP-Prefix Fehler: {ex.Message}");
+                    LoggingService.Instance.LogError($"IP prefix error for {_localIPAddress}", ex);
                 }
             }
             
-            // Strategie 2: Wildcard (nur mit Admin-Rechten)
+            // Strategie 3: Wildcard (nur mit Admin-Rechten)
             if (IsRunningAsAdministrator())
             {
                 try
                 {
-                    _httpListener!.Prefixes.Add($"http://+:{_port}/");
-                    StatusChanged?.Invoke($"✅ Wildcard-Prefix hinzugefügt: +:{_port}");
+                    var wildcardPrefix = $"http://+:{_port}/";
+                    _httpListener!.Prefixes.Add(wildcardPrefix);
+                    configuredPrefixes.Add(wildcardPrefix);
                     networkAccessConfigured = true;
+                    StatusChanged?.Invoke($"✅ Wildcard-Prefix hinzugefügt: {wildcardPrefix}");
+                }
+                catch (HttpListenerException httpEx) when (httpEx.ErrorCode == 183)
+                {
+                    StatusChanged?.Invoke($"⚠️ Wildcard-Prefix: URL bereits reserviert");
                 }
                 catch (Exception ex)
                 {
                     StatusChanged?.Invoke($"⚠️ Wildcard-Prefix Fehler: {ex.Message}");
+                    LoggingService.Instance.LogError("Wildcard prefix error", ex);
+                }
+            }
+            else
+            {
+                StatusChanged?.Invoke("💡 Wildcard-Prefix übersprungen - Administrator-Rechte erforderlich");
+            }
+            
+            // Strategie 4: Alternative Ports (Fallback)
+            if (_httpListener!.Prefixes.Count == 0)
+            {
+                StatusChanged?.Invoke("🔄 Versuche alternative Ports...");
+                
+                var alternativePorts = new[] { 8081, 8082, 8083, 9080, 9081 };
+                
+                foreach (var altPort in alternativePorts)
+                {
+                    try
+                    {
+                        var altPrefix = $"http://localhost:{altPort}/";
+                        _httpListener.Prefixes.Add(altPrefix);
+                        configuredPrefixes.Add(altPrefix);
+                        
+                        // Update URLs mit neuem Port
+                        var newBaseUrl = $"http://{_localIPAddress}:{altPort}";
+                        
+                        StatusChanged?.Invoke($"✅ Alternative Port konfiguriert: {altPort}");
+                        StatusChanged?.Invoke($"🔧 URLs aktualisiert für Port {altPort}");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusChanged?.Invoke($"⚠️ Alternative Port {altPort} fehlgeschlagen: {ex.Message}");
+                    }
                 }
             }
             
-            // Strategie 3: Localhost-Fallback (immer möglich)
-            try
+            // Ergebnis-Zusammenfassung
+            StatusChanged?.Invoke($"📋 Prefix-Konfiguration abgeschlossen:");
+            StatusChanged?.Invoke($"   • Konfigurierte Prefixes: {_httpListener.Prefixes.Count}");
+            StatusChanged?.Invoke($"   • Netzwerk-Zugriff: {(networkAccessConfigured ? "✅ Aktiviert" : "❌ Nur Localhost")}")
+            ;
+            if (configuredPrefixes.Count > 0)
             {
-                _httpListener!.Prefixes.Add($"http://localhost:{_port}/");
-                _httpListener.Prefixes.Add($"http://127.0.0.1:{_port}/");
-                StatusChanged?.Invoke($"✅ Localhost-Prefixes hinzugefügt");
-            }
-            catch (Exception ex)
-            {
-                StatusChanged?.Invoke($"❌ Localhost-Prefix Fehler: {ex.Message}");
+                StatusChanged?.Invoke("📋 Aktive URLs:");
+                foreach (var prefix in configuredPrefixes)
+                {
+                    StatusChanged?.Invoke($"   • {prefix}mobile");
+                }
             }
             
             return networkAccessConfigured;
         }
         
+        /// <summary>
+        /// Behandelt POST-Requests zum Erstellen von Replies
+        /// </summary>
+        private async Task HandleCreateReply(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            try
+            {
+                // Extract note ID from URL path
+                var pathParts = request.Url?.AbsolutePath.Split('/');
+                if (pathParts == null || pathParts.Length < 4)
+                {
+                    response.StatusCode = 400;
+                    await ServeJSON(response, new { error = "Invalid URL format" });
+                    return;
+                }
+
+                var noteId = pathParts[3]; // /api/notes/{id}/reply
+
+                // Read request body
+                var body = "";
+                using (var reader = new System.IO.StreamReader(request.InputStream))
+                {
+                    body = await reader.ReadToEndAsync();
+                }
+
+                if (string.IsNullOrEmpty(body))
+                {
+                    response.StatusCode = 400;
+                    await ServeJSON(response, new { error = "Request body is required" });
+                    return;
+                }
+
+                // Parse JSON
+                var replyData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(body);
+                if (replyData == null || !replyData.ContainsKey("content"))
+                {
+                    response.StatusCode = 400;
+                    await ServeJSON(response, new { error = "Content field is required" });
+                    return;
+                }
+
+                var content = replyData["content"].ToString();
+                if (string.IsNullOrEmpty(content))
+                {
+                    response.StatusCode = 400;
+                    await ServeJSON(response, new { error = "Content cannot be empty" });
+                    return;
+                }
+                
+                var teamName = replyData.ContainsKey("teamName") ? replyData["teamName"]?.ToString() : null;
+                var entryTypeStr = replyData.ContainsKey("entryType") ? replyData["entryType"]?.ToString() : "Manual";
+                
+                if (!Enum.TryParse<GlobalNotesEntryType>(entryTypeStr, out var entryType))
+                {
+                    entryType = GlobalNotesEntryType.Manual;
+                }
+
+                // Create reply via GlobalNotesService
+                var reply = GlobalNotesService.Instance.CreateReply(noteId, content, teamName, entryType);
+                
+                if (reply != null)
+                {
+                    response.StatusCode = 201;
+                    await ServeJSON(response, new
+                    {
+                        id = reply.Id,
+                        content = reply.Content,
+                        timestamp = reply.FormattedTimestamp,
+                        teamName = reply.TeamName,
+                        entryType = reply.EntryType.ToString(),
+                        replyToEntryId = reply.ReplyToEntryId,
+                        threadId = reply.ThreadId,
+                        threadDepth = reply.ThreadDepth
+                    });
+                }
+                else
+                {
+                    response.StatusCode = 404;
+                    await ServeJSON(response, new { error = "Original note not found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"❌ Create reply error: {ex.Message}");
+                response.StatusCode = 500;
+                await ServeJSON(response, new { error = ex.Message });
+            }
+        }
+
         private async Task HandleRequestsAsync()
         {
             StatusChanged?.Invoke("🔄 Request-Handler gestartet");
@@ -504,7 +1000,7 @@ namespace Einsatzueberwachung.Services
                 
                 // CORS Headers
                 response.Headers.Add("Access-Control-Allow-Origin", "*");
-                response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
                 response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
                 
                 if (request.HttpMethod == "OPTIONS")
@@ -547,6 +1043,19 @@ namespace Einsatzueberwachung.Services
                         await ServeJSON(response, GetGlobalNotesData());
                         break;
                     
+                    // Neue Reply-System Endpoints
+                    case var p when p.StartsWith("/api/notes/") && p.EndsWith("/reply") && request.HttpMethod == "POST":
+                        await HandleCreateReply(request, response);
+                        break;
+                    
+                    case var p when p.StartsWith("/api/threads/"):
+                        await HandleThreadRequest(request, response, path);
+                        break;
+                    
+                    case "/api/reply-stats":
+                        await ServeJSON(response, GetReplyStatsData());
+                        break;
+                    
                     default:
                         response.StatusCode = 404;
                         await ServeText(response, "Not Found");
@@ -566,6 +1075,86 @@ namespace Einsatzueberwachung.Services
                 {
                     // Fehler beim Senden der Fehlerantwort - ignorieren
                 }
+            }
+        }
+
+        /// <summary>
+        /// Behandelt Thread-spezifische Requests
+        /// </summary>
+        private async Task HandleThreadRequest(HttpListenerRequest request, HttpListenerResponse response, string path)
+        {
+            try
+            {
+                var pathParts = path.Split('/');
+                if (pathParts.Length < 4)
+                {
+                    response.StatusCode = 400;
+                    await ServeJSON(response, new { error = "Invalid thread URL format" });
+                    return;
+                }
+
+                var threadId = pathParts[3]; // /api/threads/{id}
+
+                if (pathParts.Length == 4)
+                {
+                    // GET /api/threads/{id} - Get all messages in thread
+                    var threadMessages = GlobalNotesService.Instance.GetThreadMessages(threadId);
+                    await ServeJSON(response, threadMessages.Select(m => new
+                    {
+                        id = m.Id,
+                        content = m.Content,
+                        timestamp = m.FormattedTimestamp,
+                        teamName = m.TeamName,
+                        entryType = m.EntryType.ToString(),
+                        entryTypeIcon = m.EntryTypeIcon,
+                        isReply = m.IsReply,
+                        replyToEntryId = m.ReplyToEntryId,
+                        threadDepth = m.ThreadDepth,
+                        repliesCount = m.RepliesCount
+                    }).ToList());
+                }
+                else if (pathParts.Length == 5 && pathParts[4] == "export")
+                {
+                    // GET /api/threads/{id}/export - Export thread as text
+                    var threadText = GlobalNotesService.Instance.ExportThreadAsText(threadId);
+                    response.ContentType = "text/plain; charset=utf-8";
+                    await ServeText(response, threadText);
+                }
+                else
+                {
+                    response.StatusCode = 404;
+                    await ServeText(response, "Thread endpoint not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"❌ Thread request error: {ex.Message}");
+                response.StatusCode = 500;
+                await ServeJSON(response, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Liefert Reply-System Statistiken
+        /// </summary>
+        private object GetReplyStatsData()
+        {
+            try
+            {
+                var stats = GlobalNotesService.Instance.GetReplyStats();
+                return new
+                {
+                    totalNotes = stats.TotalNotes,
+                    threadRoots = stats.ThreadRoots,
+                    replies = stats.Replies,
+                    threadsWithReplies = stats.ThreadsWithReplies,
+                    averageRepliesPerThread = Math.Round(stats.AverageRepliesPerThread, 2)
+                };
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"❌ Reply stats error: {ex.Message}");
+                return new { error = ex.Message };
             }
         }
         
@@ -658,11 +1247,23 @@ namespace Einsatzueberwachung.Services
             
             return notes.Select(n => new
             {
+                id = n.Id,
                 timestamp = n.FormattedTimestamp,
                 content = n.Content,
                 teamName = n.TeamName ?? "",
                 icon = n.EntryTypeIcon,
-                type = n.EntryType.ToString()
+                type = n.EntryType.ToString(),
+                
+                // Reply-System Daten
+                isReply = n.IsReply,
+                replyToEntryId = n.ReplyToEntryId,
+                replyPreview = n.ReplyPreview,
+                threadId = n.ThreadId,
+                threadDepth = n.ThreadDepth,
+                repliesCount = n.RepliesCount,
+                hasReplies = n.HasReplies,
+                threadMarginLeft = n.ThreadMarginLeft,
+                replyIcon = n.ReplyIcon
             }).ToList();
         }
         
@@ -1195,6 +1796,58 @@ namespace Einsatzueberwachung.Services
 </html>";
         }
 
+        public async Task CleanupNetworkConfiguration()
+        {
+            try
+            {
+                if (!IsRunningAsAdministrator())
+                {
+                    StatusChanged?.Invoke("⚠️ Cleanup erfordert Admin-Rechte - überspringe");
+                    return;
+                }
+                
+                StatusChanged?.Invoke("🧹 Räume Netzwerk-Konfiguration auf...");
+                
+                // Remove URL reservations
+                var ports = new[] { 8080, 8081, 8082, 8083 };
+                foreach (var port in ports)
+                {
+                    try
+                    {
+                        var urlCmd = $"netsh http delete urlacl url=http://+:{port}/";
+                        var result = await RunCommand(urlCmd);
+                        if (!result.Contains("Fehler") && !result.Contains("Error"))
+                        {
+                            StatusChanged?.Invoke($"✅ URL-Reservierung für Port {port} entfernt");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusChanged?.Invoke($"⚠️ URL-Cleanup für Port {port} fehlgeschlagen: {ex.Message}");
+                    }
+                }
+                
+                // Remove firewall rules
+                try
+                {
+                    var firewallCmd = "netsh advfirewall firewall delete rule name=\"Einsatzüberwachung Mobile\"";
+                    var result = await RunCommand(firewallCmd);
+                    StatusChanged?.Invoke("✅ Firewall-Regeln entfernt");
+                }
+                catch (Exception ex)
+                {
+                    StatusChanged?.Invoke($"⚠️ Firewall-Cleanup fehlgeschlagen: {ex.Message}");
+                }
+                
+                StatusChanged?.Invoke("✅ Netzwerk-Cleanup abgeschlossen");
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"⚠️ Cleanup Fehler: {ex.Message}");
+                LoggingService.Instance.LogError("Network cleanup failed", ex);
+            }
+        }
+        
         public void Dispose()
         {
             Dispose(true);

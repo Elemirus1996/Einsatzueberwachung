@@ -44,11 +44,11 @@ namespace Einsatzueberwachung.ViewModels
         {
             InitializeCommands();
             
-            // Theme-Service abonnieren
-            ThemeService.Instance.ThemeChanged += OnThemeChanged;
-            IsDarkMode = ThemeService.Instance.IsDarkMode;
+            // UnifiedThemeManager statt ThemeService verwenden
+            UnifiedThemeManager.Instance.ThemeChanged += OnThemeChanged;
+            IsDarkMode = UnifiedThemeManager.Instance.IsDarkMode;
             
-            LoggingService.Instance.LogInfo("TeamControlViewModel initialized with MVVM pattern v1.9.0");
+            LoggingService.Instance.LogInfo("TeamControlViewModel initialized with MVVM pattern v1.9.0 + UnifiedThemeManager");
         }
 
         public TeamControlViewModel(Team team) : this()
@@ -561,7 +561,30 @@ namespace Einsatzueberwachung.ViewModels
             try
             {
                 UpdateVisualState();
-                await SoundService.Instance.PlayWarningSound(isSecondWarning).ConfigureAwait(false);
+                
+                // KORRIGIERT: Stelle sicher, dass Sound immer abgespielt wird
+                LoggingService.Instance.LogInfo($"Warning triggered for team {team.TeamName}: {(isSecondWarning ? "Second" : "First")} warning");
+                
+                // Sound abspielen (async ohne ConfigureAwait(false) für UI-Thread)
+                try
+                {
+                    await SoundService.Instance.PlayWarningSound(isSecondWarning);
+                    LoggingService.Instance.LogInfo($"Warning sound played successfully for team {team.TeamName}");
+                }
+                catch (Exception soundEx)
+                {
+                    LoggingService.Instance.LogError($"Failed to play warning sound for team {team.TeamName}", soundEx);
+                    
+                    // Fallback: System-Sound
+                    try
+                    {
+                        System.Media.SystemSounds.Exclamation.Play();
+                    }
+                    catch (Exception fallbackEx)
+                    {
+                        LoggingService.Instance.LogError("Even fallback system sound failed", fallbackEx);
+                    }
+                }
                 
                 string warningType = isSecondWarning ? "Second" : "First";
                 LoggingService.Instance.LogWarning($"Warning triggered via MVVM for {team.TeamName}: {warningType} warning at {team.ElapsedTimeString}");
@@ -750,7 +773,7 @@ namespace Einsatzueberwachung.ViewModels
                 if (disposing)
                 {
                     UnsubscribeFromTeamEvents();
-                    ThemeService.Instance.ThemeChanged -= OnThemeChanged;
+                    UnifiedThemeManager.Instance.ThemeChanged -= OnThemeChanged;
                     _blinkingStoryboard = null;
                 }
                 _disposed = true;

@@ -70,6 +70,69 @@ namespace Einsatzueberwachung.Views
     }
 
     /// <summary>
+    /// Konvertiert Boolean zu verschiedenen Farben basierend auf Parameter
+    /// Parameter: "TrueColor:FalseColor" z.B. "#FF0000:#00FF00"
+    /// </summary>
+    public class BooleanToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool boolValue && parameter is string colorParam)
+            {
+                var colors = colorParam.Split(':');
+                if (colors.Length == 2)
+                {
+                    try
+                    {
+                        var trueColor = (Color)ColorConverter.ConvertFromString(colors[0]);
+                        var falseColor = (Color)ColorConverter.ConvertFromString(colors[1]);
+                        return new SolidColorBrush(boolValue ? trueColor : falseColor);
+                    }
+                    catch
+                    {
+                        // Fallback
+                    }
+                }
+            }
+
+            // Fallback: Orange für true, Gray für false
+            return new SolidColorBrush(value is bool b && b ? Colors.Orange : Colors.Gray);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Konvertiert Boolean zu verschiedenen Texten basierend auf Parameter
+    /// Parameter: "TrueText:FalseText" z.B. "Aktiv:Inaktiv"
+    /// </summary>
+    public class BooleanToTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool boolValue && parameter is string textParam)
+            {
+                var texts = textParam.Split(':');
+                if (texts.Length == 2)
+                {
+                    return boolValue ? texts[0] : texts[1];
+                }
+            }
+
+            // Fallback
+            return value is bool b && b ? "Ja" : "Nein";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
     /// Konvertiert String zu Visibility - sichtbar wenn String nicht leer
     /// </summary>
     public class StringToVisibilityConverter : IValueConverter
@@ -89,6 +152,47 @@ namespace Einsatzueberwachung.Views
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             // Not needed for one-way binding
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Konvertiert Thread-Tiefe zu dynamischen Margin-Werten für verschachtelte Antworten
+    /// </summary>
+    public class ThreadMarginConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length < 4) return new Thickness(0);
+            
+            try
+            {
+                // ThreadDepth aus dem ersten Parameter
+                int threadDepth = 0;
+                if (values[0] is int depth)
+                {
+                    threadDepth = Math.Max(0, Math.Min(depth, 5)); // Maximal 5 Ebenen
+                }
+                
+                // Standard Margin-Werte (left, top, right, bottom)
+                double left = values.Length > 1 && values[1] is double leftVal ? leftVal : 0;
+                double top = values.Length > 2 && values[2] is double topVal ? topVal : 0;
+                double right = values.Length > 3 && values[3] is double rightVal ? rightVal : 0;
+                double bottom = values.Length > 4 && values[4] is double bottomVal ? bottomVal : 8;
+                
+                // Berechne linke Einrückung basierend auf Thread-Tiefe
+                double threadIndent = threadDepth * 20; // 20px pro Ebene
+                
+                return new Thickness(left + threadIndent, top, right, bottom);
+            }
+            catch
+            {
+                return new Thickness(0, 0, 0, 8); // Fallback
+            }
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
             throw new NotImplementedException();
         }
     }

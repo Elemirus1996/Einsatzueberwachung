@@ -1,19 +1,36 @@
 <Application x:Class="Einsatzueberwachung.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:Einsatzueberwachung.Views">
+             xmlns:viewConverters="clr-namespace:Einsatzueberwachung.Views"
+             xmlns:converters="clr-namespace:Einsatzueberwachung.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- 🎨 Professional Design System v1.9 - Orange-fokussiert -->
+                <!-- 🎨 Professional Design System v4.0 - Orange-fokussiert mit konsistenten Light/Dark Modi -->
                 <ResourceDictionary Source="Resources/DesignSystem.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
             <!-- 🔄 Global Converters für MVVM-Binding -->
-            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
-            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-            <converters:ColorBrushConverter x:Key="ColorBrushConverter"/>
+            <viewConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <viewConverters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+            <viewConverters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <viewConverters:ColorBrushConverter x:Key="ColorBrushConverter"/>
+            <viewConverters:SettingsCategoryVisibilityConverter x:Key="SettingsCategoryVisibilityConverter"/>
+            <viewConverters:AddValueConverter x:Key="AddValueConverter"/>
+            <viewConverters:BooleanToYesNoConverter x:Key="BooleanToYesNoConverter"/>
+            <viewConverters:ByteArrayToBitmapImageConverter x:Key="ByteArrayToBitmapImageConverter"/>
+            <viewConverters:EnumToStringConverter x:Key="EnumToStringConverter"/>
+            <viewConverters:TimeSpanToStringConverter x:Key="TimeSpanToStringConverter"/>
+            <viewConverters:MultiBooleanConverter x:Key="MultiBooleanConverter"/>
+            
+            <!-- Thread Margin Converter aus separatem Namespace -->
+            <converters:ThreadMarginConverter x:Key="ThreadMarginConverter"/>
+            
+            <!-- 
+            Alle Theme-Farben werden jetzt durch das DesignSystem.xaml und den ThemeService verwaltet.
+            Keine lokalen Überschreibungen mehr - für konsistente Theme-Anwendung.
+            -->
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

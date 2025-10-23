@@ -383,6 +383,44 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* Note replies and threads styles */
+        .note-entry {
+            border-radius: 12px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .reply-context {
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin: -10px -10px 8px -10px;
+            font-size: 12px;
+        }
+
+        .replies-counter {
+            display: inline-block;
+        }
+
+        .reply-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Adjusting icons and buttons for mobile */
+        .info-icon, .reply-btn {
+            flex-shrink: 0;
+        }
+
+        /* Hide default scrollbar but allow scrolling */
+        body {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* Internet Explorer and Edge */
+        }
+
+        body::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
     </style>
 </head>
 <body>
@@ -596,33 +634,76 @@
             console.log('📋 First note sample:', JSON.stringify(notes[0]));
             
             try {
-                const notesHTML = notes.slice(0, 20).map((note, index) => {
+                // Show the last 20 notes, but preserve thread structure
+                const recentNotes = notes.slice(-20);
+                
+                const notesHTML = recentNotes.map((note, index) => {
                     console.log(`📝 Processing note ${index}:`, note);
                     
-                    // Zeitstempel mit Fallback
+                    // Basic properties with fallbacks
                     const time = note.formattedTimestamp || note.timestamp || 'N/A';
                     const content = note.content || 'Kein Inhalt';
                     const entryType = note.entryType || 'Manual';
                     const entryTypeIcon = note.entryTypeIcon || '📝';
                     const teamName = note.teamName || '';
                     
+                    // Reply-specific properties
+                    const isReply = note.isReply || false;
+                    const replyIcon = note.replyIcon || '';
+                    const replyPreview = note.replyPreview || '';
+                    const threadDepth = note.threadDepth || 0;
+                    const hasReplies = note.hasReplies || false;
+                    const repliesCount = note.repliesCount || 0;
+                    
+                    // Calculate indentation for replies (max 3 levels)
+                    const marginLeft = Math.min(threadDepth, 3) * 15; // 15px per level on mobile
+                    
+                    // Reply indicator styling
+                    const replyBorder = isReply ? 'border-left: 3px solid #FF9800;' : 'border-left: 4px solid #FF9800;';
+                    const replyBackground = isReply ? 'background: #FFF3E0;' : 'background: #f8f9fa;';
+                    
                     return `
-                        <div class='note-card'>
-                            <div class='note-header'>
-                                <div class='note-time'>${escapeHtml(time)}</div>
-                                <div class='note-type'>
-                                    <span>${entryTypeIcon}</span>
-                                    <span>${escapeHtml(entryType)}</span>
+                        <div class='note-entry' style='margin-left: ${marginLeft}px; ${replyBorder} ${replyBackground}'>
+                            ${isReply ? `
+                                <div class='reply-context' style='background: #FFE0B2; border-bottom: 1px solid #FF9800; padding: 6px 8px; margin: -15px -15px 10px -15px; font-size: 11px; color: #E65100;'>
+                                    <strong>↳ Antwort auf:</strong> <span style='font-style: italic;'>${escapeHtml(replyPreview)}</span>
+                                </div>
+                            ` : ''}
+                            
+                            <div class='note-header' style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;'>
+                                <div style='display: flex; align-items: center; gap: 5px;'>
+                                    ${isReply ? `<span style='color: #FF9800; font-weight: bold;'>${replyIcon}</span>` : ''}
+                                    <div class='note-time' style='font-weight: bold; font-size: 14px; color: #7f8c8d;'>${escapeHtml(time)}</div>
+                                    ${teamName ? `<div style='font-size: 11px; background: #FF9800; color: white; padding: 2px 6px; border-radius: 8px; font-weight: bold;'>${escapeHtml(teamName)}</div>` : ''}
+                                </div>
+                                <div class='note-type' style='display: flex; align-items: center; gap: 4px;'>
+                                    <span style='font-size: 12px;'>${entryTypeIcon}</span>
+                                    <span style='font-size: 11px; color: #7f8c8d;'>${escapeHtml(entryType)}</span>
                                 </div>
                             </div>
-                            <div class='note-content'>${escapeHtml(content)}</div>
-                            ${teamName ? `<div class='note-team'>Team: ${escapeHtml(teamName)}</div>` : ''}
+                            
+                            <div class='note-content' style='font-size: 15px; line-height: 1.5; color: #2c3e50; margin-bottom: 8px;'>
+                                ${escapeHtml(content)}
+                            </div>
+                            
+                            ${hasReplies && !isReply ? `
+                                <div class='replies-counter' style='background: #FFCC80; color: #E65100; padding: 4px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 5px;'>
+                                    💬 ${repliesCount} ${repliesCount === 1 ? 'Antwort' : 'Antworten'}
+                                </div>
+                            ` : ''}
+                            
+                            ${!isReply ? `
+                                <button class='reply-btn' onclick='showReplyDialog("${note.id || ''}", "${escapeHtml(content)}", "${escapeHtml(teamName)}")' 
+                                        style='background: #FF9800; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px;'>
+                                    📤 Antworten
+                                </button>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
                 
                 container.innerHTML = notesHTML;
-                console.log('✅ Notes rendered successfully:', notes.length, 'notes displayed');
+                console.log('✅ Notes rendered successfully with reply system:', notes.length, 'notes displayed');
                 
             } catch (error) {
                 console.error('❌ Error rendering notes:', error);
@@ -633,6 +714,46 @@
             }
         }
 
+        // Reply dialog functionality for mobile
+        function showReplyDialog(noteId, originalContent, teamName) {
+            const replyText = prompt(`Antwort auf: "${originalContent.substring(0, 50)}..."\n\nDeine Antwort:`);
+            
+            if (replyText && replyText.trim()) {
+                createReply(noteId, replyText.trim(), teamName);
+            }
+        }
+
+        // Create reply via API
+        function createReply(noteId, content, teamName) {
+            const replyData = {
+                content: content,
+                teamName: teamName || null,
+                entryType: 'Manual'
+            };
+
+            fetch(`/api/notes/${noteId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(replyData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Fehler beim Erstellen der Antwort: ' + data.error);
+                } else {
+                    console.log('✅ Reply created successfully:', data);
+                    // Refresh data to show new reply
+                    loadData();
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error creating reply:', error);
+                alert('Fehler beim Erstellen der Antwort');
+            });
+        }
+        
         function showError(message) {
             const container = document.getElementById('teamsContainer');
             container.innerHTML = `<div class='error'>${escapeHtml(message)}</div>`;

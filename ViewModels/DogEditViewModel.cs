@@ -31,6 +31,11 @@ namespace Einsatzueberwachung.ViewModels
         private bool _lawinensuche;
         private bool _gelaendesuche;
         private bool _leichensuche;
+        private bool _inAusbildung; // NEU
+
+        // Validation Properties
+        private bool _isFormValid;
+        private string _validationMessage = string.Empty;
 
         // Collections
         public ObservableCollection<PersonalEntry> HundefuehrerList { get; }
@@ -48,7 +53,13 @@ namespace Einsatzueberwachung.ViewModels
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set 
+            { 
+                if (SetProperty(ref _name, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public string Rasse
@@ -88,48 +99,135 @@ namespace Einsatzueberwachung.ViewModels
             set => SetProperty(ref _selectedHundefuehrer, value);
         }
 
-        // Specializations
+        // Specializations with validation triggers
         public bool Flaechensuche
         {
             get => _flaechensuche;
-            set => SetProperty(ref _flaechensuche, value);
+            set 
+            { 
+                if (SetProperty(ref _flaechensuche, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool Truemmersuche
         {
             get => _truemmersuche;
-            set => SetProperty(ref _truemmersuche, value);
+            set 
+            { 
+                if (SetProperty(ref _truemmersuche, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool Mantrailing
         {
             get => _mantrailing;
-            set => SetProperty(ref _mantrailing, value);
+            set 
+            { 
+                if (SetProperty(ref _mantrailing, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool Wasserortung
         {
             get => _wasserortung;
-            set => SetProperty(ref _wasserortung, value);
+            set 
+            { 
+                if (SetProperty(ref _wasserortung, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool Lawinensuche
         {
             get => _lawinensuche;
-            set => SetProperty(ref _lawinensuche, value);
+            set 
+            { 
+                if (SetProperty(ref _lawinensuche, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool Gelaendesuche
         {
             get => _gelaendesuche;
-            set => SetProperty(ref _gelaendesuche, value);
+            set 
+            { 
+                if (SetProperty(ref _gelaendesuche, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
 
         public bool Leichensuche
         {
             get => _leichensuche;
-            set => SetProperty(ref _leichensuche, value);
+            set 
+            { 
+                if (SetProperty(ref _leichensuche, value))
+                {
+                    ValidateForm();
+                }
+            }
         }
+
+        public bool InAusbildung
+        {
+            get => _inAusbildung;
+            set 
+            { 
+                if (SetProperty(ref _inAusbildung, value))
+                {
+                    ValidateForm();
+                }
+            }
+        }
+
+        #region Validation Properties
+
+        /// <summary>
+        /// Ist das Formular gültig und kann gespeichert werden?
+        /// </summary>
+        public bool IsFormValid
+        {
+            get => _isFormValid;
+            set
+            {
+                if (SetProperty(ref _isFormValid, value))
+                {
+                    ((RelayCommand)SaveCommand).RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Aktuelle Validierungsnachricht
+        /// </summary>
+        public string ValidationMessage
+        {
+            get => _validationMessage;
+            set => SetProperty(ref _validationMessage, value);
+        }
+
+        /// <summary>
+        /// Gibt es Validierungsfehler?
+        /// </summary>
+        public bool HasValidationError => !string.IsNullOrEmpty(ValidationMessage);
+
+        #endregion
 
         // Result
         public DogEntry DogEntry => _dogEntry;
@@ -159,8 +257,10 @@ namespace Einsatzueberwachung.ViewModels
             {
                 LoadData();
             }
+            
+            ValidateForm(); // Initial validation
 
-            LoggingService.Instance.LogInfo($"DogEditViewModel initialized in {(_isEditMode ? "edit" : "create")} mode");
+            LoggingService.Instance.LogInfo($"DogEditViewModel initialized - Mode: {(_isEditMode ? "Edit" : "New")}, Entry ID: {_dogEntry.Id}");
         }
 
         private void LoadHundefuehrerList()
@@ -186,6 +286,8 @@ namespace Einsatzueberwachung.ViewModels
 
                 // Set default selection
                 SelectedHundefuehrer = HundefuehrerList.FirstOrDefault();
+                
+                LoggingService.Instance.LogInfo($"Loaded {hundefuehrer.Count} Hundeführer for dog selection");
             }
             catch (Exception ex)
             {
@@ -211,6 +313,7 @@ namespace Einsatzueberwachung.ViewModels
                 Lawinensuche = _dogEntry.Specializations.HasFlag(DogSpecialization.Lawinensuche);
                 Gelaendesuche = _dogEntry.Specializations.HasFlag(DogSpecialization.Gelaendesuche);
                 Leichensuche = _dogEntry.Specializations.HasFlag(DogSpecialization.Leichensuche);
+                InAusbildung = _dogEntry.Specializations.HasFlag(DogSpecialization.InAusbildung);
 
                 // Select hundefuehrer if set
                 if (!string.IsNullOrEmpty(_dogEntry.HundefuehrerId))
@@ -221,6 +324,8 @@ namespace Einsatzueberwachung.ViewModels
                         SelectedHundefuehrer = HundefuehrerList.FirstOrDefault(h => h.Id == hundefuehrer.Id);
                     }
                 }
+                
+                LoggingService.Instance.LogInfo($"Loaded existing DogEntry data: {_dogEntry.Name}, Specializations: {_dogEntry.Specializations}");
             }
             catch (Exception ex)
             {
@@ -230,17 +335,54 @@ namespace Einsatzueberwachung.ViewModels
 
         private bool CanExecuteSave()
         {
-            return !string.IsNullOrWhiteSpace(Name);
+            return IsFormValid;
+        }
+
+        private bool ValidateForm()
+        {
+            var errors = new System.Collections.Generic.List<string>();
+
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                errors.Add("Name ist erforderlich");
+            }
+
+            var hasSpecializations = HasAnySpecializationSelected();
+            LoggingService.Instance.LogInfo($"Dog Validation: HasAnySpecializationSelected = {hasSpecializations}, Specs: FL={Flaechensuche}, TR={Truemmersuche}, MT={Mantrailing}, WO={Wasserortung}, LA={Lawinensuche}, GE={Gelaendesuche}, LS={Leichensuche}, IA={InAusbildung}");
+
+            if (!hasSpecializations)
+            {
+                errors.Add("Mindestens eine Spezialisierung muss ausgewählt werden");
+            }
+
+            ValidationMessage = errors.Count > 0 ? string.Join(", ", errors) : string.Empty;
+            IsFormValid = errors.Count == 0;
+
+            LoggingService.Instance.LogInfo($"Dog Validation result: IsFormValid={IsFormValid}, ValidationMessage='{ValidationMessage}'");
+
+            return IsFormValid;
+        }
+
+        private bool HasAnySpecializationSelected()
+        {
+            var result = Flaechensuche || Truemmersuche || Mantrailing || Wasserortung || 
+                        Lawinensuche || Gelaendesuche || Leichensuche || InAusbildung;
+            
+            LoggingService.Instance.LogInfo($"HasAnySpecializationSelected: result={result}, individual specs: FL={Flaechensuche}, TR={Truemmersuche}, MT={Mantrailing}, WO={Wasserortung}, LA={Lawinensuche}, GE={Gelaendesuche}, LS={Leichensuche}, IA={InAusbildung}");
+            
+            return result;
         }
 
         private void ExecuteSave()
         {
             try
             {
+                LoggingService.Instance.LogInfo($"Starting save process - IsEditMode: {_isEditMode}, DogEntry ID: {_dogEntry.Id}");
+
                 // Validation
-                if (string.IsNullOrWhiteSpace(Name))
+                if (!ValidateForm())
                 {
-                    LoggingService.Instance.LogWarning("Save attempted with empty dog name");
+                    LoggingService.Instance.LogWarning("Save cancelled due to validation errors");
                     return;
                 }
 
@@ -269,6 +411,7 @@ namespace Einsatzueberwachung.ViewModels
                 if (Lawinensuche) specs |= DogSpecialization.Lawinensuche;
                 if (Gelaendesuche) specs |= DogSpecialization.Gelaendesuche;
                 if (Leichensuche) specs |= DogSpecialization.Leichensuche;
+                if (InAusbildung) specs |= DogSpecialization.InAusbildung;
 
                 _dogEntry.Specializations = specs;
 
@@ -282,8 +425,17 @@ namespace Einsatzueberwachung.ViewModels
                     _dogEntry.HundefuehrerId = string.Empty;
                 }
 
+                // Generate new ID for new entries
+                if (!_isEditMode && string.IsNullOrEmpty(_dogEntry.Id))
+                {
+                    _dogEntry.Id = Guid.NewGuid().ToString();
+                    LoggingService.Instance.LogInfo($"Generated new ID for DogEntry: {_dogEntry.Id}");
+                }
+
+                LoggingService.Instance.LogInfo($"DogEntry prepared for save: ID={_dogEntry.Id}, Name={_dogEntry.Name}, Specializations={specs}");
+
                 DialogResult = true;
-                LoggingService.Instance.LogInfo($"Dog {(_isEditMode ? "updated" : "created")}: {_dogEntry.Name}");
+                LoggingService.Instance.LogInfo($"Dog data ready for return to caller - Mode: {(_isEditMode ? "Edit" : "New")}");
                 
                 // Trigger window close
                 RequestClose?.Invoke();

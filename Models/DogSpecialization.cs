@@ -12,7 +12,8 @@ namespace Einsatzueberwachung.Models
         Wasserortung = 1 << 3,         // 8 - Wasserortung
         Lawinensuche = 1 << 4,         // 16 - Lawinensuchhund
         Gelaendesuche = 1 << 5,        // 32 - Geländesuchhund
-        Leichensuche = 1 << 6          // 64 - Leichenspürhund
+        Leichensuche = 1 << 6,         // 64 - Leichenspürhund
+        InAusbildung = 1 << 7          // 128 - In Ausbildung (NEU)
     }
 
     public static class DogSpecializationExtensions
@@ -28,6 +29,7 @@ namespace Einsatzueberwachung.Models
                 DogSpecialization.Lawinensuche => "Lawinensuchhund",
                 DogSpecialization.Gelaendesuche => "Geländesuchhund",
                 DogSpecialization.Leichensuche => "Leichenspürhund",
+                DogSpecialization.InAusbildung => "In Ausbildung",
                 _ => spec.ToString()
             };
         }
@@ -43,6 +45,7 @@ namespace Einsatzueberwachung.Models
                 DogSpecialization.Lawinensuche => "LA",
                 DogSpecialization.Gelaendesuche => "GE",
                 DogSpecialization.Leichensuche => "LS",
+                DogSpecialization.InAusbildung => "IA",
                 _ => ""
             };
         }
@@ -64,6 +67,8 @@ namespace Einsatzueberwachung.Models
                 return "#8BC34A"; // Light Green
             if (spec.HasFlag(DogSpecialization.Leichensuche))
                 return "#795548"; // Brown
+            if (spec.HasFlag(DogSpecialization.InAusbildung))
+                return "#FFC107"; // Amber - In Training
             
             return "#9E9E9E"; // Gray - None
         }

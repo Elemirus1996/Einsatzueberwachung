@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Input;
 using Einsatzueberwachung.ViewModels;
@@ -6,7 +7,12 @@ using Einsatzueberwachung.Services;
 
 namespace Einsatzueberwachung.Views
 {
-    public partial class StartWindow : Window
+    /// <summary>
+    /// StartWindow with Unified Theme System v5.0
+    /// Now uses UnifiedThemeManager for clean, automatic theme support
+    /// Zero-configuration theme integration
+    /// </summary>
+    public partial class StartWindow : BaseThemeWindow
     {
         private readonly StartViewModel _viewModel;
         
@@ -16,103 +22,56 @@ namespace Einsatzueberwachung.Views
 
         public StartWindow()
         {
-            // Initialize theme BEFORE InitializeComponent to ensure correct initial rendering
-            InitializeThemeEarly();
-            
-            InitializeComponent();
-            
-            _viewModel = new StartViewModel();
-            DataContext = _viewModel;
-            
-            // Subscribe to ViewModel events
-            _viewModel.RequestClose += OnRequestClose;
-            _viewModel.ShowMessage += OnShowMessage;
-            
-            // Apply theme after component initialization
-            FinalizeThemeInitialization();
-            
-            LoggingService.Instance?.LogInfo($"StartWindow v1.9 initialized - Theme: {ThemeService.Instance.CurrentThemeStatus}, ScrollViewer optimized, Readability enhanced");
-        }
-
-        /// <summary>
-        /// Frühe Theme-Initialisierung vor InitializeComponent
-        /// </summary>
-        private void InitializeThemeEarly()
-        {
             try
             {
-                // Stelle sicher dass ThemeService initialisiert ist
-                var themeService = ThemeService.Instance;
+                LoggingService.Instance.LogInfo("Creating StartWindow v5.0 with Unified Theme System...");
                 
-                // ZUSÄTZLICHE SICHERHEIT: Theme auch hier nochmals anwenden
-                var currentTime = DateTime.Now.TimeOfDay;
-                bool shouldBeDark = currentTime >= new TimeSpan(18, 0, 0) || currentTime < new TimeSpan(8, 0, 0);
+                InitializeComponent();
+                // BaseThemeWindow handles all theme registration automatically!
                 
-                System.Diagnostics.Debug.WriteLine($"=== StartWindow Theme Check ===");
-                System.Diagnostics.Debug.WriteLine($"Current Time: {currentTime:hh\\:mm\\:ss}");
-                System.Diagnostics.Debug.WriteLine($"Should be Dark: {shouldBeDark}");
-                System.Diagnostics.Debug.WriteLine($"ThemeService says Dark: {themeService.IsDarkMode}");
+                _viewModel = new StartViewModel();
+                DataContext = _viewModel;
                 
-                // FORCE korrekte Theme-Anwendung falls Diskrepanz
-                if (themeService.IsDarkMode != shouldBeDark)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 FORCING theme correction in StartWindow");
-                    LoggingService.Instance.LogWarning($"StartWindow forcing theme correction: {shouldBeDark}");
-                    
-                    // Direkte Ressourcen-Anwendung
-                    var app = Application.Current;
-                    if (app?.Resources != null)
-                    {
-                        if (shouldBeDark)
-                        {
-                            app.Resources["Surface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(18, 18, 18));
-                            app.Resources["SurfaceContainer"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 26));
-                            app.Resources["OnSurface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(227, 227, 227));
-                            app.Resources["Primary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 183, 77));
-                            app.Resources["OnPrimary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 15, 0));
-                        }
-                        else
-                        {
-                            app.Resources["Surface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(254, 254, 254));
-                            app.Resources["SurfaceContainer"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(240, 240, 240));
-                            app.Resources["OnSurface"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 28, 30));
-                            app.Resources["Primary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 124, 0));
-                            app.Resources["OnPrimary"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255));
-                        }
-                    }
-                }
+                // Subscribe to ViewModel events
+                _viewModel.RequestClose += OnRequestClose;
+                _viewModel.ShowMessage += OnShowMessage;
                 
-                LoggingService.Instance.LogInfo($"StartWindow theme early init completed - Should be: {(shouldBeDark ? "Dark" : "Light")}");
+                LoggingService.Instance.LogInfo($"StartWindow v5.0 initialized with automatic theme support via UnifiedThemeManager");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in early theme initialization: {ex.Message}");
-                LoggingService.Instance.LogError("Error in early theme initialization", ex);
+                LoggingService.Instance.LogError("Error in StartWindow constructor", ex);
+                throw; // Re-throw to see the actual error
             }
         }
 
+        #region BaseThemeWindow Override - Optional Customizations
+
         /// <summary>
-        /// Finale Theme-Initialisierung nach InitializeComponent
+        /// Optional: StartWindow-spezifische Theme-Anpassungen
+        /// BaseThemeWindow handled bereits die Standard-Theme-Anwendung
         /// </summary>
-        private void FinalizeThemeInitialization()
+        protected override void ApplyThemeToWindow(bool isDarkMode)
         {
             try
             {
-                var themeService = ThemeService.Instance;
+                // Call base implementation first (does the heavy lifting)
+                base.ApplyThemeToWindow(isDarkMode);
                 
-                // Apply current theme to start window
-                ApplyTheme(themeService.IsDarkMode);
+                // Optional: StartWindow-spezifische Anpassungen hier hinzufügen
+                // Zum Beispiel: Window-Titel-Farbe, spezielle Animationen, etc.
                 
-                // Subscribe to theme changes
-                themeService.ThemeChanged += OnThemeChanged;
-                
-                LoggingService.Instance?.LogInfo($"StartWindow theme finalized - Applied: {(themeService.IsDarkMode ? "Dark" : "Light")} mode");
+                LoggingService.Instance.LogInfo($"StartWindow theme applied: {(isDarkMode ? "Dark" : "Light")} mode with Orange design via UnifiedThemeManager");
             }
             catch (Exception ex)
             {
-                LoggingService.Instance?.LogError("Error finalizing theme initialization", ex);
+                LoggingService.Instance.LogError("Error applying theme to StartWindow", ex);
             }
         }
+
+        #endregion
+
+        #region UI Event Handlers
 
         /// <summary>
         /// Event-Handler für TextBox MouseWheel-Events
@@ -141,9 +100,51 @@ namespace Einsatzueberwachung.Views
             }
             catch (Exception ex)
             {
-                LoggingService.Instance?.LogError("Error handling TextBox MouseWheel event", ex);
+                LoggingService.Instance.LogError("Error handling TextBox MouseWheel event", ex);
             }
         }
+
+        /// <summary>
+        /// Design-Einstellungen Button geklickt
+        /// Öffnet SettingsWindow mit Unified Theme System Integration
+        /// </summary>
+        private void ThemeSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var settingsWindow = new SettingsWindow();
+                settingsWindow.Owner = this;
+                
+                LoggingService.Instance.LogInfo("🎨 Opening SettingsWindow with Unified Theme System");
+                
+                // Zeige direkt die Appearance/Theme-Kategorie an
+                settingsWindow.ShowCategory("appearance");
+                
+                var result = settingsWindow.ShowDialog();
+                
+                if (result == true)
+                {
+                    LoggingService.Instance.LogInfo("✅ Settings saved successfully from StartWindow - Theme changes applied automatically");
+                }
+                else
+                {
+                    LoggingService.Instance.LogInfo("🚫 Settings dialog canceled from StartWindow");
+                }
+                
+                // Theme-Updates erfolgen automatisch über UnifiedThemeManager!
+                // Kein manueller Refresh nötig
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("Error opening settings window", ex);
+                MessageBox.Show($"Fehler beim Öffnen der Einstellungen:\n{ex.Message}", 
+                    "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
+
+        #region ViewModel Event Handlers
 
         private void OnRequestClose(object? sender, EventArgs e)
         {
@@ -173,13 +174,13 @@ namespace Einsatzueberwachung.Views
                         // Change ShutdownMode (now safe)
                         Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                         
-                        // Show MainWindow
+                        // Show MainWindow (gets automatic theme support from BaseThemeWindow)
                         mainWindow.Show();
                         
                         // Close StartWindow (App won't exit because MainWindow is still open)
                         this.Close();
                         
-                        LoggingService.Instance?.LogInfo("✅ Transition from StartWindow to MainWindow completed with theme and ScrollViewer optimizations");
+                        LoggingService.Instance.LogInfo("✅ Transition from StartWindow to MainWindow completed with automatic theme transfer");
                     }
                 }
                 else
@@ -199,7 +200,7 @@ namespace Einsatzueberwachung.Views
             }
             catch (Exception ex)
             {
-                LoggingService.Instance?.LogError("Error handling RequestClose event", ex);
+                LoggingService.Instance.LogError("Error handling RequestClose event", ex);
                 MessageBox.Show($"Fehler beim Verarbeiten der Anfrage: {ex.Message}", 
                     "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -213,82 +214,64 @@ namespace Einsatzueberwachung.Views
             }
             catch (Exception ex)
             {
-                LoggingService.Instance?.LogError("Error showing message", ex);
+                LoggingService.Instance.LogError("Error showing message", ex);
             }
         }
 
-        private void OnThemeChanged(bool isDarkMode)
-        {
-            Dispatcher.Invoke(() => ApplyTheme(isDarkMode));
-        }
+        #endregion
 
-        private void ApplyTheme(bool isDarkMode)
+        #region Window Events & Cleanup
+
+        protected override void OnWindowClosed(EventArgs e)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"Applying theme to StartWindow: {(isDarkMode ? "Dark" : "Light")}");
-
-                // Force visual update to ensure theme changes are applied
-                this.InvalidateVisual();
-                this.UpdateLayout();
+                // Unsubscribe from ViewModel events
+                if (_viewModel != null)
+                {
+                    _viewModel.RequestClose -= OnRequestClose;
+                    _viewModel.ShowMessage -= OnShowMessage;
+                }
                 
-                LoggingService.Instance?.LogInfo($"Theme applied to StartWindow: {(isDarkMode ? "Dark" : "Light")} mode");
+                LoggingService.Instance.LogInfo("StartWindow v5.0 closed and cleaned up - theme cleanup handled by BaseThemeWindow");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error applying theme: {ex.Message}");
-                LoggingService.Instance?.LogError("Error applying theme to StartWindow", ex);
+                LoggingService.Instance.LogError("Error during StartWindow cleanup", ex);
+            }
+            finally
+            {
+                // BaseThemeWindow handles theme cleanup automatically
+                base.OnWindowClosed(e);
             }
         }
+
+        #endregion
+
+        #region Theme Helper Methods (Optional)
 
         /// <summary>
-        /// DEBUG: Event-Handler für Theme-Test Button (temporär)
+        /// Beispiel: Theme-Farbe abrufen für spezielle UI-Elemente
         /// </summary>
-        private void DebugThemeButton_Click(object sender, RoutedEventArgs e)
+        private void UpdateSpecialElements()
         {
             try
             {
-                var themeService = ThemeService.Instance;
+                // Beispiel: Spezielle Farbanpassungen
+                var primaryColor = GetThemeColor("Primary");
+                var surfaceColor = GetThemeColor("Surface");
                 
-                System.Diagnostics.Debug.WriteLine($"\n=== MANUAL THEME TEST ===");
-                System.Diagnostics.Debug.WriteLine($"Before Toggle - IsDarkMode: {themeService.IsDarkMode}");
+                // Verwende die Farben für spezielle UI-Anpassungen
+                // (Meistens nicht nötig, da XAML-Bindings automatisch funktionieren)
                 
-                // Toggle theme manually
-                themeService.ToggleTheme();
-                
-                System.Diagnostics.Debug.WriteLine($"After Toggle - IsDarkMode: {themeService.IsDarkMode}");
-                System.Diagnostics.Debug.WriteLine($"After Toggle - Status: {themeService.CurrentThemeStatus}");
-                System.Diagnostics.Debug.WriteLine("=== END MANUAL TEST ===\n");
-                
-                LoggingService.Instance?.LogInfo($"DEBUG: Manual theme toggle - New mode: {(themeService.IsDarkMode ? "Dark" : "Light")}");
-                
-                // Show simple success message
-                var message = $"Theme gewechselt zu: {(themeService.IsDarkMode ? "Dark Mode" : "Light Mode")}\n\n" +
-                             $"Status: {themeService.CurrentThemeStatus}\n" +
-                             "TextBoxen sollten jetzt automatisch die korrekten Farben verwenden.";
-                
-                MessageBox.Show(message, "Theme Debug Test", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoggingService.Instance.LogInfo($"Special theme elements updated - Primary: {primaryColor}, Surface: {surfaceColor}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in debug theme button: {ex.Message}");
-                LoggingService.Instance?.LogError("Error in debug theme button", ex);
-                MessageBox.Show($"Fehler beim Theme-Test: {ex.Message}", "Debug Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                LoggingService.Instance.LogError("Error updating special theme elements", ex);
             }
         }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            // Unsubscribe from events
-            if (_viewModel != null)
-            {
-                _viewModel.RequestClose -= OnRequestClose;
-                _viewModel.ShowMessage -= OnShowMessage;
-            }
-            
-            ThemeService.Instance.ThemeChanged -= OnThemeChanged;
-            
-            base.OnClosed(e);
-        }
+        #endregion
     }
 }
