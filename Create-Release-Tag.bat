@@ -74,7 +74,7 @@ echo   Write-Output "ERROR" >> temp_version_reader.ps1
 echo } >> temp_version_reader.ps1
 
 :: F??hre PowerShell-Script aus
-for /f "delims=" %%i in ('powershell -ExecutionPolicy Bypass -File temp_version_reader.ps1') do set VERSION=1.9.2
+for /f "delims=" %%i in ('powershell -ExecutionPolicy Bypass -File temp_version_reader.ps1') do set VERSION=1.9.6
 
 :: R??ume tempor??re Datei auf
 del temp_version_reader.ps1 >nul 2>nul
@@ -317,5 +317,6 @@ echo ???? Release-Prozess erfolgreich abgeschlossen!
 echo.
 echo Dr??cken Sie eine beliebige Taste zum Beenden...
 pause >nul
+
 
 

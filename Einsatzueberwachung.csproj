@@ -11,16 +11,16 @@
     <AssemblyName>Einsatzueberwachung</AssemblyName>
     <!-- 
     ZENTRALE VERSIONSVERWALTUNG via VersionService.cs
-    WICHTIG: Diese Werte müssen manuell mit VersionService.cs synchronisiert werden!
+    WICHTIG: Diese Werte mÃ¼ssen manuell mit VersionService.cs synchronisiert werden!
     
     Aktuelle Version aus VersionService: 1.9.6.0 (Development Version)
     Beim Release-Update diese Werte entsprechend VersionService.GetProjectVersions() anpassen
     -->
-    <AssemblyTitle>Einsatzüberwachung Professional v1.9.6</AssemblyTitle>
-    <AssemblyDescription>Professionelle Einsatzüberwachung für Rettungshunde-Teams mit Dashboard-Übersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
+    <AssemblyTitle>EinsatzÃ¼berwachung Professional v1.9.6</AssemblyTitle>
+    <AssemblyDescription>Professionelle EinsatzÃ¼berwachung fÃ¼r Rettungshunde-Teams mit Dashboard-Ãœbersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
-    <AssemblyProduct>Einsatzüberwachung Professional v1.9.6</AssemblyProduct>
-    <AssemblyCopyright>Copyright © 2024 RescueDog_SW</AssemblyCopyright>
+    <AssemblyProduct>EinsatzÃ¼berwachung Professional v1.9.6</AssemblyProduct>
+    <AssemblyCopyright>Copyright Â© 2024 RescueDog_SW</AssemblyCopyright>
     <AssemblyVersion>1.9.6.0</AssemblyVersion>
     <FileVersion>1.9.6.0</FileVersion>
     <Version>1.9.6</Version>
