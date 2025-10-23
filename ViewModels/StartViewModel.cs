@@ -242,7 +242,68 @@ namespace Einsatzueberwachung.ViewModels
             LoadMasterDataAsync();
             ValidateForm();
             
-            LoggingService.Instance?.LogInfo("StartViewModel initialized with simplified form (no timer settings)");
+            // 🔄 NEU: Automatischer Update-Check beim Start
+            CheckForUpdatesAsync();
+            
+            LoggingService.Instance?.LogInfo("StartViewModel initialized with simplified form (no timer settings) and automatic update check");
+        }
+
+        /// <summary>
+        /// 🔄 Prüft automatisch nach Updates beim Start der Anwendung
+        /// </summary>
+        private async void CheckForUpdatesAsync()
+        {
+            try
+            {
+                // Nur prüfen wenn es keine Development-Version ist
+                if (VersionService.IsDevelopmentVersion)
+                {
+                    LoggingService.Instance.LogInfo("🔄 Update check skipped - Development version");
+                    return;
+                }
+
+                LoggingService.Instance.LogInfo("🔄 Starting automatic update check on application startup...");
+                
+                // Warte kurz damit das Fenster zuerst geladen wird
+                await Task.Delay(2000);
+
+                using (var updateService = new GitHubUpdateService())
+                {
+                    var updateInfo = await updateService.CheckForUpdatesAsync();
+
+                    if (updateInfo != null)
+                    {
+                        LoggingService.Instance.LogInfo($"✅ Update verfügbar: {updateInfo.Version}");
+                        
+                        // Zeige Update-Benachrichtigung auf dem UI-Thread
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            try
+                            {
+                                var updateWindow = new Views.UpdateNotificationWindow(updateInfo);
+                                updateWindow.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                                updateWindow.Topmost = true;
+                                updateWindow.Show();
+                                
+                                LoggingService.Instance.LogInfo("✅ Update notification window opened");
+                            }
+                            catch (Exception ex)
+                            {
+                                LoggingService.Instance.LogError("❌ Error showing update notification", ex);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        LoggingService.Instance.LogInfo("✅ No updates available - Application is up to date");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.LogError("❌ Error during automatic update check", ex);
+                // Fehler beim Update-Check sind nicht kritisch, Anwendung läuft normal weiter
+            }
         }
 
         private void InitializeCommands()
