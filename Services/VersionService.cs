@@ -1,31 +1,31 @@
-using System;
+﻿using System;
 using System.Reflection;
 
 namespace Einsatzueberwachung.Services
 {
     /// <summary>
-    /// Zentraler Service fÃƒÂ¼r Versionsnummern-Management
-    /// Einzige Quelle der Wahrheit fÃƒÂ¼r alle Versionsangaben in der Anwendung
+    /// Zentraler Service fÃƒÆ’Ã‚Â¼r Versionsnummern-Management
+    /// Einzige Quelle der Wahrheit fÃƒÆ’Ã‚Â¼r alle Versionsangaben in der Anwendung
     /// </summary>
     public static class VersionService
     {
-        // ZENTRALE VERSIONSDEFINITION - NUR HIER Ãƒâ€žNDERN!
+        // ZENTRALE VERSIONSDEFINITION - NUR HIER ÃƒÆ’Ã¢â‚¬Å¾NDERN!
         private const string MAJOR_VERSION = "1";
         private const string MINOR_VERSION = "9";
-        private const string PATCH_VERSION = "6";  //  UPDATED: Neue Entwicklungsversion
-        private const string BUILD_VERSION = "0";  //  RESET: Zurück auf 0 für neue Entwicklung
+        private const string PATCH_VERSION = "7";  //  UPDATED: Neue Entwicklungsversion
+        private const string BUILD_VERSION = "0";  //  RESET: ZurÃ¼ck auf 0 fÃ¼r neue Entwicklung
 
         // Development/Release Kennzeichnung
         private const bool IS_DEVELOPMENT_VERSION = false;  // DEVELOPMENT: Development-Modus aktiviert
         private const string DEVELOPMENT_SUFFIX = "-dev";
         
         /// <summary>
-        /// Vollständige Versionsnummer (z.B. "1.9.0")
+        /// VollstÃ¤ndige Versionsnummer (z.B. "1.9.0")
         /// </summary>
         public static string Version => $"{MAJOR_VERSION}.{MINOR_VERSION}.{PATCH_VERSION}";
         
         /// <summary>
-        /// Vollständige Assembly-Version (z.B. "1.9.0.0")
+        /// VollstÃ¤ndige Assembly-Version (z.B. "1.9.0.0")
         /// </summary>
         public static string AssemblyVersion => $"{MAJOR_VERSION}.{MINOR_VERSION}.{PATCH_VERSION}.{BUILD_VERSION}";
         
@@ -35,17 +35,17 @@ namespace Einsatzueberwachung.Services
         public static string DisplayVersion => IS_DEVELOPMENT_VERSION ? $"{Version}{DEVELOPMENT_SUFFIX}" : Version;
         
         /// <summary>
-        /// Produktname mit Version (z.B. "Einsatzüberwachung Professional v1.9.0")
+        /// Produktname mit Version (z.B. "EinsatzÃ¼berwachung Professional v1.9.0")
         /// </summary>
-        public static string ProductNameWithVersion => $"Einsatzüberwachung Professional v{Version}";
+        public static string ProductNameWithVersion => $"EinsatzÃ¼berwachung Professional v{Version}";
 
         /// <summary>
-        /// Vollständiger Produktname mit Development-Kennzeichnung
+        /// VollstÃ¤ndiger Produktname mit Development-Kennzeichnung
         /// </summary>
-        public static string FullProductName => $"Einsatzüberwachung Professional v{DisplayVersion}";
+        public static string FullProductName => $"EinsatzÃ¼berwachung Professional v{DisplayVersion}";
         
         /// <summary>
-        /// User Agent fÃƒÂ¼r HTTP-Requests
+        /// User Agent fÃƒÆ’Ã‚Â¼r HTTP-Requests
         /// </summary>
         public static string UserAgent => $"Einsatzueberwachung-Professional-v{Version}";
         
@@ -80,7 +80,7 @@ namespace Einsatzueberwachung.Services
         public static string Copyright => $"Copyright @ {ReleaseYear} RescueDog_SW";
 
         /// <summary>
-        /// Ermittelt die tatsächlich kompilierte Version aus der Assembly
+        /// Ermittelt die tatsÃ¤chlich kompilierte Version aus der Assembly
         /// (als Fallback und Vergleich)
         /// </summary>
         public static string CompiledVersion
@@ -104,7 +104,7 @@ namespace Einsatzueberwachung.Services
         }
         
         /// <summary>
-        /// PrÃƒÂ¼ft ob die kompilierte Version mit der statischen Version ÃƒÂ¼bereinstimmt
+        /// PrÃƒÆ’Ã‚Â¼ft ob die kompilierte Version mit der statischen Version ÃƒÆ’Ã‚Â¼bereinstimmt
         /// </summary>
         public static bool IsVersionConsistent
         {
@@ -147,7 +147,7 @@ namespace Einsatzueberwachung.Services
         }
         
         /// <summary>
-        /// Formatiert eine Versionsnummer fÃƒÂ¼r die Anzeige
+        /// Formatiert eine Versionsnummer fÃƒÆ’Ã‚Â¼r die Anzeige
         /// </summary>
         /// <param name="version">Version (z.B. "1.9.0")</param>
         /// <param name="includeDevelopment">Development-Suffix anzeigen falls zutreffend</param>
@@ -169,12 +169,12 @@ namespace Einsatzueberwachung.Services
     }
     
     /// <summary>
-    /// Version-Update Helper fÃƒÂ¼r Release-Management
+    /// Version-Update Helper fÃƒÆ’Ã‚Â¼r Release-Management
     /// </summary>
     public static class VersionUpdateHelper
     {
         /// <summary>
-        /// Generiert die Werte fÃƒÂ¼r .csproj Update
+        /// Generiert die Werte fÃƒÆ’Ã‚Â¼r .csproj Update
         /// </summary>
         public static (string assemblyVersion, string fileVersion, string version, string title, string product) GetProjectVersions()
         {
@@ -211,6 +211,7 @@ namespace Einsatzueberwachung.Services
         }
     }
 }
+
 
 
 

@@ -11,19 +11,19 @@
     <AssemblyName>Einsatzueberwachung</AssemblyName>
     <!-- 
     ZENTRALE VERSIONSVERWALTUNG via VersionService.cs
-    WICHTIG: Diese Werte mÃ¼ssen manuell mit VersionService.cs synchronisiert werden!
+    WICHTIG: Diese Werte mÃƒÂ¼ssen manuell mit VersionService.cs synchronisiert werden!
     
     Aktuelle Version aus VersionService: 1.9.6.0 (Development Version)
     Beim Release-Update diese Werte entsprechend VersionService.GetProjectVersions() anpassen
     -->
-    <AssemblyTitle>EinsatzÃ¼berwachung Professional v1.9.6</AssemblyTitle>
-    <AssemblyDescription>Professionelle EinsatzÃ¼berwachung fÃ¼r Rettungshunde-Teams mit Dashboard-Ãœbersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
+    <AssemblyTitle>EinsatzÃ¼berwachung Professional v1.9.7</AssemblyTitle>
+    <AssemblyDescription>Professionelle EinsatzÃƒÂ¼berwachung fÃƒÂ¼r Rettungshunde-Teams mit Dashboard-ÃƒÅ“bersicht, PDF-Export und Stammdatenverwaltung</AssemblyDescription>
     <AssemblyCompany>RescueDog_SW</AssemblyCompany>
-    <AssemblyProduct>EinsatzÃ¼berwachung Professional v1.9.6</AssemblyProduct>
-    <AssemblyCopyright>Copyright Â© 2024 RescueDog_SW</AssemblyCopyright>
-    <AssemblyVersion>1.9.6.0</AssemblyVersion>
-    <FileVersion>1.9.6.0</FileVersion>
-    <Version>1.9.6</Version>
+    <AssemblyProduct>EinsatzÃ¼berwachung Professional v1.9.7</AssemblyProduct>
+    <AssemblyCopyright>Copyright @ 2025 RescueDog_SW</AssemblyCopyright>
+    <AssemblyVersion>1.9.7.0</AssemblyVersion>
+    <FileVersion>1.9.7.0</FileVersion>
+    <Version>1.9.7</Version>
     <!-- Release Configuration -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>false</SelfContained>
